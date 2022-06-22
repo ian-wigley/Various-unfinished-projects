@@ -1,0 +1,10 @@
+*.xnb
+
+JetpacReloaded/.vs/
+JetpacReloaded/JetpacReloaded/bin/
+JetpacReloaded/JetpacReloaded/.vs/
+JetpacReloaded/JetpacReloaded/obj/
+JetpacReloaded/JetpacReloaded/Content/obj/
+JetpacReloaded/JetpacReloaded/app.manifest
+
+
