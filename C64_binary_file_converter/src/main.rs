@@ -4,6 +4,7 @@ use std::collections::HashMap;
 use std::env;
 use std::io::Read;
 use std::str::FromStr;
+use fltk::{app, prelude::*, window::Window};
 
 mod opcode;
 
@@ -26,6 +27,12 @@ fn main() {
     let hex_content = parse_content(file_content.clone());
 
     iterate(hex_content, opcode, opcodes.clone(), file_content);
+
+    let app = app::App::default();
+    let mut wind = Window::new(100, 100, 400, 300, "Hello from rust");
+    wind.end();
+    wind.show();
+    app.run().unwrap();
 }
 
 fn iterate(
@@ -119,7 +126,7 @@ fn load_bin_file() -> std::io::Result<Vec<u8>> {
     let path = env::current_dir()?;
     // println!("{:?}", path);
     //if release ...
-    let bin_path = path.join("BIG-T");
+    let bin_path = path.join("Assets/C64_Binary.bin");
     // println!("{:?}", bin_path);
     let mut file = std::fs::File::open(bin_path)?;
     let mut v: Vec<u8> = Vec::new();
