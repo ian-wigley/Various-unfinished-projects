@@ -1,5 +1,5 @@
 [package]
-name = "c64_bin_converter"
+name = "c64_binary_file_converter"
 version = "0.1.0"
 edition = "2021"
 
@@ -7,3 +7,4 @@ edition = "2021"
 
 [dependencies]
 hex = "0.4"
+fltk = "^1.3"
