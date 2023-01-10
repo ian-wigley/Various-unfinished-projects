@@ -11,11 +11,11 @@
             "cargo": {
                 "args": [
                     "build",
-                    "--bin=c64_bin_converter",
-                    "--package=c64_bin_converter"
+                    "--bin=c64_binary_file_converter",
+                    "--package=c64_binary_file_converter"
                 ],
                 "filter": {
-                    "name": "c64_bin_converter",
+                    "name": "c64_binary_file_converter",
                     "kind": "bin"
                 }
             },
@@ -25,16 +25,16 @@
         {
             "type": "lldb",
             "request": "launch",
-            "name": "Debug unit tests in executable 'c64_bin_converter'",
+            "name": "Debug unit tests in executable 'c64_binary_file_converter'",
             "cargo": {
                 "args": [
                     "test",
                     "--no-run",
-                    "--bin=c64_bin_converter",
-                    "--package=c64_bin_converter"
+                    "--bin=c64_binary_file_converter",
+                    "--package=c64_binary_file_converter"
                 ],
                 "filter": {
-                    "name": "c64_bin_converter",
+                    "name": "c64_binary_file_converter",
                     "kind": "bin"
                 }
             },
