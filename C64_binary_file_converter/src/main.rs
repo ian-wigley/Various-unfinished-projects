@@ -1,10 +1,15 @@
 extern crate hex;
 
+use fltk::{
+    app,
+    prelude::*,
+    text::{TextBuffer, TextDisplay},
+    window::Window,
+};
 use std::collections::HashMap;
 use std::env;
 use std::io::Read;
 use std::str::FromStr;
-use fltk::{app, prelude::*, window::Window};
 
 mod opcode;
 
@@ -13,6 +18,12 @@ pub struct Opcode {}
 
 fn main() {
     env::set_var("RUST_BACKTRACE", "full");
+
+    let app = app::App::default();
+    let mut wind = Window::new(100, 100, 800, 600, "C64 Binary to Assembly Converter");
+    let initial_display = TextDisplay::new(5, 5, 400, 550, None);
+    wind.end();
+    wind.show();
 
     // Create a new OpCode Object
     let opcode = Opcode::new();
@@ -26,12 +37,8 @@ fn main() {
 
     let hex_content = parse_content(file_content.clone());
 
-    iterate(hex_content, opcode, opcodes.clone(), file_content);
+    iterate(hex_content, opcode, opcodes.clone(), file_content, initial_display);
 
-    let app = app::App::default();
-    let mut wind = Window::new(100, 100, 400, 300, "Hello from rust");
-    wind.end();
-    wind.show();
     app.run().unwrap();
 }
 
@@ -40,7 +47,11 @@ fn iterate(
     opcode: Opcode,
     opcodes: HashMap<&str, [&str; 5]>,
     file_content: Vec<u8>,
+    disp: TextDisplay,
 ) {
+    let mut diplay_text = disp;
+    let mut buf = TextBuffer::default();
+
     let mut file_position = 0;
     let mut pc: usize = 0;
 
@@ -81,22 +92,15 @@ fn iterate(
         // increment the pc
         pc += incrementer as usize;
 
-        println!(
-            "{:04X} {} {} {}    {} {}{}{}{}",
-            // file_position, op_code, _three, _two, _nmenonic, _values[2], _two, _three, _values[3]
-            file_position,
-            op_code,
-            _three,
-            _two,
-            nmenonic,
-            values[2],
-            _padding,
-            _three,
-            values[3]
+        let code = format!(
+            "{:04X} {} {} {}        {} {}{}{}{}\n",
+            file_position, op_code, _three, _two, nmenonic, values[2], _padding, _three, values[3]
         );
+        buf.append(&code);
 
         file_position += incrementer as usize;
     }
+    diplay_text.set_buffer(buf.clone());
 }
 
 fn is_branch(nmenonic: &str) -> bool {
