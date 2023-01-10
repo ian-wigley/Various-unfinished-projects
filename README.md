@@ -1,2 +1,2 @@
 # Various-unfinished-projects
-A collection of unfinished projects
+A collection of work in progress unfinished projects ..

@@ -1,0 +1,120 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="650"
+        x:Class="MyApp.MainWindow"
+        Title="Nodes Level Editor">
+   
+    <StackPanel>
+        <Menu DockPanel.Dock="Top">
+            <MenuItem Header="_File">
+                <MenuItem Header="_Open..." Name="menuOpen" Click="OpenMenuItem_Click"/>
+                <MenuItem Header="_Save..." Name="menuSave" Click="SaveMenuItem_Click"/>
+                <Separator/>
+                <MenuItem Header="_Exit..."  Name="menuExit" Click="menuExit_Click" />
+            </MenuItem>
+            <MenuItem Header="_Edit">
+                <MenuItem Header="Copy"/>
+                <MenuItem Header="Paste"/>
+            </MenuItem>
+        </Menu>
+
+        <!--https://github.com/AvaloniaUI/Avalonia/issues/2741-->
+        <Canvas Background="Black" x:Name="testCanvas" HorizontalAlignment="Left"
+        VerticalAlignment="Top" Width="806" Height="490" IsEnabled="True" Margin="10">
+
+            <Line StartPoint="0,0" EndPoint="806,0" Stroke="Red" StrokeThickness="1"/>
+            <Line StartPoint="0,49" EndPoint="806,49" Stroke="Red" StrokeThickness="1"/>
+            <Line StartPoint="0,98" EndPoint="806,98" Stroke="Red" StrokeThickness="1"/>
+            <Line StartPoint="0,147" EndPoint="806,147" Stroke="Red" StrokeThickness="1"/>
+            <Line StartPoint="0,196" EndPoint="806,196" Stroke="Red" StrokeThickness="1"/>
+            <Line StartPoint="0,245" EndPoint="806,245" Stroke="Red" StrokeThickness="1"/>
+            <Line StartPoint="0,294" EndPoint="806,294" Stroke="Red" StrokeThickness="1"/>
+            <Line StartPoint="0,343" EndPoint="806,343" Stroke="Red" StrokeThickness="1"/>
+            <Line StartPoint="0,392" EndPoint="806,392" Stroke="Red" StrokeThickness="1"/>
+            <Line StartPoint="0,441" EndPoint="806,441" Stroke="Red" StrokeThickness="1"/>
+            <Line StartPoint="0,490" EndPoint="806,490" Stroke="Red" StrokeThickness="1"/>
+
+            <Line StartPoint="0,0" EndPoint="0,490" Stroke="Red" StrokeThickness="1"/>
+            <Line StartPoint="62,0" EndPoint="62,490" Stroke="Red" StrokeThickness="1"/>
+            <Line StartPoint="124,0" EndPoint="124,490" Stroke="Red" StrokeThickness="1"/>
+            <Line StartPoint="186,0" EndPoint="186,490" Stroke="Red" StrokeThickness="1"/>
+            <Line StartPoint="248,0" EndPoint="248,490" Stroke="Red" StrokeThickness="1"/>
+            <Line StartPoint="310,0" EndPoint="310,490" Stroke="Red" StrokeThickness="1"/>
+            <Line StartPoint="372,0" EndPoint="372,490" Stroke="Red" StrokeThickness="1"/>
+            <Line StartPoint="434,0" EndPoint="434,490" Stroke="Red" StrokeThickness="1"/>
+            <Line StartPoint="496,0" EndPoint="496,490" Stroke="Red" StrokeThickness="1"/>
+            <Line StartPoint="558,0" EndPoint="558,490" Stroke="Red" StrokeThickness="1"/>
+            <Line StartPoint="620,0" EndPoint="620,490" Stroke="Red" StrokeThickness="1"/>
+            <Line StartPoint="682,0" EndPoint="682,490" Stroke="Red" StrokeThickness="1"/>
+            <Line StartPoint="744,0" EndPoint="744,490" Stroke="Red" StrokeThickness="1"/>
+            <Line StartPoint="806,0" EndPoint="806,490" Stroke="Red" StrokeThickness="1"/>
+        </Canvas>
+
+        <Border Background="LightBlue"
+                BorderBrush="Black"
+                BorderThickness="1"
+                Margin="5">
+            <Grid Background="White" ShowGridLines="True">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <StackPanel Grid.Column="0" Grid.Row="0"
+                            HorizontalAlignment="Left"
+                            Name="StackPanel1"
+                            VerticalAlignment="Top">
+                    <Button Margin="10">Button 1</Button>
+                </StackPanel>
+
+                <StackPanel Grid.Column="1" Grid.Row="0"
+                            HorizontalAlignment="Stretch"
+                            Name="StackPanel2"
+                            VerticalAlignment="Top"
+                            Orientation="Vertical">
+                    <Button Margin="10">Button 2</Button>
+                </StackPanel>
+
+                <StackPanel Grid.Column="2" Grid.Row="0"
+                            HorizontalAlignment="Left"
+                            Name="StackPanel3"
+                            VerticalAlignment="Top">
+                    <Button Margin="10">Button 3</Button>
+                </StackPanel>
+
+                <StackPanel Grid.Column="3" Grid.Row="0"
+                            HorizontalAlignment="Left"
+                            Name="StackPanel4"
+                            VerticalAlignment="Top">
+                    <Button Margin="10">Button 4</Button>
+                </StackPanel>
+
+                    <StackPanel Grid.Column="4" Grid.Row="0"
+                            HorizontalAlignment="Left"
+                            Name="StackPanel5"
+                            VerticalAlignment="Top">
+                    <Button Margin="10">Button 5</Button>
+                </StackPanel>
+
+                    <StackPanel Grid.Column="5" Grid.Row="0"
+                            HorizontalAlignment="Left"
+                            Name="StackPanel6"
+                            VerticalAlignment="Top">
+                    <Button Margin="10">Button 6</Button>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!-- <Panel Margin="0,10,0,0">
+            <Image Source="/assets/underground_tiles.png" Width="818" HorizontalAlignment="Left"/>
+        </Panel> -->
+
+    </StackPanel>
+
+</Window>
