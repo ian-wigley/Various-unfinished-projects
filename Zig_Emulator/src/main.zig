@@ -20,16 +20,17 @@ fn loadRom() anyerror![]u8 {
 
     var buf_reader = std.io.bufferedReader(file.reader());
     var in_stream = buf_reader.reader();
-    std.log.info("in_stream: {any}", .{in_stream.context.fifo.count});
+    std.log.info("in_stream: {any}", .{in_stream.context.buf.len});
 
     var count: usize = 0;
-    var array: [in_stream.context.fifo.buf.len]u8 = undefined;
+    var array: [in_stream.context.buf.len * 2]u8 = undefined;
 
-    while (count < in_stream.context.fifo.buf.len) {
+    while (count < in_stream.context.buf.len) {
         var b = try in_stream.readByte();
         array[count] = b;
         count += 1;
     }
+    std.log.info("array length: {any}", .{array.len});
     return &array;
 }
 
