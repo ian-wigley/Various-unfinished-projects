@@ -1,7 +1,7 @@
 const std = @import("std");
 
 pub const CPU = struct {
-    // var List<byte> m_rom;
+
     var m_rom: []u8 = undefined;
     var m_PC: u16 = 0; //Program Counter: This is the current instruction pointer. 16-bit register.
     var SP: u16 = 0; // Stack Pointer. 16-bit register
@@ -65,7 +65,6 @@ pub const CPU = struct {
     pub fn Run() void {
         std.log.info("PC: {any}", .{m_PC});
         var count: usize = 0;
-        //for (int i = 0; i < instruction_per_frame; i++)
         while (count < instruction_per_frame) {
             ExecuteInstruction();
             count += 1;
@@ -80,9 +79,11 @@ pub const CPU = struct {
             // std.log.info("m_byte: {any}", .{m_byte});
             switch (m_byte) {
                 0x00 => {
+                    std.log.info("NOP\n", .{});
                     NOP();
                 },
                 0xc2, 0xc3, 0xca, 0xd2, 0xda, 0xf2, 0xfa => {
+                    std.log.info("Instruction_JMP\n", .{});
                     Instruction_JMP(m_byte);
                 },
                 0x01, 0x11, 0x21, 0x31 => {
@@ -296,7 +297,7 @@ pub const CPU = struct {
 
     fn Instruction_JMP(byte: u8) void {
         var data16: u16 = FetchRomShort();
-        // std.log.info("Instruction_JMP {any}", .{byte});
+        std.log.info("Instruction_JMP data16: {any}", .{data16});
         var m_condition = true;
 
         switch (byte) {
@@ -1282,7 +1283,9 @@ pub const CPU = struct {
 
     fn FetchRomByte() u8 {
         var value = m_rom[m_PC];
+        std.log.info("FetchRomByte m_rom[m_PC]: {any}", .{value});
         m_PC += 1;
+        std.log.info("FetchRomByte PC: {any}", .{m_PC});
         return value;
     }
 
@@ -1293,10 +1296,12 @@ pub const CPU = struct {
 
         var bytes: [2]u8 = [_]u8{ 0, 0 };
 
-        bytes[0] = m_rom[m_PC + 0];
-        bytes[1] = m_rom[m_PC + 1];
+        bytes[0] = m_rom[m_PC + 0]; // 212
+        std.log.info("bytes[0]: {any}", .{bytes[0]});
+        bytes[1] = m_rom[m_PC + 1]; // 24
+        std.log.info("bytes[1]: {any}", .{bytes[1]});
         m_PC += 2;
-        return @intCast(u16, bytes[0] + bytes[1]);
+        return std.math.shl(u16, (bytes[1] & 0xFF), 8) | (bytes[0] & 0xFF);
     }
 
     fn ReadByte(count: usize) u8 {
