@@ -9,3 +9,5 @@ JetpacReloaded/JetpacReloaded/app.manifest
 
 
 C64_binary_file_converter/pkg/
+Zig_Emulator/zig-cache/
+Zig_Emulator/zig-out/
