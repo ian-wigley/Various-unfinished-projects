@@ -8,6 +8,13 @@ type Rectangle struct {
 	height int
 }
 
+func (rectangle *Rectangle) Init(x int, y int, width int, height int) {
+	rectangle.x = x
+	rectangle.y = y
+	rectangle.width = width
+	rectangle.height = height
+}
+
 func (rectangle *Rectangle) CheckCollisions() bool {
 	if ballRect.x < blockRect.x+blockRect.width && blockRect.x < ballRect.x+ballRect.width && ballRect.y < blockRect.y+blockRect.height {
 		return blockRect.y < ballRect.y+ballRect.height
@@ -17,10 +24,10 @@ func (rectangle *Rectangle) CheckCollisions() bool {
 }
 
 func (rectangle *Rectangle) Intersects(otherRect *Rectangle) bool {
-	if ballRect.x < otherRect.x+otherRect.width && 
-	otherRect.x < ballRect.x+ballRect.width && 
-	ballRect.y < otherRect.y+otherRect.height {
-		return otherRect.y < ballRect.y+ballRect.height
+	if rectangle.x < otherRect.x+otherRect.width &&
+		otherRect.x < rectangle.x+rectangle.width &&
+		rectangle.y < otherRect.y+otherRect.height {
+		return otherRect.y < rectangle.y+rectangle.height
 	} else {
 		return false
 	}
