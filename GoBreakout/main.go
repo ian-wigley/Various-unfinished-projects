@@ -13,6 +13,7 @@ import (
 	"image/color"
 	_ "image/png"
 	"log"
+
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
 	"github.com/hajimehoshi/ebiten/v2/examples/resources/fonts"
@@ -41,8 +42,11 @@ var (
 	lostGame          = false
 	mplusNormalFont   font.Face
 	fontSize          = 20
-	ballRect          *rectangle
-	blockRect         *rectangle
+	ballRect          *Rectangle
+	blockRect         *Rectangle
+
+	b *Ball
+
 	terminated        = errors.New("terminated")
 )
 
@@ -63,13 +67,17 @@ func init() {
 	win = gameImages.SubImage(image.Rect(1, 40, 92, 60)).(*ebiten.Image)
 	lost = gameImages.SubImage(image.Rect(106, 40, 200, 60)).(*ebiten.Image)
 
-	ballRect = new(rectangle)
+	b = new(Ball)
+	b.Init(ball)
+
+
+	ballRect = new(Rectangle)
 	ballRect.x = ballX
 	ballRect.y = ballY
 	ballRect.width = ball.Bounds().Dx()
 	ballRect.height = ball.Bounds().Dy()
 
-	blockRect = new(rectangle)
+	blockRect = new(Rectangle)
 	blockRect.width = 100
 	blockRect.height = 100
 
@@ -87,27 +95,12 @@ func init() {
 	}
 }
 
-// player represents the current airship's position.
-type player struct {
-	// x16, y16 represents the position in XY plane in fixed float format.
-	// The fractional part has 16 bits of precision.
-	x16 int
-	y16 int
-
-	// angle represents the player's angle in XY plane.
-	// angle takes an integer value in [0, maxAngle).
-	angle int
-
-	// lean represents the player's leaning.
-	// lean takes an integer value in [-maxLean, maxLean].
-	lean int
-}
-
 type Game struct {
-	rectangle *rectangle
+	rectangle *Rectangle
+	spacePress bool
 }
 
-func (g *Game) Update() error {
+func (game *Game) Update() error {
 	if ebiten.IsKeyPressed(ebiten.KeyArrowRight) {
 		batX += 2
 	}
@@ -115,21 +108,29 @@ func (g *Game) Update() error {
 		batX -= 2
 	}
 	if ebiten.IsKeyPressed(ebiten.KeySpace) {
-		ballY -= 10
-		ballRect.y -= 10
+		// ballY -= 10
+		// ballRect.y -= 10
+		game.spacePress = true
 	}
 	if ebiten.IsKeyPressed(ebiten.KeyEscape) {
 		return terminated
 	}
+
+	if !game.spacePress {
+		b.Update()
+	}
+
 	return nil
 }
 
-func (g *Game) Draw(screen *ebiten.Image) {
+
+
+func (game *Game) Draw(screen *ebiten.Image) {
 	backGroundPos := &ebiten.DrawImageOptions{}
 	backGroundPos.GeoM.Scale(2.0, 2.0)
 	screen.DrawImage(background, backGroundPos)
 
-	if g.rectangle.CheckCollisions() {
+	if game.rectangle.CheckCollisions() {
 		ebitenutil.DrawRect(screen, float64(0), 0, 100, 100, color.White)
 	} else {
 		ebitenutil.DrawRect(screen, float64(0), 0, 100, 100, color.Gray16{0xa000})
@@ -145,11 +146,13 @@ func (g *Game) Draw(screen *ebiten.Image) {
 	batPos.GeoM.Translate(float64(batX), float64(batY))
 	screen.DrawImage(bat, batPos)
 
-	ballPos := &ebiten.DrawImageOptions{}
-	ballPos.GeoM.Translate(float64(ballX), float64(ballY))
-	screen.DrawImage(ball, ballPos)
+	b.Draw(screen)
 
-	score_str:=fmt.Sprintf("Score: %d", score)
+	// ballPos := &ebiten.DrawImageOptions{}
+	// ballPos.GeoM.Translate(float64(ballX), float64(ballY))
+	// screen.DrawImage(ball, ballPos)
+
+	score_str := fmt.Sprintf("Score: %d", score)
 	text.Draw(screen, score_str, mplusNormalFont, 100, 100, color.White)
 }
 
