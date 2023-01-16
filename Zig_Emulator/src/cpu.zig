@@ -25,49 +25,42 @@ pub const CPU = struct {
     var INTERRUPT: bool = false; //Interrupt Enabled flag
     var CRASHED: bool = false; //Special flag that tells if the CPU is currently crashed (stopped)
 
-    var instruction_per_frame: usize = 4000; // Approximate real machine speed
+    var instruction_per_frame: u16 = 4000; // Approximate real machine speed
 
     // Interrupt handling
     var interrupt_alternate: u16 = 0;
     var half_instruction_per_frame: u16 = 0;
 
     // Addionnal debug fields, not used by CPU
-    var BIT0: u8 = 1; //byte
-    var BIT4: u8 = 16; //byte
-    var BIT5: u8 = 32; //byte
-    var BIT6: u8 = 64; //byte
-    var BIT7: u8 = 128; //byte
+    var BIT0: u8 = 1;
+    var BIT4: u8 = 16;
+    var BIT5: u8 = 32;
+    var BIT6: u8 = 64;
+    var BIT7: u8 = 128;
 
-    var m_source: u16 = 0; //c_ushort = 0;
-    var m_value: u8 = 0; //c_ushort = 0;
-    var m_byte: u8 = 0; //byte
+    var m_source: u16 = 0;
+    var m_value: u8 = 0;
+    var m_byte: u8 = 0;
 
     var m_instructionCounter: u16 = 0;
 
     // var IO m_io;
-    // var Label m_label;
-
-    // pub fn CPU(List<byte> rom, IO io, Label label) {
-    //     m_PC = 0;
-    //     m_rom = rom;
-    //     m_io = io;
-    //     m_label = label;
-    //     half_instruction_per_frame = instruction_per_frame / 2;
-    //     Reset();
-    // }
 
     pub fn New(rom: []u8) void {
-        std.log.info("Array index: {any}", .{rom[1]});
         m_rom = rom;
-        std.log.info("Array index: {any}", .{m_rom[1]});
+        half_instruction_per_frame = instruction_per_frame / 2;
+        Reset();
     }
 
     pub fn Run() void {
-        std.log.info("PC: {any}", .{m_PC});
+        std.log.info("Programme Counter: {any}", .{m_PC});
         var count: usize = 0;
         while (count < instruction_per_frame) {
             ExecuteInstruction();
             count += 1;
+            if (count > 3000){
+                std.log.info("Count: {any}", .{count});
+            }
         }
         std.log.info("Count: {any}", .{count});
     }
@@ -83,182 +76,229 @@ pub const CPU = struct {
                     NOP();
                 },
                 0xc2, 0xc3, 0xca, 0xd2, 0xda, 0xf2, 0xfa => {
-                    std.log.info("Instruction_JMP\n", .{});
+                    std.log.info("JMP\n", .{});
                     Instruction_JMP(m_byte);
                 },
                 0x01, 0x11, 0x21, 0x31 => {
+                    std.log.info("LXI\n", .{});
                     Instruction_LXI(m_byte);
                 },
 
                 0x3e, 0x06, 0x0e, 0x16, 0x1e, 0x26, 0x2e, 0x36 => {
+                    std.log.info("MVI\n", .{});
                     Instruction_MVI(m_byte);
                 },
 
                 0xcd, 0xc4, 0xcc, 0xd4, 0xdc => {
+                    std.log.info("CALL\n", .{});
                     Instruction_CALL(m_byte);
                 },
 
                 0x0a, 0x1a, 0x3a => {
+                    std.log.info("LDA\n", .{});
                     Instruction_LDA(m_byte);
                 },
 
                 0x77, 0x70, 0x71, 0x72, 0x73, 0x74, 0x75 => {
+                    std.log.info("MOVHL\n", .{});
                     Instruction_MOVHL(m_byte);
                 },
 
                 0x03, 0x13, 0x23, 0x33 => {
+                    std.log.info("INX\n", .{});
                     Instruction_INX(m_byte);
                 },
 
                 0x0b, 0x1b, 0x2b, 0x3b => {
+                    std.log.info("DCX\n", .{});
                     Instruction_DCX(m_byte);
                 },
 
                 0x3d, 0x05, 0x0d, 0x15, 0x1d, 0x25, 0x2d, 0x35 => {
+                    std.log.info("DEC\n", .{});
                     Instruction_DEC(m_byte);
                 },
 
                 0x3c, 0x04, 0x0c, 0x14, 0x1c, 0x24, 0x2c, 0x34 => {
+                    std.log.info("INC\n", .{});
                     Instruction_INC(m_byte);
                 },
 
                 0xc9, 0xc0, 0xc8, 0xd0, 0xd8 => {
+                    std.log.info("RET\n", .{});
                     Instruction_RET(m_byte);
                 },
 
                 0x7F, 0x78, 0x79, 0x7A, 0x7B, 0x7C, 0x7D, 0x7E => {
+                    std.log.info("MOV\n", .{});
                     Instruction_MOV(m_byte);
                 },
 
                 0x47, 0x40, 0x41, 0x42, 0x43, 0x44, 0x45, 0x46 => {
+                    std.log.info("MOV\n", .{});
                     Instruction_MOV(m_byte);
                 },
 
                 0x4f, 0x48, 0x49, 0x4a, 0x4b, 0x4c, 0x4d, 0x4e => {
+                    std.log.info("MOV\n", .{});
                     Instruction_MOV(m_byte);
                 },
 
                 0x57, 0x50, 0x51, 0x52, 0x53, 0x54, 0x55, 0x56 => {
+                    std.log.info("MOV\n", .{});
                     Instruction_MOV(m_byte);
                 },
 
                 0x5f, 0x58, 0x59, 0x5a, 0x5b, 0x5c, 0x5d, 0x5e => {
+                    std.log.info("MOV\n", .{});
                     Instruction_MOV(m_byte);
                 },
 
                 0x67, 0x60, 0x61, 0x62, 0x63, 0x64, 0x65, 0x66 => {
+                    std.log.info("MOV\n", .{});
                     Instruction_MOV(m_byte);
                 },
 
                 0x6f, 0x68, 0x69, 0x6a, 0x6b, 0x6c, 0x6d, 0x6e => {
+                    std.log.info("MOV\n", .{});
                     Instruction_MOV(m_byte);
                 },
 
                 0xbf, 0xb8, 0xb9, 0xba, 0xbb, 0xbc, 0xbd, 0xbe, 0xfe => {
+                    std.log.info("CMP\n", .{});
                     Instruction_CMP(m_byte);
                 },
 
                 0xc5, 0xd5, 0xe5, 0xf5 => {
+                    std.log.info("PUSH\n", .{});
                     Instruction_PUSH(m_byte);
                 },
 
                 0xc1, 0xd1, 0xe1, 0xf1 => {
+                    std.log.info("POP\n", .{});
                     Instruction_POP(m_byte);
                 },
 
                 0x09, 0x19, 0x29, 0x39 => {
+                    std.log.info("DAD\n", .{});
                     Instruction_DAD(m_byte);
                 },
 
                 0xeb => {
+                    std.log.info("XCHG\n", .{});
                     Instruction_XCHG();
                 },
 
                 0xe3 => {
+                    std.log.info("XTHL\n", .{});
                     Instruction_XTHL();
                 },
 
                 0xd3 => {
+                    std.log.info("OUTP\n", .{});
                     Instruction_OUTP();
                 },
 
                 0xdb => {
+                    std.log.info("INP\n", .{});
                     Instruction_INP();
                 },
 
                 0xe9 => {
+                    std.log.info("PCHL\n", .{});
                     Instruction_PCHL();
                 },
 
                 0xc7, 0xcf, 0xd7, 0xdf, 0xe7, 0xef, 0xf7, 0xff => {
+                    std.log.info("RST\n", .{});
                     Instruction_RST(m_byte);
                 },
 
                 0x07 => {
+                    std.log.info("RLC\n", .{});
                     Instruction_RLC();
                 },
 
                 0x17 => {
+                    std.log.info("RAL\n", .{});
                     Instruction_RAL();
                 },
 
                 0x0f => {
+                    std.log.info("RRC\n", .{});
                     Instruction_RRC();
                 },
 
                 0x1f => {
+                    std.log.info("RAR\n", .{});
                     Instruction_RAR();
                 },
 
                 0xa7, 0xa0, 0xa1, 0xa2, 0xa3, 0xa4, 0xa5, 0xa6, 0xe6 => {
+                    std.log.info("AND\n", .{});
                     Instruction_AND(m_byte);
                 },
 
                 0x80, 0x81, 0x82, 0x83, 0x84, 0x85, 0x86, 0x87, 0xc6 => {
+                    std.log.info("ADD\n", .{});
                     Instruction_ADD(m_byte);
                 },
 
                 0x02, 0x12, 0x32 => {
+                    std.log.info("STA\n", .{});
                     Instruction_STA(m_byte);
                 },
 
                 0xaf, 0xa8, 0xa9, 0xaa, 0xab, 0xac, 0xad, 0xae, 0xee => {
+                    std.log.info("XOR\n", .{});
                     Instruction_XOR(m_byte);
                 },
                 0xf3 => {
+                    std.log.info("DI\n", .{});
                     Instruction_DI();
                 },
                 0xfb => {
+                    std.log.info("E1\n", .{});
                     Instruction_EI();
                 },
                 0x37 => {
+                    std.log.info("STC\n", .{});
                     Instruction_STC();
                 },
                 0x3f => {
+                    std.log.info("CMC\n", .{});
                     Instruction_CMC();
                 },
                 0xb7, 0xb0, 0xb1, 0xb2, 0xb3, 0xb4, 0xb5, 0xb6, 0xf6 => {
+                    std.log.info("OR\n", .{});
                     Instruction_OR(m_byte);
                 },
                 0x97, 0x90, 0x91, 0x92, 0x93, 0x94, 0x95, 0x96, 0xd6 => {
+                    std.log.info("SUB\n", .{});
                     Instruction_SUB(m_byte);
                 },
                 0x2a => {
+                    std.log.info("LHLD\n", .{});
                     Instruction_LHLD();
                 },
                 0x22 => {
+                    std.log.info("SHLD\n", .{});
                     Instruction_SHLD();
                 },
                 0xde => {
+                    std.log.info("SBBI\n", .{});
                     Instruction_SBBI();
                 },
                 0x27 => {
+                    std.log.info("DAA\n", .{});
                     Instruction_DAA();
                 },
                 0x2f => {
+                    std.log.info("CMA\n", .{});
                     Instruction_CMA();
                 },
                 0x8f, 0x88, 0x89, 0x8a, 0x8b, 0x8c, 0x8d, 0x8e, 0xce => {
+                    std.log.info("ADC\n", .{});
                     Instruction_ADC(m_byte);
                 },
                 else => {
@@ -1290,15 +1330,10 @@ pub const CPU = struct {
     }
 
     fn FetchRomShort() u16 {
-        // std.log.info("PC: {any}", .{m_PC});
-        // std.log.info("Size of the array is: {any}", .{m_rom.len});
-        // std.log.info("Array index: {any}", .{m_rom[1]});
-
         var bytes: [2]u8 = [_]u8{ 0, 0 };
-
-        bytes[0] = m_rom[m_PC + 0]; // 212
+        bytes[0] = m_rom[m_PC + 0];
         std.log.info("bytes[0]: {any}", .{bytes[0]});
-        bytes[1] = m_rom[m_PC + 1]; // 24
+        bytes[1] = m_rom[m_PC + 1];
         std.log.info("bytes[1]: {any}", .{bytes[1]});
         m_PC += 2;
         return std.math.shl(u16, (bytes[1] & 0xFF), 8) | (bytes[0] & 0xFF);
