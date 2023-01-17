@@ -1,7 +1,6 @@
 const std = @import("std");
 
 pub const CPU = struct {
-
     var m_rom: []u8 = undefined;
     var m_PC: u16 = 0; //Program Counter: This is the current instruction pointer. 16-bit register.
     var SP: u16 = 0; // Stack Pointer. 16-bit register
@@ -48,7 +47,8 @@ pub const CPU = struct {
 
     pub fn New(rom: []u8) void {
         m_rom = rom;
-        half_instruction_per_frame = instruction_per_frame / 2;
+        half_instruction_per_frame = @as(u16, instruction_per_frame / 2);
+        std.log.info("half_instruction_per_frame: {any}", .{half_instruction_per_frame});
         Reset();
     }
 
@@ -58,7 +58,7 @@ pub const CPU = struct {
         while (count < instruction_per_frame) {
             ExecuteInstruction();
             count += 1;
-            if (count > 3000){
+            if (count > 3000) {
                 std.log.info("Count: {any}", .{count});
             }
         }
@@ -69,7 +69,7 @@ pub const CPU = struct {
     pub fn ExecuteInstruction() void {
         if (!CRASHED) {
             m_byte = FetchRomByte();
-            // std.log.info("m_byte: {any}", .{m_byte});
+            std.log.info("m_byte: {any}", .{m_byte});
             switch (m_byte) {
                 0x00 => {
                     std.log.info("NOP\n", .{});
@@ -304,10 +304,15 @@ pub const CPU = struct {
                 else => {
                     CRASHED = true;
                     std.log.info("Emulator Crashed @ instruction : {any}", .{m_instructionCounter});
+                    return;
                 },
             }
 
             m_instructionCounter += 1;
+
+            std.log.info("m_instructionCounter : {any}", .{m_instructionCounter});
+            std.log.info("half_instruction_per_frame : {any}", .{half_instruction_per_frame});
+
             if (m_instructionCounter >= half_instruction_per_frame) {
                 if (INTERRUPT) {
                     // There are two interrupts that occur every frame (address $08 and $10)
@@ -320,6 +325,7 @@ pub const CPU = struct {
                 interrupt_alternate = 1 - interrupt_alternate;
                 m_instructionCounter = 0;
             }
+            std.log.info("", .{});
         }
     }
 
@@ -343,24 +349,43 @@ pub const CPU = struct {
         switch (byte) {
             0xc3 => {
                 // Do nothing apart from incrementing the Programme Counter
+                std.log.info("Debug byte: {any}", .{byte});
             },
             0xc2 => {
+                std.log.info("ZERO: {any}", .{ZERO});
+                std.log.info("m_condition: {any}", .{m_condition});
                 m_condition = ZERO != ZERO;
+                std.log.info("m_condition: {any}", .{m_condition});
             },
             0xca => {
+                std.log.info("ZERO: {any}", .{ZERO});
+                std.log.info("m_condition: {any}", .{m_condition});
                 m_condition = ZERO == ZERO;
+                std.log.info("m_condition: {any}", .{m_condition});
             },
             0xd2 => {
+                std.log.info("CARRY: {any}", .{CARRY});
+                std.log.info("m_condition: {any}", .{m_condition});
                 m_condition = CARRY != CARRY;
+                std.log.info("m_condition: {any}", .{m_condition});
             },
             0xda => {
+                std.log.info("CARRY: {any}", .{CARRY});
+                std.log.info("m_condition: {any}", .{m_condition});
                 m_condition = CARRY == CARRY;
+                std.log.info("m_condition: {any}", .{m_condition});
             },
             0xf2 => {
+                std.log.info("SIGN: {any}", .{SIGN});
+                std.log.info("m_condition: {any}", .{m_condition});
                 m_condition = SIGN != SIGN;
+                std.log.info("m_condition: {any}", .{m_condition});
             },
             0xfa => {
+                std.log.info("SIGN: {any}", .{SIGN});
+                std.log.info("m_condition: {any}", .{m_condition});
                 m_condition = SIGN == SIGN;
+                std.log.info("m_condition: {any}", .{m_condition});
             },
             else => {},
         }
@@ -423,16 +448,32 @@ pub const CPU = struct {
         switch (byte) {
             0xcd => {},
             0xc4 => {
+                std.log.info("m_condition: {any}", .{m_condition});
+                std.log.info("ZERO: {any}", .{ZERO});
                 m_condition = ZERO != ZERO;
+                std.log.info("m_condition: {any}", .{m_condition});
+                std.log.info("ZERO: {any}", .{ZERO});
             },
             0xcc => {
+                std.log.info("m_condition: {any}", .{m_condition});
+                std.log.info("ZERO: {any}", .{ZERO});
                 m_condition = ZERO == ZERO;
+                std.log.info("m_condition: {any}", .{m_condition});
+                std.log.info("ZERO: {any}", .{ZERO});
             },
             0xd4 => {
+                std.log.info("m_condition: {any}", .{m_condition});
+                std.log.info("ZERO: {any}", .{ZERO});
                 m_condition = CARRY != CARRY;
+                std.log.info("m_condition: {any}", .{m_condition});
+                std.log.info("ZERO: {any}", .{ZERO});
             },
             0xdc => {
+                std.log.info("m_condition: {any}", .{m_condition});
+                std.log.info("ZERO: {any}", .{ZERO});
                 m_condition = CARRY == CARRY;
+                std.log.info("m_condition: {any}", .{m_condition});
+                std.log.info("ZERO: {any}", .{ZERO});
             },
             else => {},
         }
@@ -1348,8 +1389,11 @@ pub const CPU = struct {
         return std.math.shl(u8, m_rom[inAddress + 1], 8) + (m_rom[inAddress + 0]);
     }
 
-    fn WriteShort(inAddress: u16, inWord: u16) void {
-        m_rom[inAddress + 1] = @intCast(u8, inWord);
+    pub fn WriteShort(inAddress: u16, inWord: u16) void {
+        // std.log.info("WriteShort inAddress: {any}", .{inAddress});
+        // std.log.info("WriteShort inWord: {any}", .{inWord});
+
+        m_rom[inAddress + 1] = @intCast(u8, std.math.shr(u16, inWord, 8));
         m_rom[inAddress + 0] = @truncate(u8, inWord);
     }
 
@@ -1371,12 +1415,21 @@ pub const CPU = struct {
         return temp;
     }
 
-    fn PerformDec(inSource: u8) u8 {
-        var value = ((inSource - 1) & 0xFF);
+    fn PerformDec(inSource: u16) u8 {
+        // std.log.info("PerformDec inSource: {any}", .{inSource});
+        // var smeel = @intCast(i16, inSource);
+        // var eel = (smeel - 1) & 0xFF;
+        // std.log.info("PerformDec eel: {any}", .{eel});
+
+        var value = @intCast(u16,(@intCast(i16, inSource) - 1) & 0xFF);
+        std.log.info("PerformDec jeel: {any}", .{value});
+        // var value:u16 = ((smeel - 1) & 0xFF);
+        // // var value = ((inSource - 1) & 0xFF);
         HALFCARRY = @truncate(u1, (value & 0x0F));
         ZERO = @boolToInt((value & 255) == 0);
         SIGN = @truncate(u1, (value & 128));
-        return value;
+        return @intCast(u8,value);
+        //return 0;
     }
 
     fn PerformInc(inSource: u8) u8 {
