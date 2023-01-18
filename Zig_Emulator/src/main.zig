@@ -27,7 +27,7 @@ fn loadRom() anyerror![]u8 {
 
     while (count < in_stream.context.buf.len * 2) {
         var b = try in_stream.readByte();
-        std.log.info("rom bytes: {any}", .{b});
+        // std.log.info("rom bytes: {any}", .{b});
         array[count] = b;
         count += 1;
     }
@@ -35,8 +35,8 @@ fn loadRom() anyerror![]u8 {
     return &array;
 }
 
-test "basic test" {
-    try std.testing.expectEqual(10, 3 + 7);
-}
+// test "basic test" {
+//     try std.testing.expectEqual(10, 3 + 7);
+// }
 
 
