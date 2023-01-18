@@ -72,233 +72,233 @@ pub const CPU = struct {
             std.log.info("m_byte: {any}", .{m_byte});
             switch (m_byte) {
                 0x00 => {
-                    std.log.info("NOP\n", .{});
+                    std.log.info("\nNOP", .{});
                     NOP();
                 },
                 0xc2, 0xc3, 0xca, 0xd2, 0xda, 0xf2, 0xfa => {
-                    std.log.info("JMP\n", .{});
+                    std.log.info("\nJMP", .{});
                     Instruction_JMP(m_byte);
                 },
                 0x01, 0x11, 0x21, 0x31 => {
-                    std.log.info("LXI\n", .{});
+                    std.log.info("\nLXI", .{});
                     Instruction_LXI(m_byte);
                 },
 
                 0x3e, 0x06, 0x0e, 0x16, 0x1e, 0x26, 0x2e, 0x36 => {
-                    std.log.info("MVI\n", .{});
+                    std.log.info("\nMVI", .{});
                     Instruction_MVI(m_byte);
                 },
 
                 0xcd, 0xc4, 0xcc, 0xd4, 0xdc => {
-                    std.log.info("CALL\n", .{});
+                    std.log.info("\nCALL", .{});
                     Instruction_CALL(m_byte);
                 },
 
                 0x0a, 0x1a, 0x3a => {
-                    std.log.info("LDA\n", .{});
+                    std.log.info("\nLDA", .{});
                     Instruction_LDA(m_byte);
                 },
 
                 0x77, 0x70, 0x71, 0x72, 0x73, 0x74, 0x75 => {
-                    std.log.info("MOVHL\n", .{});
+                    std.log.info("\nMOVHL", .{});
                     Instruction_MOVHL(m_byte);
                 },
 
                 0x03, 0x13, 0x23, 0x33 => {
-                    std.log.info("INX\n", .{});
+                    std.log.info("\nINX", .{});
                     Instruction_INX(m_byte);
                 },
 
                 0x0b, 0x1b, 0x2b, 0x3b => {
-                    std.log.info("DCX\n", .{});
+                    std.log.info("\nDCX", .{});
                     Instruction_DCX(m_byte);
                 },
 
                 0x3d, 0x05, 0x0d, 0x15, 0x1d, 0x25, 0x2d, 0x35 => {
-                    std.log.info("DEC\n", .{});
+                    std.log.info("\nDEC", .{});
                     Instruction_DEC(m_byte);
                 },
 
                 0x3c, 0x04, 0x0c, 0x14, 0x1c, 0x24, 0x2c, 0x34 => {
-                    std.log.info("INC\n", .{});
+                    std.log.info("\nINC", .{});
                     Instruction_INC(m_byte);
                 },
 
                 0xc9, 0xc0, 0xc8, 0xd0, 0xd8 => {
-                    std.log.info("RET\n", .{});
+                    std.log.info("\nRET", .{});
                     Instruction_RET(m_byte);
                 },
 
                 0x7F, 0x78, 0x79, 0x7A, 0x7B, 0x7C, 0x7D, 0x7E => {
-                    std.log.info("MOV\n", .{});
+                    std.log.info("\nMOV", .{});
                     Instruction_MOV(m_byte);
                 },
 
                 0x47, 0x40, 0x41, 0x42, 0x43, 0x44, 0x45, 0x46 => {
-                    std.log.info("MOV\n", .{});
+                    std.log.info("\nMOV", .{});
                     Instruction_MOV(m_byte);
                 },
 
                 0x4f, 0x48, 0x49, 0x4a, 0x4b, 0x4c, 0x4d, 0x4e => {
-                    std.log.info("MOV\n", .{});
+                    std.log.info("\nMOV", .{});
                     Instruction_MOV(m_byte);
                 },
 
                 0x57, 0x50, 0x51, 0x52, 0x53, 0x54, 0x55, 0x56 => {
-                    std.log.info("MOV\n", .{});
+                    std.log.info("\nMOV", .{});
                     Instruction_MOV(m_byte);
                 },
 
                 0x5f, 0x58, 0x59, 0x5a, 0x5b, 0x5c, 0x5d, 0x5e => {
-                    std.log.info("MOV\n", .{});
+                    std.log.info("\nMOV", .{});
                     Instruction_MOV(m_byte);
                 },
 
                 0x67, 0x60, 0x61, 0x62, 0x63, 0x64, 0x65, 0x66 => {
-                    std.log.info("MOV\n", .{});
+                    std.log.info("\nMOV", .{});
                     Instruction_MOV(m_byte);
                 },
 
                 0x6f, 0x68, 0x69, 0x6a, 0x6b, 0x6c, 0x6d, 0x6e => {
-                    std.log.info("MOV\n", .{});
+                    std.log.info("MOV", .{});
                     Instruction_MOV(m_byte);
                 },
 
                 0xbf, 0xb8, 0xb9, 0xba, 0xbb, 0xbc, 0xbd, 0xbe, 0xfe => {
-                    std.log.info("CMP\n", .{});
+                    std.log.info("\nCMP", .{});
                     Instruction_CMP(m_byte);
                 },
 
                 0xc5, 0xd5, 0xe5, 0xf5 => {
-                    std.log.info("PUSH\n", .{});
+                    std.log.info("\nPUSH", .{});
                     Instruction_PUSH(m_byte);
                 },
 
                 0xc1, 0xd1, 0xe1, 0xf1 => {
-                    std.log.info("POP\n", .{});
+                    std.log.info("\nPOP", .{});
                     Instruction_POP(m_byte);
                 },
 
                 0x09, 0x19, 0x29, 0x39 => {
-                    std.log.info("DAD\n", .{});
+                    std.log.info("\nDAD", .{});
                     Instruction_DAD(m_byte);
                 },
 
                 0xeb => {
-                    std.log.info("XCHG\n", .{});
+                    std.log.info("\nXCHG", .{});
                     Instruction_XCHG();
                 },
 
                 0xe3 => {
-                    std.log.info("XTHL\n", .{});
+                    std.log.info("\nXTHL", .{});
                     Instruction_XTHL();
                 },
 
                 0xd3 => {
-                    std.log.info("OUTP\n", .{});
+                    std.log.info("\nOUTP", .{});
                     Instruction_OUTP();
                 },
 
                 0xdb => {
-                    std.log.info("INP\n", .{});
+                    std.log.info("\nINP", .{});
                     Instruction_INP();
                 },
 
                 0xe9 => {
-                    std.log.info("PCHL\n", .{});
+                    std.log.info("\nPCHL", .{});
                     Instruction_PCHL();
                 },
 
                 0xc7, 0xcf, 0xd7, 0xdf, 0xe7, 0xef, 0xf7, 0xff => {
-                    std.log.info("RST\n", .{});
+                    std.log.info("\nRST", .{});
                     Instruction_RST(m_byte);
                 },
 
                 0x07 => {
-                    std.log.info("RLC\n", .{});
+                    std.log.info("\nRLC", .{});
                     Instruction_RLC();
                 },
 
                 0x17 => {
-                    std.log.info("RAL\n", .{});
+                    std.log.info("\nRAL", .{});
                     Instruction_RAL();
                 },
 
                 0x0f => {
-                    std.log.info("RRC\n", .{});
+                    std.log.info("\nRRC", .{});
                     Instruction_RRC();
                 },
 
                 0x1f => {
-                    std.log.info("RAR\n", .{});
+                    std.log.info("\nRAR", .{});
                     Instruction_RAR();
                 },
 
                 0xa7, 0xa0, 0xa1, 0xa2, 0xa3, 0xa4, 0xa5, 0xa6, 0xe6 => {
-                    std.log.info("AND\n", .{});
+                    std.log.info("\nAND", .{});
                     Instruction_AND(m_byte);
                 },
 
                 0x80, 0x81, 0x82, 0x83, 0x84, 0x85, 0x86, 0x87, 0xc6 => {
-                    std.log.info("ADD\n", .{});
+                    std.log.info("\nADD", .{});
                     Instruction_ADD(m_byte);
                 },
 
                 0x02, 0x12, 0x32 => {
-                    std.log.info("STA\n", .{});
+                    std.log.info("\nSTA", .{});
                     Instruction_STA(m_byte);
                 },
 
                 0xaf, 0xa8, 0xa9, 0xaa, 0xab, 0xac, 0xad, 0xae, 0xee => {
-                    std.log.info("XOR\n", .{});
+                    std.log.info("\nXOR", .{});
                     Instruction_XOR(m_byte);
                 },
                 0xf3 => {
-                    std.log.info("DI\n", .{});
+                    std.log.info("\nDI", .{});
                     Instruction_DI();
                 },
                 0xfb => {
-                    std.log.info("E1\n", .{});
+                    std.log.info("\nEI", .{});
                     Instruction_EI();
                 },
                 0x37 => {
-                    std.log.info("STC\n", .{});
+                    std.log.info("\nSTC", .{});
                     Instruction_STC();
                 },
                 0x3f => {
-                    std.log.info("CMC\n", .{});
+                    std.log.info("\nCMC", .{});
                     Instruction_CMC();
                 },
                 0xb7, 0xb0, 0xb1, 0xb2, 0xb3, 0xb4, 0xb5, 0xb6, 0xf6 => {
-                    std.log.info("OR\n", .{});
+                    std.log.info("\nOR", .{});
                     Instruction_OR(m_byte);
                 },
                 0x97, 0x90, 0x91, 0x92, 0x93, 0x94, 0x95, 0x96, 0xd6 => {
-                    std.log.info("SUB\n", .{});
+                    std.log.info("\nSUB", .{});
                     Instruction_SUB(m_byte);
                 },
                 0x2a => {
-                    std.log.info("LHLD\n", .{});
+                    std.log.info("\nLHLD", .{});
                     Instruction_LHLD();
                 },
                 0x22 => {
-                    std.log.info("SHLD\n", .{});
+                    std.log.info("\nSHLD", .{});
                     Instruction_SHLD();
                 },
                 0xde => {
-                    std.log.info("SBBI\n", .{});
+                    std.log.info("\nSBBI", .{});
                     Instruction_SBBI();
                 },
                 0x27 => {
-                    std.log.info("DAA\n", .{});
+                    std.log.info("\nDAA", .{});
                     Instruction_DAA();
                 },
                 0x2f => {
-                    std.log.info("CMA\n", .{});
+                    std.log.info("\nCMA", .{});
                     Instruction_CMA();
                 },
                 0x8f, 0x88, 0x89, 0x8a, 0x8b, 0x8c, 0x8d, 0x8e, 0xce => {
-                    std.log.info("ADC\n", .{});
+                    std.log.info("\nADC", .{});
                     Instruction_ADC(m_byte);
                 },
                 else => {
@@ -310,8 +310,8 @@ pub const CPU = struct {
 
             m_instructionCounter += 1;
 
-            std.log.info("m_instructionCounter : {any}", .{m_instructionCounter});
-            std.log.info("half_instruction_per_frame : {any}", .{half_instruction_per_frame});
+            // std.log.info("m_instructionCounter : {any}", .{m_instructionCounter});
+            // std.log.info("half_instruction_per_frame : {any}", .{half_instruction_per_frame});
 
             if (m_instructionCounter >= half_instruction_per_frame) {
                 if (INTERRUPT) {
@@ -325,7 +325,7 @@ pub const CPU = struct {
                 interrupt_alternate = 1 - interrupt_alternate;
                 m_instructionCounter = 0;
             }
-            std.log.info("", .{});
+//            std.log.info("", .{});
         }
     }
 
@@ -480,6 +480,7 @@ pub const CPU = struct {
         if (m_condition) {
             StackPush(m_PC);
             m_PC = data16;
+            std.log.info("m_PC: {any}", .{m_PC});
         }
     }
 
@@ -1261,7 +1262,7 @@ pub const CPU = struct {
         } else {
             CARRY = 0;
         }
-        setFlagZeroSign();
+        SetFlagZeroSign();
     }
 
     fn Instruction_CMA() void {
@@ -1307,66 +1308,100 @@ pub const CPU = struct {
     }
 
     fn SetA(inByte: u8) void {
+        std.log.info("SetA inByte: {any}", .{inByte});
         A = inByte & 0xFF;
+        std.log.info("SetA A: {any}", .{A});
     }
 
     fn SetB(inByte: u8) void {
+        std.log.info("SetB inByte: {any}", .{inByte});
         B = inByte & 0xFF;
+        std.log.info("SetB B: {any}", .{B});
         BC = std.math.shl(u16, B, 8) | C;
+        std.log.info("SetB BC: {any}", .{BC});
     }
 
     fn SetC(inByte: u8) void {
+        std.log.info("SetC inByte: {any}", .{inByte});
         C = inByte & 0xFF;
+        std.log.info("SetC C: {any}", .{C});
         BC = std.math.shl(u16, B, 8) | C;
+        std.log.info("SetC BC: {any}", .{BC});
     }
 
     fn SetD(inByte: u8) void {
+        std.log.info("SetD inByte: {any}", .{inByte});
         D = inByte;
+        std.log.info("SetD D: {any}", .{D});
         DE = std.math.shl(u16, D, 8) + E;
+        std.log.info("SetD DE: {any}", .{DE});
     }
 
     fn SetE(inByte: u8) void {
+        std.log.info("SetE inByte: {any}", .{inByte});
         E = inByte;
+        std.log.info("SetE E: {any}", .{E});
         DE = std.math.shl(u16, D, 8) + E;
+        std.log.info("SetE DE: {any}", .{DE});
     }
 
     fn SetH(inByte: u8) void {
+        std.log.info("SetH inByte: {any}", .{inByte});
         H = inByte;
+        std.log.info("SetH H: {any}", .{H});
         HL = std.math.shl(u16, H, 8) + L;
+        std.log.info("SetH HL: {any}", .{HL});
     }
 
     fn SetL(inByte: u8) void {
+        std.log.info("SetL inByte: {any}", .{inByte});
         L = inByte;
+        std.log.info("SetL L: {any}", .{L});
         HL = std.math.shl(u16, H, 8) + L;
+        std.log.info("SetL HL: {any}", .{HL});
     }
 
     fn SetBC(inShort: u16) void {
+        std.log.info("SetBC inShort: {any}", .{inShort});
         BC = inShort;
+        std.log.info("SetBC BC: {any}", .{BC});
         B = @truncate(u8, (BC >> 8));
+        std.log.info("SetBC B: {any}", .{B});
         C = @truncate(u8, (BC & 0xFF));
+        std.log.info("SetBC C: {any}", .{C});
     }
 
     fn SetDE(inShort: u16) void {
+        std.log.info("SetDE inShort: {any}", .{inShort});
         DE = inShort;
+        std.log.info("SetDE DE: {any}", .{DE});
         D = @truncate(u8, (DE >> 8));
+        std.log.info("SetDE D: {any}", .{D});
         E = @truncate(u8, (DE & 0xFF));
+        std.log.info("SetDE E: {any}", .{E});
     }
 
     fn SetHL(inShort: u16) void {
+        std.log.info("SetHL inShort: {any}", .{inShort});
         HL = inShort;
+        std.log.info("SetHL HL: {any}", .{HL});
         H = @truncate(u8, (HL >> 8));
+        std.log.info("SetHL H: {any}", .{H});
         L = @truncate(u8, (HL & 0xFF));
+        std.log.info("SetHL L: {any}", .{L});
     }
 
     fn SetSP(inShort: u16) void {
+        std.log.info("SetSP inShort: {any}", .{inShort});
         SP = inShort;
+        std.log.info("SetSP SP: {any}", .{SP});
     }
 
     fn FetchRomByte() u8 {
         var value = m_rom[m_PC];
         std.log.info("FetchRomByte m_rom[m_PC]: {any}", .{value});
         m_PC += 1;
-        std.log.info("FetchRomByte PC: {any}", .{m_PC});
+        std.log.info("FetchRomByte m_PC: {any}", .{m_PC});
         return value;
     }
 
@@ -1377,135 +1412,171 @@ pub const CPU = struct {
         bytes[1] = m_rom[m_PC + 1];
         std.log.info("bytes[1]: {any}", .{bytes[1]});
         m_PC += 2;
+        std.log.info("FetchRomShort m_PC: {any}", .{m_PC});
         return std.math.shl(u16, (bytes[1] & 0xFF), 8) | (bytes[0] & 0xFF);
     }
 
     fn ReadByte(count: usize) u8 {
-        std.log.info("Read Byte: {any}", .{m_rom[count]});
+        std.log.info("ReadByte count: {any}", .{count});
+        std.log.info("ReadByte m_rom[count]: {any}", .{m_rom[count]});
         return m_rom[count];
     }
 
     fn ReadShort(inAddress: u16) u16 {
+        std.log.info("ReadShort inAddress: {any}", .{inAddress});
+        std.log.info("ReadShort return value: {any}", .{std.math.shl(u8, m_rom[inAddress + 1], 8) + (m_rom[inAddress + 0])});
         return std.math.shl(u8, m_rom[inAddress + 1], 8) + (m_rom[inAddress + 0]);
     }
 
     pub fn WriteShort(inAddress: u16, inWord: u16) void {
-        // std.log.info("WriteShort inAddress: {any}", .{inAddress});
-        // std.log.info("WriteShort inWord: {any}", .{inWord});
-
+        std.log.info("WriteShort inAddress: {any}", .{inAddress});
+        std.log.info("WriteShort inWord: {any}", .{inWord});
+        std.log.info("WriteShort m_rom[inAddress + 1]: {any}", .{@intCast(u8, std.math.shr(u16, inWord, 8))});
+        std.log.info("WriteShort m_rom[inAddress + 0]: {any}", .{@truncate(u8, inWord)});
         m_rom[inAddress + 1] = @intCast(u8, std.math.shr(u16, inWord, 8));
         m_rom[inAddress + 0] = @truncate(u8, inWord);
     }
 
     fn WriteByte(inAddress: u16, inByte: u8) void {
+        std.log.info("WriteByte inAddress: {any}", .{inAddress});
         m_rom[inAddress] = inByte;
     }
 
     fn StackPush(inValue: u16) void {
-        std.log.info("Stack Pointer: {any}", .{SP});
+        std.log.info("StackPush SP: {any}", .{SP});
         if (SP > 1) {
             SP -= 2;
             WriteShort(SP, inValue);
         }
+        std.log.info("StackPush SP: {any}", .{SP});
     }
 
     fn StackPop() u16 {
+        std.log.info("StackPop SP: {any}", .{SP});
         var temp = ReadShort(SP);
+        std.log.info("StackPop temp: {any}", .{temp});
         SP += 2;
+        std.log.info("StackPop SP: {any}", .{SP});
         return temp;
     }
 
     fn PerformDec(inSource: u16) u8 {
-        // std.log.info("PerformDec inSource: {any}", .{inSource});
-        // var smeel = @intCast(i16, inSource);
-        // var eel = (smeel - 1) & 0xFF;
-        // std.log.info("PerformDec eel: {any}", .{eel});
-
+        std.log.info("PerformDec inSource: {any}", .{inSource});
         var value = @intCast(u16,(@intCast(i16, inSource) - 1) & 0xFF);
-        std.log.info("PerformDec jeel: {any}", .{value});
-        // var value:u16 = ((smeel - 1) & 0xFF);
-        // // var value = ((inSource - 1) & 0xFF);
+        std.log.info("PerformDec value: {any}", .{value});
         HALFCARRY = @truncate(u1, (value & 0x0F));
+        std.log.info("PerformDec HALFCARRY: {any}", .{HALFCARRY});
         ZERO = @boolToInt((value & 255) == 0);
+        std.log.info("PerformDec ZERO: {any}", .{ZERO});
         SIGN = @truncate(u1, (value & 128));
+        std.log.info("PerformDec SIGN: {any}", .{SIGN});
+        std.log.info("PerformDec return value: {any}", .{@intCast(u8,value)});
         return @intCast(u8,value);
-        //return 0;
     }
 
     fn PerformInc(inSource: u8) u8 {
+        std.log.info("PerformInc inSource: {any}", .{inSource});
         var value = inSource + 1;
+        std.log.info("PerformInc value: {any}", .{value});
         // HALFCARRY = @truncate(u1,((value & 0xF) < 0 | (value & 0xF) > 0));
+        std.log.info("PerformInc HALFCARRY: {any}", .{HALFCARRY});
         ZERO = @boolToInt((value & 255) == 0);
+        std.log.info("PerformInc ZERO: {any}", .{ZERO});
         SIGN = @truncate(u1, (value & 128));
+        std.log.info("PerformInc SIGN: {any}", .{SIGN});
         return value;
     }
 
-    fn setFlagZeroSign() void {
+    fn SetFlagZeroSign() void {
         ZERO = @boolToInt(A == 0);
+        std.log.info("SetFlagZeroSign ZERO: {any}", .{ZERO});
         SIGN = @truncate(u1, (A & 128));
+        std.log.info("SetFlagZeroSign SIGN: {any}", .{SIGN});
     }
 
     fn PerformAnd(inValue: u8) void {
+        std.log.info("PerformAnd inValue: {any}", .{inValue});
         SetA(A & inValue);
         CARRY = 0;
         HALFCARRY = 0;
-        setFlagZeroSign();
+        SetFlagZeroSign();
     }
 
     fn PerformXor(inValue: u8) void {
+        std.log.info("PerformXor inValue: {any}", .{inValue});
         SetA(A ^ inValue);
         CARRY = 0;
         HALFCARRY = 0;
-        setFlagZeroSign();
+        SetFlagZeroSign();
     }
 
     fn PerformOr(inValue: u8) void {
+        std.log.info("PerformOr inValue: {any}", .{inValue});
         SetA(A | inValue);
         CARRY = 0;
         HALFCARRY = 0;
-        setFlagZeroSign();
+        SetFlagZeroSign();
     }
 
     fn PerformByteAdd(inValue: u8, inCarryValue: u8) void {
+        std.log.info("PerformByteAdd inValue: {any}", .{inValue});
+        std.log.info("PerformByteAdd inCarryValue: {any}", .{inCarryValue});
         var value = A + inValue + inCarryValue;
+        std.log.info("PerformByteAdd value: {any}", .{value});
         HALFCARRY = @truncate(u1, (A ^ inValue ^ value) & 0x10);
+        std.log.info("PerformByteAdd HALFCARRY: {any}", .{HALFCARRY});
         SetA(value);
         if (value > 255) {
             CARRY = 1;
         } else {
             CARRY = 0;
         }
-        setFlagZeroSign();
+        std.log.info("PerformByteAdd CARRY: {any}", .{CARRY});
+        SetFlagZeroSign();
     }
 
     fn PerformByteSub(inValue: u8, inCarryValue: u8) void {
+        std.log.info("PerformByteSub inValue: {any}", .{inValue});
+        std.log.info("PerformByteSub inCarryValue: {any}", .{inCarryValue});
         var value: u8 = (A - inValue - inCarryValue);
+        std.log.info("PerformByteSub value: {any}", .{value});
         if ((value >= A) and (inValue | inCarryValue) > 0) {
             CARRY = 1;
         } else {
             CARRY = 0;
         }
+        std.log.info("PerformByteSub CARRY: {any}", .{CARRY});
         HALFCARRY = @truncate(u1, (A ^ inValue ^ value) & 0x10);
+        std.log.info("PerformByteSub HALFCARRY: {any}", .{HALFCARRY});
         SetA(value);
-        setFlagZeroSign();
+        SetFlagZeroSign();
     }
 
     fn PerformCompSub(inValue: u8) void {
+        std.log.info("PerformCompSub inValue: {any}", .{inValue});
         var value = (A - inValue) & 0xFF;
+        std.log.info("PerformCompSub value: {any}", .{value});
         if ((value >= A) and inValue != 0) {
             CARRY = inValue;
         } else {
             CARRY = 0;
         }
+        std.log.info("PerformCompSub CARRY: {any}", .{CARRY});
         HALFCARRY = @truncate(u1, ((A ^ inValue ^ value) & 0x10));
+        std.log.info("PerformCompSub HALFCARRY: {any}", .{HALFCARRY});
         ZERO = @boolToInt(value == 0);
+        std.log.info("PerformCompSub ZERO: {any}", .{ZERO});
         SIGN = @truncate(u1, (value & 128));
+        std.log.info("PerformCompSub SIGN: {any}", .{SIGN});
     }
 
     pub fn AddHL(inValue: u16) void {
+        std.log.info("AddHL inValue: {any}", .{inValue});
         var value = HL + inValue;
+        std.log.info("AddHL value: {any}", .{value});
         SetHL(value);
         CARRY = @boolToInt(value > 65535);
+        std.log.info("AddHL CARRY: {any}", .{CARRY});
     }
 
     fn Reset() void {
