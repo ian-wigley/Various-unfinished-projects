@@ -11,3 +11,6 @@ JetpacReloaded/JetpacReloaded/app.manifest
 C64_binary_file_converter/pkg/
 Zig_Emulator/zig-cache/
 Zig_Emulator/zig-out/
+Zig_Emulator/main.exe
+Zig_Emulator/main.exe.obj
+Zig_Emulator/main.pdb
