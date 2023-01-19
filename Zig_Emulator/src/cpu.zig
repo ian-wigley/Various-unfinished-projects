@@ -52,21 +52,24 @@ pub const CPU = struct {
         Reset();
     }
 
-    pub fn Run() void {
+    pub fn Run() bool {
         std.log.info("Programme Counter: {any}", .{m_PC});
         var count: usize = 0;
-        while (count < instruction_per_frame) {
+        while (count < instruction_per_frame or !CRASHED) {
             ExecuteInstruction();
             count += 1;
-            if (count > 3000) {
-                std.log.info("Count: {any}", .{count});
-            }
         }
         std.log.info("Count: {any}", .{count});
+        std.log.info("CRASHED: {any}", .{CRASHED});
+        return CRASHED;
     }
 
     // All opcodes are 1 byte wide
     pub fn ExecuteInstruction() void {
+        if (m_instructionCounter == 20) {
+            var stop = true;
+            std.log.info("stop: {any}", .{stop});
+        }
         if (!CRASHED) {
             m_byte = FetchRomByte();
             std.log.info("m_byte: {any}", .{m_byte});
@@ -325,7 +328,6 @@ pub const CPU = struct {
                 interrupt_alternate = 1 - interrupt_alternate;
                 m_instructionCounter = 0;
             }
-//            std.log.info("", .{});
         }
     }
 
@@ -354,37 +356,37 @@ pub const CPU = struct {
             0xc2 => {
                 std.log.info("ZERO: {any}", .{ZERO});
                 std.log.info("m_condition: {any}", .{m_condition});
-                m_condition = ZERO != ZERO;
+                m_condition = !ToBooleanU1(ZERO);
                 std.log.info("m_condition: {any}", .{m_condition});
             },
             0xca => {
                 std.log.info("ZERO: {any}", .{ZERO});
                 std.log.info("m_condition: {any}", .{m_condition});
-                m_condition = ZERO == ZERO;
+                m_condition = ToBooleanU1(ZERO);
                 std.log.info("m_condition: {any}", .{m_condition});
             },
             0xd2 => {
                 std.log.info("CARRY: {any}", .{CARRY});
                 std.log.info("m_condition: {any}", .{m_condition});
-                m_condition = CARRY != CARRY;
+                m_condition = !ToBooleanU16(CARRY);
                 std.log.info("m_condition: {any}", .{m_condition});
             },
             0xda => {
                 std.log.info("CARRY: {any}", .{CARRY});
                 std.log.info("m_condition: {any}", .{m_condition});
-                m_condition = CARRY == CARRY;
+                m_condition = ToBooleanU16(CARRY);
                 std.log.info("m_condition: {any}", .{m_condition});
             },
             0xf2 => {
                 std.log.info("SIGN: {any}", .{SIGN});
                 std.log.info("m_condition: {any}", .{m_condition});
-                m_condition = SIGN != SIGN;
+                m_condition = !ToBooleanU1(SIGN);
                 std.log.info("m_condition: {any}", .{m_condition});
             },
             0xfa => {
                 std.log.info("SIGN: {any}", .{SIGN});
                 std.log.info("m_condition: {any}", .{m_condition});
-                m_condition = SIGN == SIGN;
+                m_condition = ToBooleanU1(SIGN);
                 std.log.info("m_condition: {any}", .{m_condition});
             },
             else => {},
@@ -450,28 +452,28 @@ pub const CPU = struct {
             0xc4 => {
                 std.log.info("m_condition: {any}", .{m_condition});
                 std.log.info("ZERO: {any}", .{ZERO});
-                m_condition = ZERO != ZERO;
+                m_condition = !ToBooleanU1(ZERO);
                 std.log.info("m_condition: {any}", .{m_condition});
                 std.log.info("ZERO: {any}", .{ZERO});
             },
             0xcc => {
                 std.log.info("m_condition: {any}", .{m_condition});
                 std.log.info("ZERO: {any}", .{ZERO});
-                m_condition = ZERO == ZERO;
+                m_condition = ToBooleanU1(ZERO);
                 std.log.info("m_condition: {any}", .{m_condition});
                 std.log.info("ZERO: {any}", .{ZERO});
             },
             0xd4 => {
                 std.log.info("m_condition: {any}", .{m_condition});
                 std.log.info("ZERO: {any}", .{ZERO});
-                m_condition = CARRY != CARRY;
+                m_condition = !ToBooleanU16(CARRY);
                 std.log.info("m_condition: {any}", .{m_condition});
                 std.log.info("ZERO: {any}", .{ZERO});
             },
             0xdc => {
                 std.log.info("m_condition: {any}", .{m_condition});
                 std.log.info("ZERO: {any}", .{ZERO});
-                m_condition = CARRY == CARRY;
+                m_condition = ToBooleanU16(CARRY);
                 std.log.info("m_condition: {any}", .{m_condition});
                 std.log.info("ZERO: {any}", .{ZERO});
             },
@@ -628,16 +630,16 @@ pub const CPU = struct {
         switch (byte) {
             0xc9 => {},
             0xc0 => {
-                m_condition = ZERO != ZERO;
+                m_condition = !ToBooleanU1(ZERO);
             },
             0xc8 => {
-                m_condition = ZERO == ZERO;
+                m_condition = ToBooleanU1(ZERO);
             },
             0xd0 => {
-                m_condition = CARRY != CARRY;
+                m_condition = !ToBooleanU16(CARRY);
             },
             0xd8 => {
-                m_condition = CARRY == CARRY;
+                m_condition = ToBooleanU16(CARRY);
             },
             else => {},
         }
@@ -867,19 +869,19 @@ pub const CPU = struct {
             },
             0xf5 => {
                 m_value = std.math.shl(u8, A, 8);
-                if (SIGN == 1) {
+                if (ToBooleanU1(SIGN)) {
                     m_value = (m_value | BIT7);
                 }
-                if (ZERO == 1) {
+                if (ToBooleanU1(ZERO)) {
                     m_value = (m_value | BIT6);
                 }
                 if (INTERRUPT) {
                     m_value = (m_value | BIT5);
                 }
-                if (HALFCARRY == 1) {
+                if (ToBooleanU1(HALFCARRY)) {
                     m_value = (m_value | BIT4);
                 }
-                if (CARRY == 1) {
+                if (ToBooleanU16(CARRY)) {
                     m_value = (m_value | BIT0);
                 }
             },
@@ -901,10 +903,10 @@ pub const CPU = struct {
                 SetHL(value);
             },
             0xf1 => {
-                // A = (value >> 8);
+                A = std.math.shr(u8, @truncate(u8, value), 8);
                 SIGN = @truncate(u1, (value & 0x80));
                 ZERO = @truncate(u1, (value & 0x40));
-                // INTERRUPT = Convert.ToBoolean(value & 0x20);
+                INTERRUPT = ToBooleanU16(value & 0x20);
                 HALFCARRY = @truncate(u1, (value & BIT4));
                 CARRY = (value & BIT0);
             },
@@ -994,20 +996,15 @@ pub const CPU = struct {
 
     fn Instruction_RLC() void {
         SetA(((A << 1) | (A >> 7)));
-        // var temp = (A & 1);
-        // bool testCarry = Convert.ToBoolean(temp);
         CARRY = (A & BIT0);
     }
 
     fn Instruction_RAL() void {
-        var temp: u8 = A;
         SetA(A << 1);
-        // if (Convert.ToBoolean(CARRY))
-        // {
-        //     SetA((ushort)(A | BIT0));
-        // }
-
-        CARRY = temp & 0x80;
+        if (ToBooleanU16(CARRY)) {
+            SetA(A | BIT0);
+        }
+        CARRY = A & 0x80;
     }
 
     fn Instruction_RRC() void {
@@ -1016,13 +1013,11 @@ pub const CPU = struct {
     }
 
     fn Instruction_RAR() void {
-        var temp = A;
         SetA((A >> 1));
-        // if (Convert.ToBoolean(CARRY))
-        // {
-        //     SetA((ushort)(A | BIT7));
-        // }
-        CARRY = (temp & 1);
+        if (ToBooleanU16(CARRY)) {
+            SetA(A | BIT7);
+        }
+        CARRY = (A & 1);
     }
 
     fn Instruction_AND(byte: u8) void {
@@ -1241,7 +1236,7 @@ pub const CPU = struct {
         var immediate = FetchRomByte();
         var carryvalue: u8 = 0;
         // TO-DO check
-        if (CARRY != 0) {
+        if (ToBooleanU16(CARRY)) {
             carryvalue = 1;
         }
         PerformByteSub(immediate, carryvalue);
@@ -1249,14 +1244,14 @@ pub const CPU = struct {
 
     fn Instruction_DAA() void {
         // TO-DO check
-        if (((A & 0x0F) > 9) or HALFCARRY != 0) {
+        if (((A & 0x0F) > 9) or ToBooleanU1(HALFCARRY)) {
             A += 0x06;
             HALFCARRY = 1;
         } else {
             HALFCARRY = 0;
         }
         // TO-DO check
-        if ((A > 0x9F) or CARRY != 0) {
+        if ((A > 0x9F) or ToBooleanU16(CARRY)) {
             A += 0x60;
             CARRY = 1;
         } else {
@@ -1271,7 +1266,7 @@ pub const CPU = struct {
 
     fn Instruction_ADC(byte: u8) void {
         var carryvalue: u8 = 0;
-        if (CARRY != 0) {
+        if (ToBooleanU16(CARRY)) {
             carryvalue = 1;
         }
         switch (byte) {
@@ -1462,7 +1457,7 @@ pub const CPU = struct {
 
     fn PerformDec(inSource: u16) u8 {
         std.log.info("PerformDec inSource: {any}", .{inSource});
-        var value = @intCast(u16,(@intCast(i16, inSource) - 1) & 0xFF);
+        var value = @intCast(u16, (@intCast(i16, inSource) - 1) & 0xFF);
         std.log.info("PerformDec value: {any}", .{value});
         HALFCARRY = @truncate(u1, (value & 0x0F));
         std.log.info("PerformDec HALFCARRY: {any}", .{HALFCARRY});
@@ -1470,8 +1465,8 @@ pub const CPU = struct {
         std.log.info("PerformDec ZERO: {any}", .{ZERO});
         SIGN = @truncate(u1, (value & 128));
         std.log.info("PerformDec SIGN: {any}", .{SIGN});
-        std.log.info("PerformDec return value: {any}", .{@intCast(u8,value)});
-        return @intCast(u8,value);
+        std.log.info("PerformDec return value: {any}", .{@intCast(u8, value)});
+        return @intCast(u8, value);
     }
 
     fn PerformInc(inSource: u8) u8 {
@@ -1556,7 +1551,7 @@ pub const CPU = struct {
         std.log.info("PerformCompSub inValue: {any}", .{inValue});
         var value = (A - inValue) & 0xFF;
         std.log.info("PerformCompSub value: {any}", .{value});
-        if ((value >= A) and inValue != 0) {
+        if ((value >= A) and ToBooleanU8(inValue)) {
             CARRY = inValue;
         } else {
             CARRY = 0;
@@ -1577,6 +1572,19 @@ pub const CPU = struct {
         SetHL(value);
         CARRY = @boolToInt(value > 65535);
         std.log.info("AddHL CARRY: {any}", .{CARRY});
+    }
+
+    // https://github.com/microsoft/referencesource/blob/master/mscorlib/system/convert.cs
+    pub fn ToBooleanU1(value: u1) bool {
+        return value != 0;
+    }
+
+    pub fn ToBooleanU8(value: u8) bool {
+        return value != 0;
+    }
+
+    pub fn ToBooleanU16(value: u16) bool {
+        return value != 0;
     }
 
     fn Reset() void {
