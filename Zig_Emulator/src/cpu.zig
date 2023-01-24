@@ -1,4 +1,6 @@
 const std = @import("std");
+const fmt = std.fmt;
+const print = std.log.info;
 
 pub const CPU = struct {
     var m_rom: []u8 = undefined;
@@ -44,277 +46,287 @@ pub const CPU = struct {
     var m_instructionCounter: u16 = 0;
 
     // var IO m_io;
+    var iteration: usize = 0;
 
     pub fn New(rom: []u8) void {
         m_rom = rom;
         half_instruction_per_frame = @as(u16, instruction_per_frame / 2);
-        std.log.info("half_instruction_per_frame: {any}", .{half_instruction_per_frame});
+        // print("half_instruction_per_frame: {any}", .{half_instruction_per_frame});
         Reset();
     }
 
     pub fn Run() bool {
-        std.log.info("Programme Counter: {any}", .{m_PC});
+        // print("Programme Counter: {any}", .{m_PC});
         var count: usize = 0;
-        while (count < instruction_per_frame or !CRASHED) {
+        while (count < instruction_per_frame) {
             ExecuteInstruction();
             count += 1;
+            if (CRASHED == true) {
+                // print("CRASHED: {any}", .{CRASHED});
+                break;
+            }
         }
-        std.log.info("Count: {any}", .{count});
-        std.log.info("CRASHED: {any}", .{CRASHED});
+        // print("Count: {any}", .{count});
+        if (CRASHED == false) {
+            iteration += 1;
+            // print("CRASHED: {any}", .{CRASHED});
+        }
+        // print("CPU iteration. {any}", .{iteration});
+        // print("CRASHED: {any}", .{CRASHED});
         return CRASHED;
+    }
+
+    fn OutputInfo(opcode: [*:0]const u8) void {
+        print("Opcode: {s}, PC: {any}, SP: {any}, A: {any}, B: {any}, C: {any}, D: {any}, E: {any}, H: {any}, L: {any}, BC: {any}, DE: {any}, HL: {any}, SIGN: {any}, ZERO: {any}, HALFCARRY: {any}, PARITY: {any}, CARRY: {any}, INTERRUPT: {any}", .{ opcode, m_PC, SP, A, B, C, D, E, H, L, BC, DE, HL, SIGN, ZERO, HALFCARRY, PARITY, CARRY, INTERRUPT });
     }
 
     // All opcodes are 1 byte wide
     pub fn ExecuteInstruction() void {
-        if (m_instructionCounter == 20) {
-            var stop = true;
-            std.log.info("stop: {any}", .{stop});
-        }
         if (!CRASHED) {
             m_byte = FetchRomByte();
-            std.log.info("m_byte: {any}", .{m_byte});
+            // print("m_byte: {any}", .{m_byte});
             switch (m_byte) {
                 0x00 => {
-                    std.log.info("\nNOP", .{});
                     NOP();
+                    OutputInfo("NOP");
                 },
                 0xc2, 0xc3, 0xca, 0xd2, 0xda, 0xf2, 0xfa => {
-                    std.log.info("\nJMP", .{});
                     Instruction_JMP(m_byte);
+                    OutputInfo("JMP");
                 },
                 0x01, 0x11, 0x21, 0x31 => {
-                    std.log.info("\nLXI", .{});
                     Instruction_LXI(m_byte);
+                    OutputInfo("LXI");
                 },
 
                 0x3e, 0x06, 0x0e, 0x16, 0x1e, 0x26, 0x2e, 0x36 => {
-                    std.log.info("\nMVI", .{});
                     Instruction_MVI(m_byte);
+                    OutputInfo("MVI");
                 },
 
                 0xcd, 0xc4, 0xcc, 0xd4, 0xdc => {
-                    std.log.info("\nCALL", .{});
                     Instruction_CALL(m_byte);
+                    OutputInfo("CALL");
                 },
 
                 0x0a, 0x1a, 0x3a => {
-                    std.log.info("\nLDA", .{});
                     Instruction_LDA(m_byte);
+                    OutputInfo("LDA");
                 },
 
                 0x77, 0x70, 0x71, 0x72, 0x73, 0x74, 0x75 => {
-                    std.log.info("\nMOVHL", .{});
                     Instruction_MOVHL(m_byte);
+                    OutputInfo("MOVHL");
                 },
 
                 0x03, 0x13, 0x23, 0x33 => {
-                    std.log.info("\nINX", .{});
                     Instruction_INX(m_byte);
+                    OutputInfo("INX");
                 },
 
                 0x0b, 0x1b, 0x2b, 0x3b => {
-                    std.log.info("\nDCX", .{});
                     Instruction_DCX(m_byte);
+                    OutputInfo("DCX");
                 },
 
                 0x3d, 0x05, 0x0d, 0x15, 0x1d, 0x25, 0x2d, 0x35 => {
-                    std.log.info("\nDEC", .{});
                     Instruction_DEC(m_byte);
+                    OutputInfo("DEC");
                 },
 
                 0x3c, 0x04, 0x0c, 0x14, 0x1c, 0x24, 0x2c, 0x34 => {
-                    std.log.info("\nINC", .{});
                     Instruction_INC(m_byte);
+                    OutputInfo("INC");
                 },
 
                 0xc9, 0xc0, 0xc8, 0xd0, 0xd8 => {
-                    std.log.info("\nRET", .{});
                     Instruction_RET(m_byte);
+                    OutputInfo("RET");
                 },
 
                 0x7F, 0x78, 0x79, 0x7A, 0x7B, 0x7C, 0x7D, 0x7E => {
-                    std.log.info("\nMOV", .{});
                     Instruction_MOV(m_byte);
+                    OutputInfo("MOV");
                 },
 
                 0x47, 0x40, 0x41, 0x42, 0x43, 0x44, 0x45, 0x46 => {
-                    std.log.info("\nMOV", .{});
                     Instruction_MOV(m_byte);
+                    OutputInfo("MOV");
                 },
 
                 0x4f, 0x48, 0x49, 0x4a, 0x4b, 0x4c, 0x4d, 0x4e => {
-                    std.log.info("\nMOV", .{});
                     Instruction_MOV(m_byte);
+                    OutputInfo("MOV");
                 },
 
                 0x57, 0x50, 0x51, 0x52, 0x53, 0x54, 0x55, 0x56 => {
-                    std.log.info("\nMOV", .{});
                     Instruction_MOV(m_byte);
+                    OutputInfo("MOV");
                 },
 
                 0x5f, 0x58, 0x59, 0x5a, 0x5b, 0x5c, 0x5d, 0x5e => {
-                    std.log.info("\nMOV", .{});
                     Instruction_MOV(m_byte);
+                    OutputInfo("MOV");
                 },
 
                 0x67, 0x60, 0x61, 0x62, 0x63, 0x64, 0x65, 0x66 => {
-                    std.log.info("\nMOV", .{});
                     Instruction_MOV(m_byte);
+                    OutputInfo("MOV");
                 },
 
                 0x6f, 0x68, 0x69, 0x6a, 0x6b, 0x6c, 0x6d, 0x6e => {
-                    std.log.info("MOV", .{});
                     Instruction_MOV(m_byte);
+                    OutputInfo("MOV");
                 },
 
                 0xbf, 0xb8, 0xb9, 0xba, 0xbb, 0xbc, 0xbd, 0xbe, 0xfe => {
-                    std.log.info("\nCMP", .{});
                     Instruction_CMP(m_byte);
+                    OutputInfo("CMP");
                 },
 
                 0xc5, 0xd5, 0xe5, 0xf5 => {
-                    std.log.info("\nPUSH", .{});
                     Instruction_PUSH(m_byte);
+                    OutputInfo("PUSH");
                 },
 
                 0xc1, 0xd1, 0xe1, 0xf1 => {
-                    std.log.info("\nPOP", .{});
                     Instruction_POP(m_byte);
+                    OutputInfo("POP");
                 },
 
                 0x09, 0x19, 0x29, 0x39 => {
-                    std.log.info("\nDAD", .{});
                     Instruction_DAD(m_byte);
+                    OutputInfo("DAD");
                 },
 
                 0xeb => {
-                    std.log.info("\nXCHG", .{});
                     Instruction_XCHG();
+                    OutputInfo("XCHG");
                 },
 
                 0xe3 => {
-                    std.log.info("\nXTHL", .{});
                     Instruction_XTHL();
+                    OutputInfo("XTHL");
                 },
 
                 0xd3 => {
-                    std.log.info("\nOUTP", .{});
                     Instruction_OUTP();
+                    OutputInfo("OUTP");
                 },
 
                 0xdb => {
-                    std.log.info("\nINP", .{});
                     Instruction_INP();
+                    OutputInfo("INP");
                 },
 
                 0xe9 => {
-                    std.log.info("\nPCHL", .{});
                     Instruction_PCHL();
+                    OutputInfo("PCHL");
                 },
 
                 0xc7, 0xcf, 0xd7, 0xdf, 0xe7, 0xef, 0xf7, 0xff => {
-                    std.log.info("\nRST", .{});
                     Instruction_RST(m_byte);
+                    OutputInfo("RST");
                 },
 
                 0x07 => {
-                    std.log.info("\nRLC", .{});
                     Instruction_RLC();
+                    OutputInfo("RLC");
                 },
 
                 0x17 => {
-                    std.log.info("\nRAL", .{});
                     Instruction_RAL();
+                    OutputInfo("RAL");
                 },
 
                 0x0f => {
-                    std.log.info("\nRRC", .{});
                     Instruction_RRC();
+                    OutputInfo("RRC");
                 },
 
                 0x1f => {
-                    std.log.info("\nRAR", .{});
                     Instruction_RAR();
+                    OutputInfo("RAR");
                 },
 
                 0xa7, 0xa0, 0xa1, 0xa2, 0xa3, 0xa4, 0xa5, 0xa6, 0xe6 => {
-                    std.log.info("\nAND", .{});
                     Instruction_AND(m_byte);
+                    OutputInfo("AND");
                 },
 
                 0x80, 0x81, 0x82, 0x83, 0x84, 0x85, 0x86, 0x87, 0xc6 => {
-                    std.log.info("\nADD", .{});
                     Instruction_ADD(m_byte);
+                    OutputInfo("ADD");
                 },
 
                 0x02, 0x12, 0x32 => {
-                    std.log.info("\nSTA", .{});
                     Instruction_STA(m_byte);
+                    OutputInfo("STA");
                 },
 
                 0xaf, 0xa8, 0xa9, 0xaa, 0xab, 0xac, 0xad, 0xae, 0xee => {
-                    std.log.info("\nXOR", .{});
                     Instruction_XOR(m_byte);
+                    OutputInfo("XOR");
                 },
                 0xf3 => {
-                    std.log.info("\nDI", .{});
                     Instruction_DI();
+                    OutputInfo("DI");
                 },
                 0xfb => {
-                    std.log.info("\nEI", .{});
                     Instruction_EI();
+                    OutputInfo("EI");
                 },
                 0x37 => {
-                    std.log.info("\nSTC", .{});
                     Instruction_STC();
+                    OutputInfo("STC");
                 },
                 0x3f => {
-                    std.log.info("\nCMC", .{});
                     Instruction_CMC();
+                    OutputInfo("CMC");
                 },
                 0xb7, 0xb0, 0xb1, 0xb2, 0xb3, 0xb4, 0xb5, 0xb6, 0xf6 => {
-                    std.log.info("\nOR", .{});
                     Instruction_OR(m_byte);
+                    OutputInfo("OR");
                 },
                 0x97, 0x90, 0x91, 0x92, 0x93, 0x94, 0x95, 0x96, 0xd6 => {
-                    std.log.info("\nSUB", .{});
                     Instruction_SUB(m_byte);
+                    OutputInfo("SUB");
                 },
                 0x2a => {
-                    std.log.info("\nLHLD", .{});
                     Instruction_LHLD();
+                    OutputInfo("LHLD");
                 },
                 0x22 => {
-                    std.log.info("\nSHLD", .{});
                     Instruction_SHLD();
+                    OutputInfo("SHLD");
                 },
                 0xde => {
-                    std.log.info("\nSBBI", .{});
                     Instruction_SBBI();
+                    OutputInfo("SBBI");
                 },
                 0x27 => {
-                    std.log.info("\nDAA", .{});
                     Instruction_DAA();
+                    OutputInfo("DAA");
                 },
                 0x2f => {
-                    std.log.info("\nCMA", .{});
                     Instruction_CMA();
+                    OutputInfo("CMA");
                 },
                 0x8f, 0x88, 0x89, 0x8a, 0x8b, 0x8c, 0x8d, 0x8e, 0xce => {
-                    std.log.info("\nADC", .{});
                     Instruction_ADC(m_byte);
+                    OutputInfo("ADC");
                 },
                 else => {
                     CRASHED = true;
-                    std.log.info("Emulator Crashed @ instruction : {any}", .{m_instructionCounter});
+                    // print("Emulator Crashed @ instruction : {any}", .{m_instructionCounter});
                     return;
                 },
             }
 
             m_instructionCounter += 1;
 
-            // std.log.info("m_instructionCounter : {any}", .{m_instructionCounter});
-            // std.log.info("half_instruction_per_frame : {any}", .{half_instruction_per_frame});
+            // // print("m_instructionCounter : {any}", .{m_instructionCounter});
+            // // print("half_instruction_per_frame : {any}", .{half_instruction_per_frame});
 
             if (m_instructionCounter >= half_instruction_per_frame) {
                 if (INTERRUPT) {
@@ -340,54 +352,54 @@ pub const CPU = struct {
 
     fn NOP() void {
         // No Operation - Do nothing !
-        // std.log.info("NOP", .{});
+        // // print("NOP", .{});
     }
 
     fn Instruction_JMP(byte: u8) void {
         var data16: u16 = FetchRomShort();
-        std.log.info("Instruction_JMP data16: {any}", .{data16});
+        // print("Instruction_JMP data16: {any}", .{data16});
         var m_condition = true;
 
         switch (byte) {
             0xc3 => {
                 // Do nothing apart from incrementing the Programme Counter
-                std.log.info("Debug byte: {any}", .{byte});
+                // print("Debug byte: {any}", .{byte});
             },
             0xc2 => {
-                std.log.info("ZERO: {any}", .{ZERO});
-                std.log.info("m_condition: {any}", .{m_condition});
+                // print("ZERO: {any}", .{ZERO});
+                // print("m_condition: {any}", .{m_condition});
                 m_condition = !ToBooleanU1(ZERO);
-                std.log.info("m_condition: {any}", .{m_condition});
+                // print("m_condition: {any}", .{m_condition});
             },
             0xca => {
-                std.log.info("ZERO: {any}", .{ZERO});
-                std.log.info("m_condition: {any}", .{m_condition});
+                // print("ZERO: {any}", .{ZERO});
+                // print("m_condition: {any}", .{m_condition});
                 m_condition = ToBooleanU1(ZERO);
-                std.log.info("m_condition: {any}", .{m_condition});
+                // print("m_condition: {any}", .{m_condition});
             },
             0xd2 => {
-                std.log.info("CARRY: {any}", .{CARRY});
-                std.log.info("m_condition: {any}", .{m_condition});
+                // print("CARRY: {any}", .{CARRY});
+                // print("m_condition: {any}", .{m_condition});
                 m_condition = !ToBooleanU16(CARRY);
-                std.log.info("m_condition: {any}", .{m_condition});
+                // print("m_condition: {any}", .{m_condition});
             },
             0xda => {
-                std.log.info("CARRY: {any}", .{CARRY});
-                std.log.info("m_condition: {any}", .{m_condition});
+                // print("CARRY: {any}", .{CARRY});
+                // print("m_condition: {any}", .{m_condition});
                 m_condition = ToBooleanU16(CARRY);
-                std.log.info("m_condition: {any}", .{m_condition});
+                // print("m_condition: {any}", .{m_condition});
             },
             0xf2 => {
-                std.log.info("SIGN: {any}", .{SIGN});
-                std.log.info("m_condition: {any}", .{m_condition});
+                // print("SIGN: {any}", .{SIGN});
+                // print("m_condition: {any}", .{m_condition});
                 m_condition = !ToBooleanU1(SIGN);
-                std.log.info("m_condition: {any}", .{m_condition});
+                // print("m_condition: {any}", .{m_condition});
             },
             0xfa => {
-                std.log.info("SIGN: {any}", .{SIGN});
-                std.log.info("m_condition: {any}", .{m_condition});
+                // print("SIGN: {any}", .{SIGN});
+                // print("m_condition: {any}", .{m_condition});
                 m_condition = ToBooleanU1(SIGN);
-                std.log.info("m_condition: {any}", .{m_condition});
+                // print("m_condition: {any}", .{m_condition});
             },
             else => {},
         }
@@ -450,39 +462,39 @@ pub const CPU = struct {
         switch (byte) {
             0xcd => {},
             0xc4 => {
-                std.log.info("m_condition: {any}", .{m_condition});
-                std.log.info("ZERO: {any}", .{ZERO});
+                // print("m_condition: {any}", .{m_condition});
+                // print("ZERO: {any}", .{ZERO});
                 m_condition = !ToBooleanU1(ZERO);
-                std.log.info("m_condition: {any}", .{m_condition});
-                std.log.info("ZERO: {any}", .{ZERO});
+                // print("m_condition: {any}", .{m_condition});
+                // print("ZERO: {any}", .{ZERO});
             },
             0xcc => {
-                std.log.info("m_condition: {any}", .{m_condition});
-                std.log.info("ZERO: {any}", .{ZERO});
+                // print("m_condition: {any}", .{m_condition});
+                // print("ZERO: {any}", .{ZERO});
                 m_condition = ToBooleanU1(ZERO);
-                std.log.info("m_condition: {any}", .{m_condition});
-                std.log.info("ZERO: {any}", .{ZERO});
+                // print("m_condition: {any}", .{m_condition});
+                // print("ZERO: {any}", .{ZERO});
             },
             0xd4 => {
-                std.log.info("m_condition: {any}", .{m_condition});
-                std.log.info("ZERO: {any}", .{ZERO});
+                // print("m_condition: {any}", .{m_condition});
+                // print("ZERO: {any}", .{ZERO});
                 m_condition = !ToBooleanU16(CARRY);
-                std.log.info("m_condition: {any}", .{m_condition});
-                std.log.info("ZERO: {any}", .{ZERO});
+                // print("m_condition: {any}", .{m_condition});
+                // print("ZERO: {any}", .{ZERO});
             },
             0xdc => {
-                std.log.info("m_condition: {any}", .{m_condition});
-                std.log.info("ZERO: {any}", .{ZERO});
+                // print("m_condition: {any}", .{m_condition});
+                // print("ZERO: {any}", .{ZERO});
                 m_condition = ToBooleanU16(CARRY);
-                std.log.info("m_condition: {any}", .{m_condition});
-                std.log.info("ZERO: {any}", .{ZERO});
+                // print("m_condition: {any}", .{m_condition});
+                // print("ZERO: {any}", .{ZERO});
             },
             else => {},
         }
         if (m_condition) {
             StackPush(m_PC);
             m_PC = data16;
-            std.log.info("m_PC: {any}", .{m_PC});
+            // print("m_PC: {any}", .{m_PC});
         }
     }
 
@@ -1303,194 +1315,194 @@ pub const CPU = struct {
     }
 
     fn SetA(inByte: u8) void {
-        std.log.info("SetA inByte: {any}", .{inByte});
+        // print("SetA inByte: {any}", .{inByte});
         A = inByte & 0xFF;
-        std.log.info("SetA A: {any}", .{A});
+        // print("SetA A: {any}", .{A});
     }
 
     fn SetB(inByte: u8) void {
-        std.log.info("SetB inByte: {any}", .{inByte});
+        // print("SetB inByte: {any}", .{inByte});
         B = inByte & 0xFF;
-        std.log.info("SetB B: {any}", .{B});
+        // print("SetB B: {any}", .{B});
         BC = std.math.shl(u16, B, 8) | C;
-        std.log.info("SetB BC: {any}", .{BC});
+        // print("SetB BC: {any}", .{BC});
     }
 
     fn SetC(inByte: u8) void {
-        std.log.info("SetC inByte: {any}", .{inByte});
+        // print("SetC inByte: {any}", .{inByte});
         C = inByte & 0xFF;
-        std.log.info("SetC C: {any}", .{C});
+        // print("SetC C: {any}", .{C});
         BC = std.math.shl(u16, B, 8) | C;
-        std.log.info("SetC BC: {any}", .{BC});
+        // print("SetC BC: {any}", .{BC});
     }
 
     fn SetD(inByte: u8) void {
-        std.log.info("SetD inByte: {any}", .{inByte});
+        // print("SetD inByte: {any}", .{inByte});
         D = inByte;
-        std.log.info("SetD D: {any}", .{D});
+        // print("SetD D: {any}", .{D});
         DE = std.math.shl(u16, D, 8) + E;
-        std.log.info("SetD DE: {any}", .{DE});
+        // print("SetD DE: {any}", .{DE});
     }
 
     fn SetE(inByte: u8) void {
-        std.log.info("SetE inByte: {any}", .{inByte});
+        // print("SetE inByte: {any}", .{inByte});
         E = inByte;
-        std.log.info("SetE E: {any}", .{E});
+        // print("SetE E: {any}", .{E});
         DE = std.math.shl(u16, D, 8) + E;
-        std.log.info("SetE DE: {any}", .{DE});
+        // print("SetE DE: {any}", .{DE});
     }
 
     fn SetH(inByte: u8) void {
-        std.log.info("SetH inByte: {any}", .{inByte});
+        // print("SetH inByte: {any}", .{inByte});
         H = inByte;
-        std.log.info("SetH H: {any}", .{H});
+        // print("SetH H: {any}", .{H});
         HL = std.math.shl(u16, H, 8) + L;
-        std.log.info("SetH HL: {any}", .{HL});
+        // print("SetH HL: {any}", .{HL});
     }
 
     fn SetL(inByte: u8) void {
-        std.log.info("SetL inByte: {any}", .{inByte});
+        // print("SetL inByte: {any}", .{inByte});
         L = inByte;
-        std.log.info("SetL L: {any}", .{L});
+        // print("SetL L: {any}", .{L});
         HL = std.math.shl(u16, H, 8) + L;
-        std.log.info("SetL HL: {any}", .{HL});
+        // print("SetL HL: {any}", .{HL});
     }
 
     fn SetBC(inShort: u16) void {
-        std.log.info("SetBC inShort: {any}", .{inShort});
+        // print("SetBC inShort: {any}", .{inShort});
         BC = inShort;
-        std.log.info("SetBC BC: {any}", .{BC});
+        // print("SetBC BC: {any}", .{BC});
         B = @truncate(u8, (BC >> 8));
-        std.log.info("SetBC B: {any}", .{B});
+        // print("SetBC B: {any}", .{B});
         C = @truncate(u8, (BC & 0xFF));
-        std.log.info("SetBC C: {any}", .{C});
+        // print("SetBC C: {any}", .{C});
     }
 
     fn SetDE(inShort: u16) void {
-        std.log.info("SetDE inShort: {any}", .{inShort});
+        // print("SetDE inShort: {any}", .{inShort});
         DE = inShort;
-        std.log.info("SetDE DE: {any}", .{DE});
+        // print("SetDE DE: {any}", .{DE});
         D = @truncate(u8, (DE >> 8));
-        std.log.info("SetDE D: {any}", .{D});
+        // print("SetDE D: {any}", .{D});
         E = @truncate(u8, (DE & 0xFF));
-        std.log.info("SetDE E: {any}", .{E});
+        // print("SetDE E: {any}", .{E});
     }
 
     fn SetHL(inShort: u16) void {
-        std.log.info("SetHL inShort: {any}", .{inShort});
+        // print("SetHL inShort: {any}", .{inShort});
         HL = inShort;
-        std.log.info("SetHL HL: {any}", .{HL});
+        // print("SetHL HL: {any}", .{HL});
         H = @truncate(u8, (HL >> 8));
-        std.log.info("SetHL H: {any}", .{H});
+        // print("SetHL H: {any}", .{H});
         L = @truncate(u8, (HL & 0xFF));
-        std.log.info("SetHL L: {any}", .{L});
+        // print("SetHL L: {any}", .{L});
     }
 
     fn SetSP(inShort: u16) void {
-        std.log.info("SetSP inShort: {any}", .{inShort});
+        // print("SetSP inShort: {any}", .{inShort});
         SP = inShort;
-        std.log.info("SetSP SP: {any}", .{SP});
+        // print("SetSP SP: {any}", .{SP});
     }
 
     fn FetchRomByte() u8 {
         var value = m_rom[m_PC];
-        std.log.info("FetchRomByte m_rom[m_PC]: {any}", .{value});
+        // print("FetchRomByte m_rom[m_PC]: {any}", .{value});
         m_PC += 1;
-        std.log.info("FetchRomByte m_PC: {any}", .{m_PC});
+        // print("FetchRomByte m_PC: {any}", .{m_PC});
         return value;
     }
 
     fn FetchRomShort() u16 {
         var bytes: [2]u8 = [_]u8{ 0, 0 };
         bytes[0] = m_rom[m_PC + 0];
-        std.log.info("bytes[0]: {any}", .{bytes[0]});
+        // print("bytes[0]: {any}", .{bytes[0]});
         bytes[1] = m_rom[m_PC + 1];
-        std.log.info("bytes[1]: {any}", .{bytes[1]});
+        // print("bytes[1]: {any}", .{bytes[1]});
         m_PC += 2;
-        std.log.info("FetchRomShort m_PC: {any}", .{m_PC});
+        // print("FetchRomShort m_PC: {any}", .{m_PC});
         return std.math.shl(u16, (bytes[1] & 0xFF), 8) | (bytes[0] & 0xFF);
     }
 
     fn ReadByte(count: usize) u8 {
-        std.log.info("ReadByte count: {any}", .{count});
-        std.log.info("ReadByte m_rom[count]: {any}", .{m_rom[count]});
+        // print("ReadByte count: {any}", .{count});
+        // print("ReadByte m_rom[count]: {any}", .{m_rom[count]});
         return m_rom[count];
     }
 
     fn ReadShort(inAddress: u16) u16 {
-        std.log.info("ReadShort inAddress: {any}", .{inAddress});
-        std.log.info("ReadShort return value: {any}", .{std.math.shl(u8, m_rom[inAddress + 1], 8) + (m_rom[inAddress + 0])});
+        // print("ReadShort inAddress: {any}", .{inAddress});
+        // print("ReadShort return value: {any}", .{std.math.shl(u8, m_rom[inAddress + 1], 8) + (m_rom[inAddress + 0])});
         return std.math.shl(u8, m_rom[inAddress + 1], 8) + (m_rom[inAddress + 0]);
     }
 
     pub fn WriteShort(inAddress: u16, inWord: u16) void {
-        std.log.info("WriteShort inAddress: {any}", .{inAddress});
-        std.log.info("WriteShort inWord: {any}", .{inWord});
-        std.log.info("WriteShort m_rom[inAddress + 1]: {any}", .{@intCast(u8, std.math.shr(u16, inWord, 8))});
-        std.log.info("WriteShort m_rom[inAddress + 0]: {any}", .{@truncate(u8, inWord)});
+        // print("WriteShort inAddress: {any}", .{inAddress});
+        // print("WriteShort inWord: {any}", .{inWord});
+        // print("WriteShort m_rom[inAddress + 1]: {any}", .{@intCast(u8, std.math.shr(u16, inWord, 8))});
+        // print("WriteShort m_rom[inAddress + 0]: {any}", .{@truncate(u8, inWord)});
         m_rom[inAddress + 1] = @intCast(u8, std.math.shr(u16, inWord, 8));
         m_rom[inAddress + 0] = @truncate(u8, inWord);
     }
 
     fn WriteByte(inAddress: u16, inByte: u8) void {
-        std.log.info("WriteByte inAddress: {any}", .{inAddress});
+        // print("WriteByte inAddress: {any}", .{inAddress});
         m_rom[inAddress] = inByte;
     }
 
     fn StackPush(inValue: u16) void {
-        std.log.info("StackPush SP: {any}", .{SP});
+        // print("StackPush SP: {any}", .{SP});
         if (SP > 1) {
             SP -= 2;
             WriteShort(SP, inValue);
         }
-        std.log.info("StackPush SP: {any}", .{SP});
+        // print("StackPush SP: {any}", .{SP});
     }
 
     fn StackPop() u16 {
-        std.log.info("StackPop SP: {any}", .{SP});
+        // print("StackPop SP: {any}", .{SP});
         var temp = ReadShort(SP);
-        std.log.info("StackPop temp: {any}", .{temp});
+        // print("StackPop temp: {any}", .{temp});
         SP += 2;
-        std.log.info("StackPop SP: {any}", .{SP});
+        // print("StackPop SP: {any}", .{SP});
         return temp;
     }
 
     fn PerformDec(inSource: u16) u8 {
-        std.log.info("PerformDec inSource: {any}", .{inSource});
+        // print("PerformDec inSource: {any}", .{inSource});
         var value = @intCast(u16, (@intCast(i16, inSource) - 1) & 0xFF);
-        std.log.info("PerformDec value: {any}", .{value});
+        // print("PerformDec value: {any}", .{value});
         HALFCARRY = @truncate(u1, (value & 0x0F));
-        std.log.info("PerformDec HALFCARRY: {any}", .{HALFCARRY});
+        // print("PerformDec HALFCARRY: {any}", .{HALFCARRY});
         ZERO = @boolToInt((value & 255) == 0);
-        std.log.info("PerformDec ZERO: {any}", .{ZERO});
+        // print("PerformDec ZERO: {any}", .{ZERO});
         SIGN = @truncate(u1, (value & 128));
-        std.log.info("PerformDec SIGN: {any}", .{SIGN});
-        std.log.info("PerformDec return value: {any}", .{@intCast(u8, value)});
+        // print("PerformDec SIGN: {any}", .{SIGN});
+        // print("PerformDec return value: {any}", .{@intCast(u8, value)});
         return @intCast(u8, value);
     }
 
     fn PerformInc(inSource: u8) u8 {
-        std.log.info("PerformInc inSource: {any}", .{inSource});
+        // print("PerformInc inSource: {any}", .{inSource});
         var value = inSource + 1;
-        std.log.info("PerformInc value: {any}", .{value});
+        // print("PerformInc value: {any}", .{value});
         // HALFCARRY = @truncate(u1,((value & 0xF) < 0 | (value & 0xF) > 0));
-        std.log.info("PerformInc HALFCARRY: {any}", .{HALFCARRY});
+        // print("PerformInc HALFCARRY: {any}", .{HALFCARRY});
         ZERO = @boolToInt((value & 255) == 0);
-        std.log.info("PerformInc ZERO: {any}", .{ZERO});
+        // print("PerformInc ZERO: {any}", .{ZERO});
         SIGN = @truncate(u1, (value & 128));
-        std.log.info("PerformInc SIGN: {any}", .{SIGN});
+        // print("PerformInc SIGN: {any}", .{SIGN});
         return value;
     }
 
     fn SetFlagZeroSign() void {
         ZERO = @boolToInt(A == 0);
-        std.log.info("SetFlagZeroSign ZERO: {any}", .{ZERO});
+        // print("SetFlagZeroSign ZERO: {any}", .{ZERO});
         SIGN = @truncate(u1, (A & 128));
-        std.log.info("SetFlagZeroSign SIGN: {any}", .{SIGN});
+        // print("SetFlagZeroSign SIGN: {any}", .{SIGN});
     }
 
     fn PerformAnd(inValue: u8) void {
-        std.log.info("PerformAnd inValue: {any}", .{inValue});
+        // print("PerformAnd inValue: {any}", .{inValue});
         SetA(A & inValue);
         CARRY = 0;
         HALFCARRY = 0;
@@ -1498,7 +1510,7 @@ pub const CPU = struct {
     }
 
     fn PerformXor(inValue: u8) void {
-        std.log.info("PerformXor inValue: {any}", .{inValue});
+        // print("PerformXor inValue: {any}", .{inValue});
         SetA(A ^ inValue);
         CARRY = 0;
         HALFCARRY = 0;
@@ -1506,7 +1518,7 @@ pub const CPU = struct {
     }
 
     fn PerformOr(inValue: u8) void {
-        std.log.info("PerformOr inValue: {any}", .{inValue});
+        // print("PerformOr inValue: {any}", .{inValue});
         SetA(A | inValue);
         CARRY = 0;
         HALFCARRY = 0;
@@ -1514,64 +1526,70 @@ pub const CPU = struct {
     }
 
     fn PerformByteAdd(inValue: u8, inCarryValue: u8) void {
-        std.log.info("PerformByteAdd inValue: {any}", .{inValue});
-        std.log.info("PerformByteAdd inCarryValue: {any}", .{inCarryValue});
+        // print("PerformByteAdd inValue: {any}", .{inValue});
+        // print("PerformByteAdd inCarryValue: {any}", .{inCarryValue});
         var value = A + inValue + inCarryValue;
-        std.log.info("PerformByteAdd value: {any}", .{value});
+        // print("PerformByteAdd value: {any}", .{value});
         HALFCARRY = @truncate(u1, (A ^ inValue ^ value) & 0x10);
-        std.log.info("PerformByteAdd HALFCARRY: {any}", .{HALFCARRY});
+        // print("PerformByteAdd HALFCARRY: {any}", .{HALFCARRY});
         SetA(value);
         if (value > 255) {
             CARRY = 1;
         } else {
             CARRY = 0;
         }
-        std.log.info("PerformByteAdd CARRY: {any}", .{CARRY});
+        // print("PerformByteAdd CARRY: {any}", .{CARRY});
         SetFlagZeroSign();
     }
 
     fn PerformByteSub(inValue: u8, inCarryValue: u8) void {
-        std.log.info("PerformByteSub inValue: {any}", .{inValue});
-        std.log.info("PerformByteSub inCarryValue: {any}", .{inCarryValue});
+        // print("PerformByteSub inValue: {any}", .{inValue});
+        // print("PerformByteSub inCarryValue: {any}", .{inCarryValue});
         var value: u8 = (A - inValue - inCarryValue);
-        std.log.info("PerformByteSub value: {any}", .{value});
+        // print("PerformByteSub value: {any}", .{value});
         if ((value >= A) and (inValue | inCarryValue) > 0) {
             CARRY = 1;
         } else {
             CARRY = 0;
         }
-        std.log.info("PerformByteSub CARRY: {any}", .{CARRY});
+        // print("PerformByteSub CARRY: {any}", .{CARRY});
         HALFCARRY = @truncate(u1, (A ^ inValue ^ value) & 0x10);
-        std.log.info("PerformByteSub HALFCARRY: {any}", .{HALFCARRY});
+        // print("PerformByteSub HALFCARRY: {any}", .{HALFCARRY});
         SetA(value);
         SetFlagZeroSign();
     }
 
     fn PerformCompSub(inValue: u8) void {
-        std.log.info("PerformCompSub inValue: {any}", .{inValue});
-        var value = (A - inValue) & 0xFF;
-        std.log.info("PerformCompSub value: {any}", .{value});
+        // // print("PerformCompSub inValue: {any}", .{inValue});
+        // // print("PerformCompSub A: {any}", .{A});
+        // var x: i8 = @intCast(i8, A);
+        // var y: i8 = @bitCast(i8, inValue);
+        // var z = x - y;
+        // // print("PerformCompSub z: {any}", .{z});
+
+        var value = @intCast(u8, (@bitCast(i8, A) - @bitCast(i8, inValue))) & 0xFF;
+        // print("PerformCompSub value: {any}", .{value});
         if ((value >= A) and ToBooleanU8(inValue)) {
             CARRY = inValue;
         } else {
             CARRY = 0;
         }
-        std.log.info("PerformCompSub CARRY: {any}", .{CARRY});
+        // print("PerformCompSub CARRY: {any}", .{CARRY});
         HALFCARRY = @truncate(u1, ((A ^ inValue ^ value) & 0x10));
-        std.log.info("PerformCompSub HALFCARRY: {any}", .{HALFCARRY});
+        // print("PerformCompSub HALFCARRY: {any}", .{HALFCARRY});
         ZERO = @boolToInt(value == 0);
-        std.log.info("PerformCompSub ZERO: {any}", .{ZERO});
+        // print("PerformCompSub ZERO: {any}", .{ZERO});
         SIGN = @truncate(u1, (value & 128));
-        std.log.info("PerformCompSub SIGN: {any}", .{SIGN});
+        // print("PerformCompSub SIGN: {any}", .{SIGN});
     }
 
     pub fn AddHL(inValue: u16) void {
-        std.log.info("AddHL inValue: {any}", .{inValue});
+        // print("AddHL inValue: {any}", .{inValue});
         var value = HL + inValue;
-        std.log.info("AddHL value: {any}", .{value});
+        // print("AddHL value: {any}", .{value});
         SetHL(value);
         CARRY = @boolToInt(value > 65535);
-        std.log.info("AddHL CARRY: {any}", .{CARRY});
+        // print("AddHL CARRY: {any}", .{CARRY});
     }
 
     // https://github.com/microsoft/referencesource/blob/master/mscorlib/system/convert.cs
