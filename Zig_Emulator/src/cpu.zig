@@ -1432,7 +1432,7 @@ pub const CPU = struct {
     fn ReadShort(inAddress: u16) u16 {
         // print("ReadShort inAddress: {any}", .{inAddress});
         // print("ReadShort return value: {any}", .{std.math.shl(u8, m_rom[inAddress + 1], 8) + (m_rom[inAddress + 0])});
-        return std.math.shl(u8, m_rom[inAddress + 1], 8) + (m_rom[inAddress + 0]);
+        return std.math.shl(u16, m_rom[inAddress + 1], 8) + (m_rom[inAddress + 0]);
     }
 
     pub fn WriteShort(inAddress: u16, inWord: u16) void {
