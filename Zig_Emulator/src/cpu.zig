@@ -4,27 +4,27 @@ const print = std.log.info;
 
 pub const CPU = struct {
     var m_rom: []u8 = undefined;
-    var m_PC: u16 = 0; //Program Counter: This is the current instruction pointer. 16-bit register.
-    var SP: u16 = 0; // Stack Pointer. 16-bit register
-    var A: u8 = 0; // Accumulator. 8-bit register
-    var B: u8 = 0; // Register B. 8-bit register
-    var C: u8 = 0; // Register C. 8-bit register
-    var D: u8 = 0; // Register D. 8-bit register
-    var E: u8 = 0; // Register E. 8-bit register
-    var H: u8 = 0; // Register H. 8-bit register
-    var L: u8 = 0; // Register L. 8-bit register
-    var BC: u16 = 0; // Virtual register BC (16-bit) combinaison of registers B and C
-    var DE: u16 = 0; // Virtual register DE (16-bit) combinaison of registers D and E
+    var m_PC: u16 = 0;   // Program Counter: This is the current instruction pointer. 16-bit register.
+    var SP: u16 = 0;     // Stack Pointer. 16-bit register
+    var A: u8 = 0;       // Accumulator. 8-bit register
+    var B: u8 = 0;       // Register B. 8-bit register
+    var C: u8 = 0;       // Register C. 8-bit register
+    var D: u8 = 0;       // Register D. 8-bit register
+    var E: u8 = 0;       // Register E. 8-bit register
+    var H: u8 = 0;       // Register H. 8-bit register
+    var L: u8 = 0;       // Register L. 8-bit register
+    var BC: u16 = 0;     // Virtual register BC (16-bit) combinaison of registers B and C
+    var DE: u16 = 0;     // Virtual register DE (16-bit) combinaison of registers D and E
     pub var HL: u16 = 0; // Virtual register HL (16-bit) combinaison of registers H and L
 
-    var SIGN: u1 = 0; // Sign flag
-    var ZERO: u1 = 0; // Zero flag
-    var HALFCARRY: u1 = 0; //Half-carry (or Auxiliary Carry) flag
-    var PARITY: bool = false; //Parity flag
-    var CARRY: u16 = 0; //Carry flag
+    var SIGN: u8 = 0;            // Sign flag
+    var ZERO: u1 = 0;            // Zero flag
+    var HALFCARRY: u1 = 0;       // Half-carry (or Auxiliary Carry) flag
+    var PARITY: bool = false;    // Parity flag
+    var CARRY: u16 = 0;          // Carry flag
 
-    var INTERRUPT: bool = false; //Interrupt Enabled flag
-    var CRASHED: bool = false; //Special flag that tells if the CPU is currently crashed (stopped)
+    var INTERRUPT: bool = false; // Interrupt Enabled flag
+    var CRASHED: bool = false;   // Special flag that tells if the CPU is currently crashed (stopped)
 
     var instruction_per_frame: u16 = 4000; // Approximate real machine speed
 
@@ -392,13 +392,13 @@ pub const CPU = struct {
             0xf2 => {
                 // print("SIGN: {any}", .{SIGN});
                 // print("m_condition: {any}", .{m_condition});
-                m_condition = !ToBooleanU1(SIGN);
+                m_condition = !ToBooleanU8(SIGN);
                 // print("m_condition: {any}", .{m_condition});
             },
             0xfa => {
                 // print("SIGN: {any}", .{SIGN});
                 // print("m_condition: {any}", .{m_condition});
-                m_condition = ToBooleanU1(SIGN);
+                m_condition = ToBooleanU8(SIGN);
                 // print("m_condition: {any}", .{m_condition});
             },
             else => {},
@@ -881,7 +881,7 @@ pub const CPU = struct {
             },
             0xf5 => {
                 m_value = std.math.shl(u8, A, 8);
-                if (ToBooleanU1(SIGN)) {
+                if (ToBooleanU8(SIGN)) {
                     m_value = (m_value | BIT7);
                 }
                 if (ToBooleanU1(ZERO)) {
@@ -916,7 +916,7 @@ pub const CPU = struct {
             },
             0xf1 => {
                 A = std.math.shr(u8, @truncate(u8, value), 8);
-                SIGN = @truncate(u1, (value & 0x80));
+                SIGN = @truncate(u8, (value & 0x80));
                 ZERO = @truncate(u1, (value & 0x40));
                 INTERRUPT = ToBooleanU16(value & 0x20);
                 HALFCARRY = @truncate(u1, (value & BIT4));
@@ -1471,11 +1471,11 @@ pub const CPU = struct {
         // print("PerformDec inSource: {any}", .{inSource});
         var value = @intCast(u16, (@intCast(i16, inSource) - 1) & 0xFF);
         // print("PerformDec value: {any}", .{value});
-        HALFCARRY = @truncate(u1, (value & 0x0F));
+        HALFCARRY = @boolToInt((value & 0x0F) == 0);
         // print("PerformDec HALFCARRY: {any}", .{HALFCARRY});
         ZERO = @boolToInt((value & 255) == 0);
         // print("PerformDec ZERO: {any}", .{ZERO});
-        SIGN = @truncate(u1, (value & 128));
+        SIGN = @truncate(u8, (value & 128));
         // print("PerformDec SIGN: {any}", .{SIGN});
         // print("PerformDec return value: {any}", .{@intCast(u8, value)});
         return @intCast(u8, value);
@@ -1485,11 +1485,11 @@ pub const CPU = struct {
         // print("PerformInc inSource: {any}", .{inSource});
         var value = inSource + 1;
         // print("PerformInc value: {any}", .{value});
-        // HALFCARRY = @truncate(u1,((value & 0xF) < 0 | (value & 0xF) > 0));
+        HALFCARRY = @boolToInt(((value & 0xF) < 0) or ((value & 0xF) > 0));
         // print("PerformInc HALFCARRY: {any}", .{HALFCARRY});
         ZERO = @boolToInt((value & 255) == 0);
         // print("PerformInc ZERO: {any}", .{ZERO});
-        SIGN = @truncate(u1, (value & 128));
+        SIGN = @truncate(u8, (value & 128));
         // print("PerformInc SIGN: {any}", .{SIGN});
         return value;
     }
@@ -1497,7 +1497,7 @@ pub const CPU = struct {
     fn SetFlagZeroSign() void {
         ZERO = @boolToInt(A == 0);
         // print("SetFlagZeroSign ZERO: {any}", .{ZERO});
-        SIGN = @truncate(u1, (A & 128));
+        SIGN = @truncate(u8, (A & 128));
         // print("SetFlagZeroSign SIGN: {any}", .{SIGN});
     }
 
@@ -1579,7 +1579,7 @@ pub const CPU = struct {
         // print("PerformCompSub HALFCARRY: {any}", .{HALFCARRY});
         ZERO = @boolToInt(value == 0);
         // print("PerformCompSub ZERO: {any}", .{ZERO});
-        SIGN = @truncate(u1, (value & 128));
+        SIGN = @truncate(u8, (value & 128));
         // print("PerformCompSub SIGN: {any}", .{SIGN});
     }
 
