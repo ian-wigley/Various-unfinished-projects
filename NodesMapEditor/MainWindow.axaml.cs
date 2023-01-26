@@ -4,6 +4,9 @@ using Avalonia.Media.Imaging;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Avalonia;
+using SkiaSharp;
+using System.IO;
+using Avalonia.Media;
 
 namespace MyApp;
 
@@ -12,12 +15,12 @@ public partial class MainWindow : Window
 
     // private int m_asciiCode;
     // private int m_gridSquareNmber = 0;
-    // private int m_level = 0;
+    private int m_level = 0;
     // private int m_screenshotStartX;
     // private int m_screenshotStartY;
-    // private int m_tileWidth = 62;
-    // private int m_tileHeight = 49;
-    // private int m_noOfScreens = 256;
+    private int m_tileWidth = 62;
+    private int m_tileHeight = 49;
+    private int m_noOfScreens = 256;
     // private int m_screenDisplayX;
     // private int m_screenDisplayY;
 
@@ -28,10 +31,10 @@ public partial class MainWindow : Window
 
     // private bool m_areMoving = false;
     // private bool m_platforms = true;
-    // private Bitmap m_standardEnemyTiles = new Bitmap("assets/enemy_tiles.png");
+    private System.Drawing.Bitmap? m_standardEnemyTiles = new System.Drawing.Bitmap("assets/enemy_tiles.png");
     // private Bitmap m_smallEnemyButtonTiles = new Bitmap("assets/enemy_tiles_small.png");
-    // private Bitmap m_standardLevelTiles = new Bitmap("assets/underground_tiles_small.png");
-    // private Bitmap m_smallLevelButtonTiles = new Bitmap("assets/underground_tiles.png");
+    private System.Drawing.Bitmap? m_standardLevelTiles = new System.Drawing.Bitmap("assets/underground_tiles_small.png");
+    // private SkiaSharp.SKBitmap m_smallLevelButtonTiles = new SkiaSharp.SKBitmap(("assets/underground_tiles.png");
     // private Bitmap m_cloneScreenDisplay;
     // private Bitmap m_cloneEnemyDisplay;
     // private Bitmap m_cloneBitmap;
@@ -56,8 +59,15 @@ public partial class MainWindow : Window
     {
         InitializeComponent();
         // CreateBitmapGrid();
+        for (int i = 0; i < m_noOfScreens; i++)
+        {
+            m_screens.Add(new Screen());
+            // screenNumbers.Items.Add(i);
+            // screenNumbers.Text = "0";
+        }
         // m_fileManager = new FileManager();
-        // m_fileManager = new FileManager(m_screens, m_numButtonsX, m_standardEnemyTiles, m_standardLevelTiles);
+        // m_fileManager = new FileManager(m_screens, m_numButtonsX);
+        m_fileManager = new FileManager(m_screens, m_numButtonsX, m_standardEnemyTiles, m_standardLevelTiles);
         // testCanvas.PreviewMouseMove += this.MouseMove;
         // this.AddHandler(PointerPressedEvent, MouseDownHandler, handledEventsToo: true);
         // this.AddHandler(PointerReleasedEvent, MouseUpHandler, handledEventsToo: true);
@@ -79,8 +89,9 @@ public partial class MainWindow : Window
     {
         var parent = this;//(Window)sender;//.GetVisualRoot();
 
-        OpenFileDialog dialog = new OpenFileDialog();
+        OpenFileDialog? dialog = new OpenFileDialog();
         dialog.Filters.Add(new FileDialogFilter() { Name = "Text", Extensions = { "txt" } });
+        dialog.Directory = Directory.GetCurrentDirectory();
         string[]? result = await dialog.ShowAsync(this);
 
         if (result != null && result.Length > 0)
@@ -94,6 +105,7 @@ public partial class MainWindow : Window
                 m_fileManager.ImportJSONFile(result[0]);
             }
         }
+        InvalidateVisual();
     }
 
     private async void SaveMenuItem_Click(object sender, RoutedEventArgs e)
@@ -167,38 +179,23 @@ public partial class MainWindow : Window
     //     // }
     // }
 
+    // https://stackoverflow.com/questions/67536123/in-avaloniaui-how-to-display-an-image-from-a-web-url
+    public override void Render(DrawingContext drawingContext)
+    {
+        int tileCount = 0;
+        // drawingContext.DrawImage(m_grid, m_gridPos);
 
-//     public override void Render(DrawingContext drawingContext)
-//     {
-//         // // CreateBitmapGrid();
-
-//         // LineGeometry line1 = new LineGeometry(new Point(-100, 150), new Point(1000, 150));
-//         // LineGeometry line2 = new LineGeometry(new Point(-100, 200), new Point(1000, 200));
-//         // LineGeometry line3 = new LineGeometry(new Point(-100, 250), new Point(1000, 250));
-//         // LineGeometry line4 = new LineGeometry(new Point(-100, 300), new Point(1000, 300));
-//         // LineGeometry line5 = new LineGeometry(new Point(-100, 350), new Point(1000, 350));
-//         // LineGeometry line6 = new LineGeometry(new Point(-100, 400), new Point(1000, 400));
-//         // LineGeometry line7 = new LineGeometry(new Point(-100, 450), new Point(1000, 450));
-//         // LineGeometry line8 = new LineGeometry(new Point(-100, 500), new Point(1000, 500));
-
-//         // // testCanvas.Height = 400;
-//         // // testCanvas.Width = 400;
-
-//         // GeometryGroup? geom = new GeometryGroup();
-//         // geom.Children.Add(line1);
-//         // geom.Children.Add(line2);
-//         // geom.Children.Add(line3);
-//         // geom.Children.Add(line4);
-//         // geom.Children.Add(line5);
-//         // geom.Children.Add(line6);
-//         // geom.Children.Add(line7);
-//         // geom.Children.Add(line8);
-//         // Path testPath = new Path();
-//         // testPath.StrokeThickness = 0.1;
-//         // testPath.Stroke = Brushes.White;
-
-//         // testPath.Data = geom;
-//         // testCanvas.Children.Add(testPath);
-
-//     }
+        foreach (Tile t in m_screens[m_level].Tiles)
+        {
+            if (m_screens[m_level].Tiles[tileCount].BitmapTile != null)
+            {
+                drawingContext.DrawImage(t.ConvertToAvaloniaBitmap(), t.rect());
+            }
+            if (tileCount == m_screens[m_level].Tiles.Count)
+            {
+                tileCount = 0;
+            }
+            tileCount += 1;
+        }
+    }
 }
