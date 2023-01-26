@@ -5,10 +5,10 @@ const cpu = @import("CPU.zig");
 const print = std.log.info;
 
 pub fn main() anyerror!void {
-    var array = try loadRom();
+    var romData = try loadRom();
     // print("Size of the array is: {any}", .{array.len});
     // print("Array index: {any}", .{array[1]});
-    cpu.CPU.New(array);
+    cpu.CPU.New(romData);
 
     var crashed = false;
     while (!crashed) {
