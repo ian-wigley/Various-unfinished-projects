@@ -62,7 +62,7 @@ pub const CPU = struct {
             ExecuteInstruction();
             count += 1;
             if (CRASHED == true) {
-                // print("CRASHED: {any}", .{CRASHED});
+                print("CRASHED: {any}", .{CRASHED});
                 break;
             }
         }
@@ -77,6 +77,7 @@ pub const CPU = struct {
     }
 
     fn OutputInfo(opcode: [*:0]const u8) void {
+        //print("Opcode: {s}", .{opcode});
         print("Opcode: {s}, PC: {any}, SP: {any}, A: {any}, B: {any}, C: {any}, D: {any}, E: {any}, H: {any}, L: {any}, BC: {any}, DE: {any}, HL: {any}, SIGN: {any}, ZERO: {any}, HALFCARRY: {any}, PARITY: {any}, CARRY: {any}, INTERRUPT: {any}", .{ opcode, m_PC, SP, A, B, C, D, E, H, L, BC, DE, HL, SIGN, ZERO, HALFCARRY, PARITY, CARRY, INTERRUPT });
     }
 
@@ -427,6 +428,7 @@ pub const CPU = struct {
     }
 
     fn Instruction_MVI(byte: u8) void {
+        print("Instruction_MVI: {any}", .{byte});
         switch (byte) {
             0x3e => {
                 SetA(FetchRomByte());
@@ -1562,12 +1564,7 @@ pub const CPU = struct {
     fn PerformCompSub(inValue: u8) void {
         // // print("PerformCompSub inValue: {any}", .{inValue});
         // // print("PerformCompSub A: {any}", .{A});
-        // var x: i8 = @intCast(i8, A);
-        // var y: i8 = @bitCast(i8, inValue);
-        // var z = x - y;
-        // // print("PerformCompSub z: {any}", .{z});
-
-        var value = @intCast(u8, (@bitCast(i8, A) - @bitCast(i8, inValue))) & 0xFF;
+        var value = @intCast(u16, (@intCast(i16, A) - @intCast(i16, inValue)) & 0xFF);
         // print("PerformCompSub value: {any}", .{value});
         if ((value >= A) and ToBooleanU8(inValue)) {
             CARRY = inValue;
