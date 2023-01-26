@@ -19,6 +19,12 @@ namespace MyApp
             screens = new List<Screen>();
         }
 
+        public FileManager(List<Screen> screen, int numButtons)
+        {
+            screens = screen;
+            numOfEditorButtons = numButtons;
+        }
+
         public FileManager(List<Screen> screen, int numButtons, Bitmap enemyBitmap, Bitmap standardLevelTiles)
         {
             screens = screen;
@@ -32,12 +38,10 @@ namespace MyApp
             int y = 30;
             int levelNumber = 0;
             int counterOfTilesPerLevel = 0;
-            string wordLine;
+            string? wordLine;
             try
             {
                 StreamReader? wordFile = new StreamReader(fileName);
-                // var t = wordFile.ReadLine();
-
                 while ((wordLine = wordFile.ReadLine()) != null)
                 {
                     ConvertToTiles(wordLine, ref y, ref levelNumber, ref counterOfTilesPerLevel);
@@ -46,7 +50,7 @@ namespace MyApp
             }
             catch (Exception e)
             {
-                // MessageBox.Show("The following error occured while attempting to read the file: " + e.Message);
+                // MessageBox.Show("The following error occurred while attempting to read the file: " + e.Message);
                 Console.WriteLine(e.Message);
             }
         }
@@ -108,14 +112,14 @@ namespace MyApp
             // //return screens;
         }
 
-        private void ConvertToTiles(string wordLine, ref int y, ref int levelNumber, ref int counterOfTilesPerLevel)
+        private void ConvertToTiles(string? wordLine, ref int y, ref int levelNumber, ref int counterOfTilesPerLevel)
         {
             int x = 0;
             int temp;
             bool enemyTile;
-            string[] rowOfTiles = wordLine.Split(new Char[] { ',' });
+            string[]? rowOfTiles = wordLine.Split(new Char[] { ',' });
 
-            for (int i = 0; i < rowOfTiles.Length - 1; i++)
+            for (int i = 0; i < rowOfTiles.Length - 2; i++)
             {
                 int tileNumber = int.Parse(rowOfTiles[i]);
 
@@ -187,10 +191,10 @@ namespace MyApp
             {
                 cloneBitmap = m_enemyBitmap.Clone(cloneRect, m_enemyBitmap.PixelFormat);
             }
-            // screens[level].Tiles[count].BitmapTile = cloneBitmap;
-            // screens[level].Tiles[count].DX = x;
-            // screens[level].Tiles[count].DY = y;
-            // screens[level].Tiles[count].TileNumber = tileNumber;
+            screens[level].Tiles[count].BitmapTile = cloneBitmap;
+            screens[level].Tiles[count].DX = x;
+            screens[level].Tiles[count].DY = y;
+            screens[level].Tiles[count].TileNumber = tileNumber;
         }
 
         public void ExportTextFile(string fileName)
