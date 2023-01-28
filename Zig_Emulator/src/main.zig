@@ -26,7 +26,7 @@ fn loadRom() anyerror![]u8 {
     // print("in_stream: {any}", .{in_stream.context.buf.len});
 
     var count: usize = 0;
-    var array: [in_stream.context.buf.len * 4]u8 = undefined;
+    var array: [in_stream.context.buf.len * 4  + 1001]u8 = undefined;
 
     while (count < in_stream.context.buf.len * 2) {
         var b = try in_stream.readByte();
