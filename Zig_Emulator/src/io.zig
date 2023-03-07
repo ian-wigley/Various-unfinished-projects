@@ -1,3 +1,4 @@
+const std = @import("std");
 const CPU = @import("CPU.zig");
 
 pub const IO = struct {
@@ -30,8 +31,8 @@ pub const IO = struct {
     pub fn New() void {
         // Dipswitch: BIT0 and BIT1 controls starting number of life (from 3 to 6)
         // BIT7 prints additionnal coin message on intro screen
-        // IN_PORT2 = (byte)(IN_PORT2 | (BIT0 | BIT1));
-        // IN_PORT2 = (byte)(IN_PORT2 | (BIT7));
+        IN_PORT2 = (IN_PORT2 | (BIT0 | BIT1));
+        IN_PORT2 = (IN_PORT2 | (BIT7));
     }
 
     pub fn SetCPU(cpu: *CPU) void {
@@ -115,66 +116,76 @@ pub const IO = struct {
         // m_fire = true;
     }
 
-    // pub fn OutputPort(port: u8, value: u8) void {
-    //     //    switch (port)
-    //     //    {
-    //     //        // Port 2 simply stores a 8-bit value
-    //     //        case 2:
-    //     //            OUT_PORT2 = value;
-    //     //            break;
+    pub fn OutputPort(port: u8, value: u8) void {
+        switch (port) {
+            // Port 2 simply stores a 8-bit value
+            0x02 => {
+                // case 2:
+                OUT_PORT2 = value;
+                // break;
+            },
 
-    //     //        // Port 3 controls play of various sound effects
-    //     //        case 3:
-    //     //            if ((value & BIT0) == 0)
-    //     //            {
-    //     //                // sound.StartUfo()
-    //     //            }
-    //     //            else
-    //     //            {
-    //     //                // sound.StopUfo()
-    //     //            }
-    //     //            //            If((value & BIT1) And Not (OUT_PORT3 & BIT1)) sound.PlayShot()
-    //     //            //            If((value & BIT2) And Not (OUT_PORT3 & BIT2)) sound.PlayBaseHit()
-    //     //            //            If((value & BIT3) And Not (OUT_PORT3 & BIT3)) sound.PlayInvHit()
-    //     //            //            If((value & BIT4) And Not (OUT_PORT3 & BIT4)) sound.PlayExtraLife()
-    //     //            //            If((value & BIT5) And Not (OUT_PORT3 & BIT5)) sound.PlayBeginPlay()
-    //     //            //            OUT_PORT3 = value
-    //     //            break;
+            // Port 3 controls play of various sound effects
+            0x03 => {
+                // case 3:
+                if ((value & BIT0) == 0) {
+                    // sound.StartUfo()
+                } else {
+                    // sound.StopUfo()
+                }
+                //     If((value & BIT1) And Not (OUT_PORT3 & BIT1)) sound.PlayShot()
+                //     If((value & BIT2) And Not (OUT_PORT3 & BIT2)) sound.PlayBaseHit()
+                //     If((value & BIT3) And Not (OUT_PORT3 & BIT3)) sound.PlayInvHit()
+                //     If((value & BIT4) And Not (OUT_PORT3 & BIT4)) sound.PlayExtraLife()
+                //     If((value & BIT5) And Not (OUT_PORT3 & BIT5)) sound.PlayBeginPlay()
+                //     OUT_PORT3 = value
+                //    break;
+            },
+            0x04 => {
+                // case 4:
+                OUT_PORT4LO = OUT_PORT4HI;
+                OUT_PORT4HI = value;
+                // break;
+            },
+            0x05 => {
+                // Port 5 also controls sound
+                // case 5:
+                // If((value & BIT0) And Not (OUT_PORT5 & BIT0)) sound.PlayWalk1()
+                // If((value & BIT1) And Not (OUT_PORT5 & BIT1)) sound.PlayWalk2()
+                // If((value & BIT2) And Not (OUT_PORT5 & BIT2)) sound.PlayWalk3()
+                // If((value & BIT3) And Not (OUT_PORT5 & BIT3)) sound.PlayWalk4()
+                // If((value & BIT4) And Not (OUT_PORT5 & BIT4)) sound.PlayUfoHit()
+                // OUT_PORT5 = value;
+                // break;
+            },
+            else => {},
+        }
+    }
 
-    //     //        case 4:
-    //     //            OUT_PORT4LO = OUT_PORT4HI;
-    //     //            OUT_PORT4HI = value;
-    //     //            break;
-
-    //     //        // Port 5 also controls sound
-    //     //        case 5:
-    //     //            //        If((value & BIT0) And Not (OUT_PORT5 & BIT0)) sound.PlayWalk1()
-    //     //            //            If((value & BIT1) And Not (OUT_PORT5 & BIT1)) sound.PlayWalk2()
-    //     //            //            If((value & BIT2) And Not (OUT_PORT5 & BIT2)) sound.PlayWalk3()
-    //     //            //            If((value & BIT3) And Not (OUT_PORT5 & BIT3)) sound.PlayWalk4()
-    //     //            //            If((value & BIT4) And Not (OUT_PORT5 & BIT4)) sound.PlayUfoHit()
-    //     //            //            OUT_PORT5 = value
-    //     //            break;
-    //     //    }
-    // }
-
-    // pub fn InputPort(port: u8) u8 {
-    //     var result: u8 = 0;
-
-    //     //    switch (port)
-    //     //    {
-    //     //        // Player 1 Input keys
-    //     //        case 1:
-    //     //            result = IN_PORT1;
-    //     //            break;
-    //     //        // Player 2 Input keys And dip switches:
-    //     //        case 2:
-    //     //            result = IN_PORT2;
-    //     //            break;
-    //     //        case 3:
-    //     //            result = (byte)((((OUT_PORT4HI << 8) | OUT_PORT4LO) << OUT_PORT2) >> 8);
-    //     //            break;
-    //     //    }
-    //     return result;
-    // }
+    pub fn InputPort(port: u8) u8 {
+        var result: u8 = 0;
+        // _ = port;
+        switch (port) {
+            // Player 1 Input keys
+            0x01 => {
+                //case 1:
+                result = IN_PORT1;
+                //   break;
+            },
+            // Player 2 Input keys And dip switches:
+            0x02 => {
+                // case 2:
+                result = IN_PORT2;
+                // break;
+            },
+            0x03 => {
+                // case 3:
+                // result = (byte)((((OUT_PORT4HI << 8) | OUT_PORT4LO) << OUT_PORT2) >> 8);
+                result = std.math.shr(u8, std.math.shl(u8, (std.math.shl(u8, OUT_PORT4HI, 8) | OUT_PORT4LO), OUT_PORT2), 8);
+                // break;
+            },
+            else => {},
+        }
+        return result;
+    }
 };
