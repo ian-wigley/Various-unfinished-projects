@@ -8,6 +8,7 @@ pub fn main() anyerror!void {
     var romData = try loadRom();
     // print("Size of the array is: {any}", .{array.len});
     // print("Array index: {any}", .{array[1]});
+
     cpu.CPU.New(romData);
 
     var crashed = false;
@@ -27,6 +28,13 @@ fn loadRom() anyerror![]u8 {
 
     var count: usize = 0;
     var array: [in_stream.context.buf.len * 4  + 1001]u8 = undefined;
+
+    // Clear down the array
+    while (count < array.len) {
+        array[count] = 0;
+        count +=1;
+    }
+    count = 0;
 
     while (count < in_stream.context.buf.len * 2) {
         var b = try in_stream.readByte();
