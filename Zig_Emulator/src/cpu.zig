@@ -1,30 +1,34 @@
 const std = @import("std");
 const fmt = std.fmt;
 const print = std.log.info;
+const m_io = @import("IO.zig");
 
 pub const CPU = struct {
+    var debug_stuff: [4000][]const u8 = undefined;
+    var count: usize = 0;
+
     var m_rom: []u8 = undefined;
-    var m_PC: u16 = 0;   // Program Counter: This is the current instruction pointer. 16-bit register.
-    var SP: u16 = 0;     // Stack Pointer. 16-bit register
-    var A: u8 = 0;       // Accumulator. 8-bit register
-    var B: u8 = 0;       // Register B. 8-bit register
-    var C: u8 = 0;       // Register C. 8-bit register
-    var D: u8 = 0;       // Register D. 8-bit register
-    var E: u8 = 0;       // Register E. 8-bit register
-    var H: u8 = 0;       // Register H. 8-bit register
-    var L: u8 = 0;       // Register L. 8-bit register
-    var BC: u16 = 0;     // Virtual register BC (16-bit) combinaison of registers B and C
-    var DE: u16 = 0;     // Virtual register DE (16-bit) combinaison of registers D and E
+    var m_PC: u16 = 0; // Program Counter: This is the current instruction pointer. 16-bit register.
+    var SP: u16 = 0; // Stack Pointer. 16-bit register
+    var A: u8 = 0; // Accumulator. 8-bit register
+    var B: u8 = 0; // Register B. 8-bit register
+    var C: u8 = 0; // Register C. 8-bit register
+    var D: u8 = 0; // Register D. 8-bit register
+    var E: u8 = 0; // Register E. 8-bit register
+    var H: u8 = 0; // Register H. 8-bit register
+    var L: u8 = 0; // Register L. 8-bit register
+    var BC: u16 = 0; // Virtual register BC (16-bit) combinaison of registers B and C
+    var DE: u16 = 0; // Virtual register DE (16-bit) combinaison of registers D and E
     pub var HL: u16 = 0; // Virtual register HL (16-bit) combinaison of registers H and L
 
-    var SIGN: u8 = 0;            // Sign flag
-    var ZERO: u1 = 0;            // Zero flag
-    var HALFCARRY: u1 = 0;       // Half-carry (or Auxiliary Carry) flag
-    var PARITY: bool = false;    // Parity flag
-    var CARRY: u16 = 0;          // Carry flag
+    var SIGN: u8 = 0; // Sign flag
+    var ZERO: u8 = 0; // Zero flag
+    var HALFCARRY: u16 = 0; // Half-carry (or Auxiliary Carry) flag
+    var CARRY: u16 = 0; // Carry flag
+    var PARITY: bool = false; // Parity flag
 
     var INTERRUPT: bool = false; // Interrupt Enabled flag
-    var CRASHED: bool = false;   // Special flag that tells if the CPU is currently crashed (stopped)
+    var CRASHED: bool = false; // Special flag that tells if the CPU is currently crashed (stopped)
 
     var instruction_per_frame: u16 = 4000; // Approximate real machine speed
 
@@ -40,16 +44,14 @@ pub const CPU = struct {
     var BIT7: u8 = 128;
 
     var m_source: u16 = 0;
-    var m_value: u8 = 0;
+    var m_value: u16 = 0;
     var m_byte: u8 = 0;
-
     var m_instructionCounter: u16 = 0;
-
-    // var IO m_io;
     var iteration: usize = 0;
 
     pub fn New(rom: []u8) void {
         m_rom = rom;
+        m_io.IO.New();
         half_instruction_per_frame = @as(u16, instruction_per_frame / 2);
         // print("half_instruction_per_frame: {any}", .{half_instruction_per_frame});
         Reset();
@@ -57,35 +59,45 @@ pub const CPU = struct {
 
     pub fn Run() bool {
         // print("Programme Counter: {any}", .{m_PC});
-        var count: usize = 0;
+
+        count = 0;
+        // clear the slice once per 4000 items
+        debug_stuff = undefined;
+
         while (count < instruction_per_frame) {
             ExecuteInstruction();
             count += 1;
-            if (CRASHED == true) {
+
+            if (CRASHED) {
                 print("CRASHED: {any}", .{CRASHED});
                 break;
             }
         }
-        // print("Count: {any}", .{count});
-        if (CRASHED == false) {
+        if (!CRASHED) {
             iteration += 1;
-            // print("CRASHED: {any}", .{CRASHED});
+            print("Iteration: {any}", .{iteration});
         }
-        // print("CPU iteration. {any}", .{iteration});
-        // print("CRASHED: {any}", .{CRASHED});
+
+        // // print("CPU iteration. {any}", .{iteration});
+        // // print("CRASHED: {any}", .{CRASHED});
         return CRASHED;
     }
 
+    /// Method assists debugging.
     fn OutputInfo(opcode: [*:0]const u8) void {
-        //print("Opcode: {s}", .{opcode});
-        print("Opcode: {s}, PC: {any}, SP: {any}, A: {any}, B: {any}, C: {any}, D: {any}, E: {any}, H: {any}, L: {any}, BC: {any}, DE: {any}, HL: {any}, SIGN: {any}, ZERO: {any}, HALFCARRY: {any}, PARITY: {any}, CARRY: {any}, INTERRUPT: {any}", .{ opcode, m_PC, SP, A, B, C, D, E, H, L, BC, DE, HL, SIGN, ZERO, HALFCARRY, PARITY, CARRY, INTERRUPT });
+        if (iteration == 11) {
+            print("Count: {any}, Opcode: {s}, PC: {any}, SP: {any}, A: {any}, B: {any}, C: {any}, D: {any}, E: {any}, H: {any}, L: {any}, BC: {any}, DE: {any}, HL: {any}, SIGN: {any}, ZERO: {any}, HALFCARRY: {any}, PARITY: {any}, CARRY: {any}, INTERRUPT: {any}, 9206: {any}, 9207: {any}, 9210: {any}, 9211: {any}, 9212: {any}, 9213: {any}, 9214: {any}, 9215: {any}", .{ count, opcode, m_PC, SP, A, B, C, D, E, H, L, BC, DE, HL, SIGN, ZERO, HALFCARRY, PARITY, CARRY, INTERRUPT, m_rom[9206], m_rom[9207], m_rom[9210], m_rom[9211], m_rom[9212], m_rom[9213], m_rom[9214], m_rom[9215] });
+        }
+        if (iteration == 12) {
+            var stop: bool = true;
+            _ = stop;
+        }
     }
 
     // All opcodes are 1 byte wide
     pub fn ExecuteInstruction() void {
         if (!CRASHED) {
             m_byte = FetchRomByte();
-            // print("m_byte: {any}", .{m_byte});
             switch (m_byte) {
                 0x00 => {
                     NOP();
@@ -353,54 +365,33 @@ pub const CPU = struct {
 
     fn NOP() void {
         // No Operation - Do nothing !
-        // // print("NOP", .{});
     }
 
     fn Instruction_JMP(byte: u8) void {
         var data16: u16 = FetchRomShort();
-        // print("Instruction_JMP data16: {any}", .{data16});
         var m_condition = true;
 
         switch (byte) {
             0xc3 => {
                 // Do nothing apart from incrementing the Programme Counter
-                // print("Debug byte: {any}", .{byte});
             },
             0xc2 => {
-                // print("ZERO: {any}", .{ZERO});
-                // print("m_condition: {any}", .{m_condition});
-                m_condition = !ToBooleanU1(ZERO);
-                // print("m_condition: {any}", .{m_condition});
+                m_condition = !ToBooleanU8(ZERO);
             },
             0xca => {
-                // print("ZERO: {any}", .{ZERO});
-                // print("m_condition: {any}", .{m_condition});
-                m_condition = ToBooleanU1(ZERO);
-                // print("m_condition: {any}", .{m_condition});
+                m_condition = ToBooleanU8(ZERO);
             },
             0xd2 => {
-                // print("CARRY: {any}", .{CARRY});
-                // print("m_condition: {any}", .{m_condition});
                 m_condition = !ToBooleanU16(CARRY);
-                // print("m_condition: {any}", .{m_condition});
             },
             0xda => {
-                // print("CARRY: {any}", .{CARRY});
-                // print("m_condition: {any}", .{m_condition});
                 m_condition = ToBooleanU16(CARRY);
-                // print("m_condition: {any}", .{m_condition});
             },
             0xf2 => {
-                // print("SIGN: {any}", .{SIGN});
-                // print("m_condition: {any}", .{m_condition});
                 m_condition = !ToBooleanU8(SIGN);
-                // print("m_condition: {any}", .{m_condition});
             },
             0xfa => {
-                // print("SIGN: {any}", .{SIGN});
-                // print("m_condition: {any}", .{m_condition});
                 m_condition = ToBooleanU8(SIGN);
-                // print("m_condition: {any}", .{m_condition});
             },
             else => {},
         }
@@ -411,7 +402,7 @@ pub const CPU = struct {
 
     fn Instruction_LXI(byte: u8) void {
         switch (byte) {
-            0x00 => {
+            0x01 => {
                 SetBC(FetchRomShort());
             },
             0x11 => {
@@ -428,7 +419,6 @@ pub const CPU = struct {
     }
 
     fn Instruction_MVI(byte: u8) void {
-        print("Instruction_MVI: {any}", .{byte});
         switch (byte) {
             0x3e => {
                 SetA(FetchRomByte());
@@ -464,39 +454,22 @@ pub const CPU = struct {
         switch (byte) {
             0xcd => {},
             0xc4 => {
-                // print("m_condition: {any}", .{m_condition});
-                // print("ZERO: {any}", .{ZERO});
-                m_condition = !ToBooleanU1(ZERO);
-                // print("m_condition: {any}", .{m_condition});
-                // print("ZERO: {any}", .{ZERO});
+                m_condition = !ToBooleanU8(ZERO);
             },
             0xcc => {
-                // print("m_condition: {any}", .{m_condition});
-                // print("ZERO: {any}", .{ZERO});
-                m_condition = ToBooleanU1(ZERO);
-                // print("m_condition: {any}", .{m_condition});
-                // print("ZERO: {any}", .{ZERO});
+                m_condition = ToBooleanU8(ZERO);
             },
             0xd4 => {
-                // print("m_condition: {any}", .{m_condition});
-                // print("ZERO: {any}", .{ZERO});
                 m_condition = !ToBooleanU16(CARRY);
-                // print("m_condition: {any}", .{m_condition});
-                // print("ZERO: {any}", .{ZERO});
             },
             0xdc => {
-                // print("m_condition: {any}", .{m_condition});
-                // print("ZERO: {any}", .{ZERO});
                 m_condition = ToBooleanU16(CARRY);
-                // print("m_condition: {any}", .{m_condition});
-                // print("ZERO: {any}", .{ZERO});
             },
             else => {},
         }
         if (m_condition) {
             StackPush(m_PC);
             m_PC = data16;
-            // print("m_PC: {any}", .{m_PC});
         }
     }
 
@@ -644,10 +617,10 @@ pub const CPU = struct {
         switch (byte) {
             0xc9 => {},
             0xc0 => {
-                m_condition = !ToBooleanU1(ZERO);
+                m_condition = !ToBooleanU8(ZERO);
             },
             0xc8 => {
-                m_condition = ToBooleanU1(ZERO);
+                m_condition = ToBooleanU8(ZERO);
             },
             0xd0 => {
                 m_condition = !ToBooleanU16(CARRY);
@@ -873,31 +846,21 @@ pub const CPU = struct {
     fn Instruction_PUSH(byte: u8) void {
         switch (byte) {
             0xc5 => {
-                m_value = @truncate(u8, BC);
+                m_value = BC;
             },
             0xd5 => {
-                m_value = @truncate(u8, DE);
+                m_value = DE;
             },
             0xe5 => {
-                m_value = @truncate(u8, HL);
+                m_value = HL;
             },
             0xf5 => {
-                m_value = std.math.shl(u8, A, 8);
-                if (ToBooleanU8(SIGN)) {
-                    m_value = (m_value | BIT7);
-                }
-                if (ToBooleanU1(ZERO)) {
-                    m_value = (m_value | BIT6);
-                }
-                if (INTERRUPT) {
-                    m_value = (m_value | BIT5);
-                }
-                if (ToBooleanU1(HALFCARRY)) {
-                    m_value = (m_value | BIT4);
-                }
-                if (ToBooleanU16(CARRY)) {
-                    m_value = (m_value | BIT0);
-                }
+                m_value = std.math.shl(u16, A, 8);
+                SetValueU8(SIGN, BIT7);
+                SetValueU8(ZERO, BIT6);
+                SetValueInterrupt(INTERRUPT, BIT5);
+                SetValueU16(HALFCARRY, BIT4);
+                SetValueU16(CARRY, BIT0);
             },
             else => {},
         }
@@ -917,11 +880,11 @@ pub const CPU = struct {
                 SetHL(value);
             },
             0xf1 => {
-                A = std.math.shr(u8, @truncate(u8, value), 8);
+                A = @intCast(u8, std.math.shr(u16, value, 8));
                 SIGN = @truncate(u8, (value & 0x80));
-                ZERO = @truncate(u1, (value & 0x40));
+                ZERO = @truncate(u8, (value & 0x40));
                 INTERRUPT = ToBooleanU16(value & 0x20);
-                HALFCARRY = @truncate(u1, (value & BIT4));
+                HALFCARRY = value & BIT4;
                 CARRY = (value & BIT0);
             },
             else => {},
@@ -947,9 +910,8 @@ pub const CPU = struct {
     }
 
     fn Instruction_XCHG() void {
-        var temp = DE;
         SetDE(HL);
-        SetHL(temp);
+        SetHL(DE);
     }
 
     fn Instruction_XTHL() void {
@@ -962,13 +924,13 @@ pub const CPU = struct {
     }
 
     fn Instruction_OUTP() void {
-        // var port = FetchRomByte();
-        // m_io.OutputPort(port, (byte)A);
+        var port = FetchRomByte();
+        m_io.IO.OutputPort(port, A);
     }
 
     fn Instruction_INP() void {
-        // var port = FetchRomByte();
-        // SetA(m_io.InputPort(port));
+        var port = FetchRomByte();
+        SetA(m_io.IO.InputPort(port));
     }
 
     fn Instruction_PCHL() void {
@@ -1258,7 +1220,7 @@ pub const CPU = struct {
 
     fn Instruction_DAA() void {
         // TO-DO check
-        if (((A & 0x0F) > 9) or ToBooleanU1(HALFCARRY)) {
+        if (((A & 0x0F) > 9) or ToBooleanU16(HALFCARRY)) {
             A += 0x06;
             HALFCARRY = 1;
         } else {
@@ -1317,194 +1279,133 @@ pub const CPU = struct {
     }
 
     fn SetA(inByte: u8) void {
-        // print("SetA inByte: {any}", .{inByte});
         A = inByte & 0xFF;
-        // print("SetA A: {any}", .{A});
     }
 
     fn SetB(inByte: u8) void {
-        // print("SetB inByte: {any}", .{inByte});
         B = inByte & 0xFF;
-        // print("SetB B: {any}", .{B});
         BC = std.math.shl(u16, B, 8) | C;
-        // print("SetB BC: {any}", .{BC});
     }
 
     fn SetC(inByte: u8) void {
-        // print("SetC inByte: {any}", .{inByte});
         C = inByte & 0xFF;
-        // print("SetC C: {any}", .{C});
         BC = std.math.shl(u16, B, 8) | C;
-        // print("SetC BC: {any}", .{BC});
     }
 
     fn SetD(inByte: u8) void {
-        // print("SetD inByte: {any}", .{inByte});
         D = inByte;
-        // print("SetD D: {any}", .{D});
         DE = std.math.shl(u16, D, 8) + E;
-        // print("SetD DE: {any}", .{DE});
     }
 
     fn SetE(inByte: u8) void {
-        // print("SetE inByte: {any}", .{inByte});
         E = inByte;
-        // print("SetE E: {any}", .{E});
         DE = std.math.shl(u16, D, 8) + E;
-        // print("SetE DE: {any}", .{DE});
     }
 
     fn SetH(inByte: u8) void {
-        // print("SetH inByte: {any}", .{inByte});
         H = inByte;
-        // print("SetH H: {any}", .{H});
         HL = std.math.shl(u16, H, 8) + L;
-        // print("SetH HL: {any}", .{HL});
     }
 
     fn SetL(inByte: u8) void {
-        // print("SetL inByte: {any}", .{inByte});
         L = inByte;
-        // print("SetL L: {any}", .{L});
         HL = std.math.shl(u16, H, 8) + L;
-        // print("SetL HL: {any}", .{HL});
     }
 
     fn SetBC(inShort: u16) void {
-        // print("SetBC inShort: {any}", .{inShort});
         BC = inShort;
-        // print("SetBC BC: {any}", .{BC});
         B = @truncate(u8, (BC >> 8));
-        // print("SetBC B: {any}", .{B});
         C = @truncate(u8, (BC & 0xFF));
-        // print("SetBC C: {any}", .{C});
     }
 
     fn SetDE(inShort: u16) void {
-        // print("SetDE inShort: {any}", .{inShort});
         DE = inShort;
-        // print("SetDE DE: {any}", .{DE});
         D = @truncate(u8, (DE >> 8));
-        // print("SetDE D: {any}", .{D});
         E = @truncate(u8, (DE & 0xFF));
-        // print("SetDE E: {any}", .{E});
     }
 
     fn SetHL(inShort: u16) void {
-        // print("SetHL inShort: {any}", .{inShort});
         HL = inShort;
-        // print("SetHL HL: {any}", .{HL});
         H = @truncate(u8, (HL >> 8));
-        // print("SetHL H: {any}", .{H});
         L = @truncate(u8, (HL & 0xFF));
-        // print("SetHL L: {any}", .{L});
     }
 
     fn SetSP(inShort: u16) void {
-        // print("SetSP inShort: {any}", .{inShort});
         SP = inShort;
-        // print("SetSP SP: {any}", .{SP});
     }
 
     fn FetchRomByte() u8 {
         var value = m_rom[m_PC];
-        // print("FetchRomByte m_rom[m_PC]: {any}", .{value});
         m_PC += 1;
-        // print("FetchRomByte m_PC: {any}", .{m_PC});
         return value;
     }
 
     fn FetchRomShort() u16 {
         var bytes: [2]u8 = [_]u8{ 0, 0 };
         bytes[0] = m_rom[m_PC + 0];
-        // print("bytes[0]: {any}", .{bytes[0]});
         bytes[1] = m_rom[m_PC + 1];
-        // print("bytes[1]: {any}", .{bytes[1]});
         m_PC += 2;
-        // print("FetchRomShort m_PC: {any}", .{m_PC});
         return std.math.shl(u16, (bytes[1] & 0xFF), 8) | (bytes[0] & 0xFF);
     }
 
-    fn ReadByte(count: usize) u8 {
-        // print("ReadByte count: {any}", .{count});
-        // print("ReadByte m_rom[count]: {any}", .{m_rom[count]});
-        return m_rom[count];
+    fn ReadByte(counter: usize) u8 {
+        return m_rom[counter];
     }
 
     fn ReadShort(inAddress: u16) u16 {
-        // print("ReadShort inAddress: {any}", .{inAddress});
-        // print("ReadShort return value: {any}", .{std.math.shl(u8, m_rom[inAddress + 1], 8) + (m_rom[inAddress + 0])});
         return std.math.shl(u16, m_rom[inAddress + 1], 8) + (m_rom[inAddress + 0]);
     }
 
     pub fn WriteShort(inAddress: u16, inWord: u16) void {
-        // print("WriteShort inAddress: {any}", .{inAddress});
-        // print("WriteShort inWord: {any}", .{inWord});
-        // print("WriteShort m_rom[inAddress + 1]: {any}", .{@intCast(u8, std.math.shr(u16, inWord, 8))});
-        // print("WriteShort m_rom[inAddress + 0]: {any}", .{@truncate(u8, inWord)});
         m_rom[inAddress + 1] = @intCast(u8, std.math.shr(u16, inWord, 8));
         m_rom[inAddress + 0] = @truncate(u8, inWord);
     }
 
     fn WriteByte(inAddress: u16, inByte: u8) void {
-        // print("WriteByte inAddress: {any}", .{inAddress});
-        m_rom[inAddress] = inByte;
+
+        if (inAddress < m_rom.len) {
+            m_rom[inAddress] = inByte;
+        } else {
+            print("Overflow occurred: {any}", .{m_rom.len});
+            print("Overflow occurred: {any}", .{inAddress});
+        }
     }
 
     fn StackPush(inValue: u16) void {
-        // print("StackPush SP: {any}", .{SP});
         if (SP > 1) {
             SP -= 2;
             WriteShort(SP, inValue);
         }
-        // print("StackPush SP: {any}", .{SP});
     }
 
     fn StackPop() u16 {
-        // print("StackPop SP: {any}", .{SP});
         var temp = ReadShort(SP);
-        // print("StackPop temp: {any}", .{temp});
         SP += 2;
-        // print("StackPop SP: {any}", .{SP});
         return temp;
     }
 
     fn PerformDec(inSource: u16) u8 {
-        // print("PerformDec inSource: {any}", .{inSource});
         var value = @intCast(u16, (@intCast(i16, inSource) - 1) & 0xFF);
-        // print("PerformDec value: {any}", .{value});
         HALFCARRY = @boolToInt((value & 0x0F) == 0);
-        // print("PerformDec HALFCARRY: {any}", .{HALFCARRY});
         ZERO = @boolToInt((value & 255) == 0);
-        // print("PerformDec ZERO: {any}", .{ZERO});
         SIGN = @truncate(u8, (value & 128));
-        // print("PerformDec SIGN: {any}", .{SIGN});
-        // print("PerformDec return value: {any}", .{@intCast(u8, value)});
         return @intCast(u8, value);
     }
 
     fn PerformInc(inSource: u8) u8 {
-        // print("PerformInc inSource: {any}", .{inSource});
         var value = inSource + 1;
-        // print("PerformInc value: {any}", .{value});
         HALFCARRY = @boolToInt(((value & 0xF) < 0) or ((value & 0xF) > 0));
-        // print("PerformInc HALFCARRY: {any}", .{HALFCARRY});
         ZERO = @boolToInt((value & 255) == 0);
-        // print("PerformInc ZERO: {any}", .{ZERO});
         SIGN = @truncate(u8, (value & 128));
-        // print("PerformInc SIGN: {any}", .{SIGN});
         return value;
     }
 
     fn SetFlagZeroSign() void {
         ZERO = @boolToInt(A == 0);
-        // print("SetFlagZeroSign ZERO: {any}", .{ZERO});
         SIGN = @truncate(u8, (A & 128));
-        // print("SetFlagZeroSign SIGN: {any}", .{SIGN});
     }
 
     fn PerformAnd(inValue: u8) void {
-        // print("PerformAnd inValue: {any}", .{inValue});
         SetA(A & inValue);
         CARRY = 0;
         HALFCARRY = 0;
@@ -1512,7 +1413,6 @@ pub const CPU = struct {
     }
 
     fn PerformXor(inValue: u8) void {
-        // print("PerformXor inValue: {any}", .{inValue});
         SetA(A ^ inValue);
         CARRY = 0;
         HALFCARRY = 0;
@@ -1520,7 +1420,6 @@ pub const CPU = struct {
     }
 
     fn PerformOr(inValue: u8) void {
-        // print("PerformOr inValue: {any}", .{inValue});
         SetA(A | inValue);
         CARRY = 0;
         HALFCARRY = 0;
@@ -1528,45 +1427,32 @@ pub const CPU = struct {
     }
 
     fn PerformByteAdd(inValue: u8, inCarryValue: u8) void {
-        // print("PerformByteAdd inValue: {any}", .{inValue});
-        // print("PerformByteAdd inCarryValue: {any}", .{inCarryValue});
         var value = A + inValue + inCarryValue;
-        // print("PerformByteAdd value: {any}", .{value});
         HALFCARRY = @truncate(u1, (A ^ inValue ^ value) & 0x10);
-        // print("PerformByteAdd HALFCARRY: {any}", .{HALFCARRY});
         SetA(value);
         if (value > 255) {
             CARRY = 1;
         } else {
             CARRY = 0;
         }
-        // print("PerformByteAdd CARRY: {any}", .{CARRY});
         SetFlagZeroSign();
     }
 
     fn PerformByteSub(inValue: u8, inCarryValue: u8) void {
-        // print("PerformByteSub inValue: {any}", .{inValue});
-        // print("PerformByteSub inCarryValue: {any}", .{inCarryValue});
         var value: u8 = (A - inValue - inCarryValue);
-        // print("PerformByteSub value: {any}", .{value});
         if ((value >= A) and (inValue | inCarryValue) > 0) {
             CARRY = 1;
         } else {
             CARRY = 0;
         }
-        // print("PerformByteSub CARRY: {any}", .{CARRY});
         HALFCARRY = @truncate(u1, (A ^ inValue ^ value) & 0x10);
-        // print("PerformByteSub HALFCARRY: {any}", .{HALFCARRY});
         SetA(value);
         SetFlagZeroSign();
     }
 
-    fn PerformCompSub(inValue: u8) void {
-        // // print("PerformCompSub inValue: {any}", .{inValue});
-        // // print("PerformCompSub A: {any}", .{A});
+    fn PerformCompSub(inValue: u16) void {
         var value = @intCast(u16, (@intCast(i16, A) - @intCast(i16, inValue)) & 0xFF);
-        // print("PerformCompSub value: {any}", .{value});
-        if ((value >= A) and ToBooleanU8(inValue)) {
+        if ((value >= A) and ToBooleanU16(inValue)) {
             CARRY = inValue;
         } else {
             CARRY = 0;
@@ -1581,19 +1467,41 @@ pub const CPU = struct {
     }
 
     pub fn AddHL(inValue: u16) void {
-        // print("AddHL inValue: {any}", .{inValue});
         var value = HL + inValue;
-        // print("AddHL value: {any}", .{value});
         SetHL(value);
         CARRY = @boolToInt(value > 65535);
-        // print("AddHL CARRY: {any}", .{CARRY});
+    }
+
+    // TODO - Temp method
+    pub fn SetValueU8(value: u8, bit: u8) void {
+        const conv: u16 = @intCast(u16, value);
+        if (conv != 0) {
+            m_value = (m_value | bit);
+        } else {
+            _ = conv == 0;
+        }
+    }
+
+    // TODO - Temp method
+    pub fn SetValueU16(value: u16, bit: u8) void {
+        const conv: u16 = @intCast(u16, value);
+        if (conv != 0) {
+            m_value = (m_value | bit);
+        } else {
+            _ = conv == 0;
+        }
+    }
+
+    pub fn SetValueInterrupt(value: bool, bit: u8) void {
+        const fudge: bool = value;
+        if (fudge) {
+            m_value = (m_value | bit);
+        } else {
+            _ = fudge == false;
+        }
     }
 
     // https://github.com/microsoft/referencesource/blob/master/mscorlib/system/convert.cs
-    pub fn ToBooleanU1(value: u1) bool {
-        return value != 0;
-    }
-
     pub fn ToBooleanU8(value: u8) bool {
         return value != 0;
     }
