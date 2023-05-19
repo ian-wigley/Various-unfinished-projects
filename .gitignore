@@ -14,3 +14,4 @@ Zig_Emulator/zig-out/
 Zig_Emulator/main.exe
 Zig_Emulator/main.exe.obj
 Zig_Emulator/main.pdb
+*.pyc
