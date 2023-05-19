@@ -1,7 +1,10 @@
 import pygame
 
-class BaseObject:
+class BaseObject(pygame.sprite.Sprite):
+
     def __init__(self, x, y, position, image, frame, width, height):
+
+        pygame.sprite.Sprite.__init__(self, self.containers)
         self.m_x = x
         self.m_y = y
         self.m_position = position
@@ -11,17 +14,8 @@ class BaseObject:
         self.image = image
         self.m_delay_counter = 0
         self.m_elapsed_counter = 0.1
-        self.m_rect = pygame.Rect(self.m_frame * self.m_width, 0, self.m_width, self.m_height)
+
+        self.rect = pygame.Rect(self.m_frame * self.m_width, 0, self.m_width, self.m_height)
         self.type = ''
-
-    def update(self):
-        # Overriden method
-        pass
-
-    def draw(self, screen):
-        #pygame.draw.rect(screen, (250,250,250), self.rect)
-        screen.blit(self.image, self.m_position, self.m_rect)
-        #screen.blit(self.image, self.m_rect)
-
-    def get_rect(self):
-        return pygame.Rect(self.m_position.x, self.m_position.y, self.m_width, self.m_height)
+        self.position = pygame.Vector2(0,0)
+        self.images = []
