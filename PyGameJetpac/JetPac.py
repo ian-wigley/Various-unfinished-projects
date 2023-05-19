@@ -5,39 +5,49 @@
 # //        Project migrated to Python & Pygame          //
 # /////////////////////////////////////////////////////////
 
-import pygame
 import sys
-from pygame.locals import *
+
+import pygame
+
 from Bonus import bonus
 from Bullet import bullet
 from Enemy import enemy
 from Explosion import explosion
 from Fuel import fuel
+from Gamestate import GameState
 from Jetman import jetman
 from Ledge import ledge
+from Particle import particle
 from Rocket import rocket
 from StarLayerOne import starlayerone
-from Particle import particle
-from Gamestate import GameState
 
 
 class JetPac:
+
     def __init__(self):
-        # https://www.youtube.com/watch?v=Q-__8Xw9KTM
-        self.py = pygame.init()
         pygame.init()
         pygame.font.init()
         pygame.display.set_caption("JetPac")
-        self.FPS = 120  # frames per second setting
         self.fps_clock = pygame.time.Clock()
+        self.clock = pygame.Clock()
         self.size = width, height = 800, 600
-        #self.screen = pygame.display.set_mode(self.size)
-        self.screen = pygame.display.set_mode((800,600))
+
+        fullscreen = False
+        SCREENRECT = pygame.Rect(0, 0, 800, 600)
+        # Set the display mode
+        winstyle = 0  # |FULLSCREEN
+        bestdepth = pygame.display.mode_ok(SCREENRECT.size, winstyle, 32)
+        self.screen = pygame.display.set_mode(SCREENRECT.size, winstyle, bestdepth)
+
+        # create the background surface
+        self.background = pygame.Surface(SCREENRECT.size)
+        self.screen.blit(self.background, (0, 0))
+        pygame.display.flip()
 
         self.game_on = True
 
-        self.m_rocket1X = 422
-        self.m_rocket1Y = 443
+        self.rocket_1x = 422
+        self.rocket_1y = 443
         self.m_rocket2X = 110
         self.m_rocket2Y = 139
         self.m_rocket3X = 510
@@ -52,9 +62,9 @@ class JetPac:
 
         self.game_state = GameState.GAME_OVER.value
 
-        #         private SoundEffect died;
-        #         private SoundEffect fire;
-        #         private SoundEffect hit;
+        #SoundEffect died;
+        #SoundEffect fire;
+        #SoundEffect hit;
 
         self.m_score_location = pygame.Vector2(11.0, 11.0)
         self.m_rocket_location_1 = None
@@ -107,23 +117,31 @@ class JetPac:
         self.rocket_images = pygame.image.load("Images/rocket_sprites.png").convert_alpha()
         self.star_image = pygame.image.load("Images/star.png").convert_alpha()
 
+        enemies = pygame.sprite.Group()
+        rockets = pygame.sprite.Group()
+        self.all = pygame.sprite.RenderUpdates()
+
+        jetman.containers = self.all
+        enemy.containers = enemies, self.all
+        rocket.containers = rockets, self.all
+
         self.jet_man = jetman(200, 200, pygame.Vector2(200, 200), self.jetman_images)
 
-        # self.m_rockets.append(rocket(0, 0, pygame.Vector2(422, 443), self.rocket_images, 0, 75, 61))
-        # self.m_rockets.append(rocket(0, 0, pygame.Vector2(110, 139), self.rocket_images, 4, 75, 61))
-        # self.m_rockets.append(rocket(0, 0, pygame.Vector2(510, 75), self.rocket_images, 8, 75, 61))
+        # # self.m_rockets.append(rocket(0, 0, pygame.Vector2(422, 443), self.rocket_images, 0, 75, 61))
+        # # self.m_rockets.append(rocket(0, 0, pygame.Vector2(110, 139), self.rocket_images, 4, 75, 61))
+        # # self.m_rockets.append(rocket(0, 0, pygame.Vector2(510, 75), self.rocket_images, 8, 75, 61))
 
-        # for x in range(20):
-        #     self.master_list.append(starlayerone(image=self.star_image))
-        #     #m_particles.Add(new Particle(m_particleTexture));
-        for x in range(5):
-            self.master_list.append(enemy(0, 0, pygame.Vector2(422, 443), self.meteor_images, 0, 0, 0))
+        # # for x in range(20):
+        # #     self.master_list.append(starlayerone(image=self.star_image))
+        # #     #m_particles.Add(new Particle(m_particleTexture));
+        # for x in range(5):
+        #     self.master_list.append(enemy(0, 0, pygame.Vector2(422, 443), self.meteor_images, 0, 0, 0))
 
-        self.master_list.append(ledge(0, 0, pygame.Vector2(60, 200), self.m_ledge_1_texture, 0, 0, 0))
-        self.master_list.append(ledge(0, 0, pygame.Vector2(310, 265), self.m_ledge_2_texture, 0, 0, 0))
-        self.master_list.append(ledge(0, 0, pygame.Vector2(490, 136), self.m_ledge_1_texture, 0, 0, 0))
-        self.master_list.append(ledge(0, 0, pygame.Vector2(0, 500), self.m_floor_texture, 0, 0, 0))
-        self.master_list.append(bonus(0, 0, pygame.Vector2(0, 0), self.bonus_images, 0, 0, 0))
+        # # self.master_list.append(ledge(0, 0, pygame.Vector2(60, 200), self.m_ledge_1_texture, 0, 0, 0))
+        # # self.master_list.append(ledge(0, 0, pygame.Vector2(310, 265), self.m_ledge_2_texture, 0, 0, 0))
+        # # self.master_list.append(ledge(0, 0, pygame.Vector2(490, 136), self.m_ledge_1_texture, 0, 0, 0))
+        # # self.master_list.append(ledge(0, 0, pygame.Vector2(0, 500), self.m_floor_texture, 0, 0, 0))
+        # # self.master_list.append(bonus(0, 0, pygame.Vector2(0, 0), self.bonus_images, 0, 0, 0))
 
         self.myfont = pygame.font.SysFont("Comic Sans MS", 15)
         self.textsurface = self.myfont.render("Score : 0000", False, (100, 100, 100))
@@ -131,13 +149,18 @@ class JetPac:
     def main(self):
         pygame.key.set_repeat(10, 10)
         while self.game_on:
+
+            self.all.clear(self.screen, self.background)
+
             self.check_keys()
-            self.update()
+            self.all.update()
             self.draw()
-            self.fps_clock.tick(60)
-            pygame.display.update()
+
+            self.clock.tick(60)
+
 
     def update(self):
+        pass
 
         # if self.game_state == GameState.GAME_START.value:
         #     self.m_game_starting_delay += self.m_elapsed_counter
@@ -148,27 +171,27 @@ class JetPac:
         # for particle in self.m_particles:
         # self.jet_man.m_y += 1
 
-        for star in self.m_stars:
-            star.update()
+        # for star in self.m_stars:
+        #     star.update()
 
         # master_rects ? is used for collision detection
-        self.master_rects = []
-        for obj in self.master_list:
-            # if obj.type != 'enemy':
-            obj.update()
-            # else:
-            # obj.update(self.m_level)
+        # self.master_rects = []
+        # for obj in self.master_list:
+        #     # if obj.type != 'enemy':
+        #     obj.update()
+        #     # else:
+        #     # obj.update(self.m_level)
         #            self.master_rects.append(obj.get_rect())
 
         #        for enemy in self.m_enemies:
         #            enemy.update(self.m_level)
 
-        temp_bullet = []
-        for bullet in self.m_bullets:
-            if not bullet.offscreen():
-                bullet.update()
-                temp_bullet.append(bullet)
-        self.m_bullets = temp_bullet
+        # temp_bullet = []
+        # for bullet in self.m_bullets:
+        #     if not bullet.offscreen():
+        #         bullet.update()
+        #         temp_bullet.append(bullet)
+        # self.m_bullets = temp_bullet
 
         # temp_explosion = []
         # for explosion in self.m_explosion:
@@ -227,12 +250,10 @@ class JetPac:
         #     self.game_state = GameState.GAME_ON.value
 
     def draw(self):
+
         if self.game_on:
 
-            self.screen.fill((0, 0, 0))
-
             if self.game_state == GameState.GAME_OVER.value:
-                # self.screen.blit(self.textsurface,(100,100))
                 self.screen.blit(
                     self.loading_image,
                     pygame.Vector2(0, 0),
@@ -260,27 +281,24 @@ class JetPac:
                 )
                 self.screen.blit(intro_text_four, (150, 520))
                 pygame.display.update()
-            else:
-                score_text = self.myfont.render(
-                    "Score : " + str(self.m_score), False, (100, 100, 100)
-                )
-                self.screen.blit(score_text, (100, 10))
-                fuel_text = self.myfont.render(
-                    "Fuel : " + str(self.m_fuel_level) + "%", False, (100, 100, 100)
-                )
-                self.screen.blit(fuel_text, (350, 10))
-                lives_text = self.myfont.render(
-                    "Lives : " + str(self.m_lives), False, (100, 100, 100)
-                )
-                self.screen.blit(lives_text, (600, 10))
 
-                # self.textsurface = self.myfont.render(
-                #     "X : " + (str)(self.jet_man.m_x), False, (100, 100, 100)
+            else:
+
+                dirty = self.all.draw(self.screen)
+                pygame.display.update(dirty)
+
+                # score_text = self.myfont.render(
+                #     "Score : " + str(self.m_score), False, (100, 100, 100)
                 # )
-                # self.screen.blit(self.textsurface, (100, 30))
-                # # m_spriteBatch.DrawString(m_font, "SCORE : " + m_score.ToString("D4"), m_score_location, Color.Yellow);
-                # # m_spriteBatch.DrawString(m_font, "FUEL : " + m_fuel_level + "%", m_score_location + new Vector2(350.0f, 1.0f), Color.Yellow);
-                # # m_spriteBatch.DrawString(m_font, "LIVES : " + m_lives, m_score_location + new Vector2(700.0f, 1.0f), Color.Yellow);
+                # self.screen.blit(score_text, (100, 10))
+                # fuel_text = self.myfont.render(
+                #     "Fuel : " + str(self.m_fuel_level) + "%", False, (100, 100, 100)
+                # )
+                # self.screen.blit(fuel_text, (350, 10))
+                # lives_text = self.myfont.render(
+                #     "Lives : " + str(self.m_lives), False, (100, 100, 100)
+                # )
+                # self.screen.blit(lives_text, (600, 10))
 
                 # # for star in self.m_stars:
                 # #     star.draw(self.screen)
@@ -291,8 +309,8 @@ class JetPac:
                 # # for explosion in self.m_explosion:
                 # #     explosion.draw(self.screen)
 
-                for bullet in self.m_bullets:
-                    bullet.draw(self.screen)
+                # for bullet in self.m_bullets:
+                #     bullet.draw(self.screen)
 
                 # # for fuel in self.m_fuel:
                 # #     fuel.draw(self.screen)
@@ -300,13 +318,13 @@ class JetPac:
                 # # # for bonus in self.m_bonus:
                 # # #     bonus.draw(self.screen)
 
-                for obj in self.master_list:
-                    obj.draw(self.screen)
+                # for obj in self.master_list:
+                #     obj.draw(self.screen)
 
-                for rocket in self.m_rockets:
-                    rocket.draw(self.screen)
+                # for rocket in self.m_rockets:
+                #     rocket.draw(self.screen)
 
-                self.jet_man.draw(self.screen, self.m_flip)
+                # self.jet_man.draw(self.screen, self.m_flip)
 
                 # for particle in self.m_particles:
                 #   particle.draw(self.screen)
@@ -314,100 +332,76 @@ class JetPac:
                 # pygame.display.update()  # self.master_rects)
                 # pygame.display.update(self.master_rects)
 
-            #pygame.display.flip()
-            #pygame.display.update()
+            # pygame.display.flip()
+            # pygame.display.update()
+
             #pygame.time.delay(10)
 
     def check_keys(self):
+
+        position = pygame.Vector2(0,0)
+
         for event in pygame.event.get():
-            # if event.type == pygame.KEYDOWN:
+
             if event.type == pygame.QUIT:
                 self.game_on = False
                 pygame.quit()
                 sys.exit()
 
-            if event.type == KEYDOWN:
-                #             if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
-                #             {
-                #                 Exit();
-                #             }
+            if event.type == pygame.KEYDOWN:
                 if (event.key == pygame.K_x and self.game_state == GameState.GAME_OVER.value):
-                    #             if (GamePad.GetState(PlayerIndex.One).Buttons.Start == ButtonState.Pressed ||
-                    #                 Keyboard.GetState().IsKeyDown(Keys.X))
-                    #             {
-                    # if (self.game_state == GameState.GAME_OVER.value):
                     self.game_state = GameState.GAME_START.value
                     self.reset_game()
-                #                     gameState = GameState.gameStart;
-                #                     ResetGame();
-                #                 }
-                #             }
+                    self.screen.fill((0, 0, 0))
+                    pygame.display.flip()
+                    pygame.display.update()
 
                 if event.key == pygame.K_RIGHT:
-                    #             if (GamePad.GetState(PlayerIndex.One).DPad.Right == ButtonState.Pressed ||
-                    #                 Keyboard.GetState().IsKeyDown(Keys.Right))
-                    #             {
-                    #                 m_flip = SpriteEffects.None;
-                    #                 x += 2;
-                    #                 m_animation_timer += m_elapsed_counter;
-                    #                 CheckScreenBounds();
-                    #                 if (m_onGround && m_animation_timer > 0.4)
-                    #                 {
-                    #                     m_current_frame = (m_current_frame + 1) % 4;
-                    #                     if (m_current_frame == 0) { m_current_frame = 1; }
-                    #                     m_animation_timer = 0;
-                    #                 }
-                    #             }
+                    # m_flip = SpriteEffects.None;
+                    # x += 2;
+                    # m_animation_timer += m_elapsed_counter;
+                    # CheckScreenBounds();
+                    # if (m_onGround && m_animation_timer > 0.4)
+                    # {
+                    #     m_current_frame = (m_current_frame + 1) % 4;
+                    #     if (m_current_frame == 0) { m_current_frame = 1; }
+                    #     m_animation_timer = 0;
+                    # }
+                    position.x = 1.1
                     self.jet_man.m_x += 2
                     self.m_flip = "right"
+
                 elif event.key == pygame.K_LEFT:
-                    #             if (GamePad.GetState(PlayerIndex.One).DPad.Left == ButtonState.Pressed ||
-                    #                 Keyboard.GetState().IsKeyDown(Keys.Left))
-                    #             {
-                    #                 m_flip = SpriteEffects.m_flipHorizontally;
-                    #                 x -= 2;
-                    #                 m_animation_timer += m_elapsed_counter;
-                    #                 CheckScreenBounds();
-                    #                 if (m_onGround && m_animation_timer > 0.4)
-                    #                 {
-                    #                     m_current_frame = (m_current_frame + 1) % 4;
-                    #                     if (m_current_frame == 0) { m_current_frame = 1; }
-                    #                     m_animation_timer = 0;
-                    #                 }
-                    #             }
+                    # m_flip = SpriteEffects.m_flipHorizontally;
+                    # x -= 2;
+                    # m_animation_timer += m_elapsed_counter;
+                    # CheckScreenBounds();
+                    # if (m_onGround && m_animation_timer > 0.4)
+                    # {
+                    #     m_current_frame = (m_current_frame + 1) % 4;
+                    #     if (m_current_frame == 0) { m_current_frame = 1; }
+                    #     m_animation_timer = 0;
+                    # }
+                    position.x = -1.1
                     self.jet_man.m_x -= 2
                     self.m_flip = "left"
+
                 elif event.key == pygame.K_DOWN:
-                    #             if (GamePad.GetState(PlayerIndex.One).DPad.Down == ButtonState.Pressed ||
-                    #             Keyboard.GetState().IsKeyDown(Keys.Down))
-                    #             {
-                    #                 if (!m_onGround)
-                    #                 {
-                    #                     y += 2;
-                    #                     CheckScreenBounds();
-                    #                     m_current_frame = 0;
-                    #                 }
-                    #             }
                     if not self.m_on_ground:
+                        position.y = 2.1
                         self.jet_man.m_y += 2
                         self.check_screen_bounds()
                         self.m_current_frame = 0
+
                 elif event.key == pygame.K_UP:
-                    #             if (GamePad.GetState(PlayerIndex.One).DPad.Up == ButtonState.Pressed ||
-                    #                 Keyboard.GetState().IsKeyDown(Keys.Up))
-                    #             {
-                    #                 y -= 2;
-                    #                 CheckScreenBounds();
-                    #                 m_onGround = false;
-                    #                 m_walking = false;
-                    #                 m_current_frame = 0;
-                    #             }
+                    position.y = -2.1
                     self.jet_man.m_y -= 2
                     self.check_screen_bounds()
                     self.m_on_ground = False
                     self.m_walking = False
                     self.m_current_frame = 0
                     self.jet_man.m_y -= 1
+
                 elif event.key == pygame.K_LCTRL:
                     # fire.Play()
                     self.m_delay_counter += self.m_elapsed_counter
@@ -449,8 +443,8 @@ class JetPac:
                         self.m_delay_counter = 0
 
             self.jet_man.m_frame = self.m_current_frame
-
-    #             m_jetman.Update(x, y, m_flip);
+        self.jet_man.move(position)
+    # m_jetman.Update(x, y, m_flip);
 
     def check_bullet_collisions(self):
         bullet_to_remove = None
@@ -616,13 +610,13 @@ class JetPac:
         self.m_current_frame = 0
         self.x = 150
         self.y = 300
-        self.reset_level()
+        # self.reset_level()
 
     def reset_level(self):
         self.x = 150
         self.y = 300
-        self.m_rocket1X = 422
-        self.m_rocket1Y = 443
+        self.rocket_1x = 422
+        self.rocket_1y = 443
         self.m_rocket2X = 110
         self.m_rocket2Y = 139
         self.m_rocket3X = 510
@@ -634,7 +628,7 @@ class JetPac:
         self.m_first_section_complete = False
         self.m_second_section_lowering = False
         self.m_second_section_complete = False
-        self.m_rocket_location_1 = pygame.Vector2(self.m_rocket1X, self.m_rocket1Y)
+        self.m_rocket_location_1 = pygame.Vector2(self.rocket_1x, self.rocket_1y)
         self.m_rocket_location_2 = pygame.Vector2(self.m_rocket2X, self.m_rocket2Y)
         self.m_rocket_location_3 = pygame.Vector2(self.m_rocket3X, self.m_rocket3Y)
         self.m_rockets = []
