@@ -8,7 +8,7 @@
             "name": "Start Jetpac",
             "type": "python",
             "request": "launch",
-            "program": "./JetPac.py",
+            "program": "./jet_pac.py",
             "console": "integratedTerminal",
             "justMyCode": true
         }
