@@ -21,10 +21,10 @@
         </Menu>
 
         <!--https://github.com/AvaloniaUI/Avalonia/issues/2741-->
-        <Canvas Background="Black" x:Name="testCanvas" HorizontalAlignment="Left"
+        <Canvas Background="Black" x:Name="drawingCanvas" HorizontalAlignment="Left"
         VerticalAlignment="Top" Width="806" Height="490" IsEnabled="True" Margin="10">
 
-            <Line StartPoint="0,0" EndPoint="806,0" Stroke="Red" StrokeThickness="1"/>
+            <!-- <Line StartPoint="0,0" EndPoint="806,0" Stroke="Red" StrokeThickness="1"/>
             <Line StartPoint="0,49" EndPoint="806,49" Stroke="Red" StrokeThickness="1"/>
             <Line StartPoint="0,98" EndPoint="806,98" Stroke="Red" StrokeThickness="1"/>
             <Line StartPoint="0,147" EndPoint="806,147" Stroke="Red" StrokeThickness="1"/>
@@ -49,7 +49,7 @@
             <Line StartPoint="620,0" EndPoint="620,490" Stroke="Red" StrokeThickness="1"/>
             <Line StartPoint="682,0" EndPoint="682,490" Stroke="Red" StrokeThickness="1"/>
             <Line StartPoint="744,0" EndPoint="744,490" Stroke="Red" StrokeThickness="1"/>
-            <Line StartPoint="806,0" EndPoint="806,490" Stroke="Red" StrokeThickness="1"/>
+            <Line StartPoint="806,0" EndPoint="806,490" Stroke="Red" StrokeThickness="1"/> -->
         </Canvas>
 
         <Border Background="LightBlue"

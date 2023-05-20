@@ -1,5 +1,5 @@
 import pygame
-from BaseObject import BaseObject
+from base_object import BaseObject
 
 class bullet(BaseObject):
     def __init__(self, x, y, position, image, frame, width, height, left):

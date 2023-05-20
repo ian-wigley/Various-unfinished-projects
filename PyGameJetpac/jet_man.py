@@ -1,5 +1,5 @@
 import pygame
-from BaseObject import BaseObject
+from base_object import BaseObject
 
 class jetman(BaseObject):
 

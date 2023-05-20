@@ -1,6 +1,6 @@
 import pygame
 import random
-from BaseObject import BaseObject
+from base_object import BaseObject
 
 class enemy(BaseObject):
     def __init__(self, x, y, position, image, frame, width, height):

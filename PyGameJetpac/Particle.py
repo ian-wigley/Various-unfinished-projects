@@ -1,6 +1,6 @@
 import pygame
 import random
-from BaseObject import BaseObject
+from base_object import BaseObject
 
 class particle(BaseObject):
     def __init__(self, x=0, y=0, position=pygame.Vector2(), image=0, frame=0, width=0, height=0):

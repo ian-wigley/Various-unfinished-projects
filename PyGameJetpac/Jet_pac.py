@@ -9,17 +9,17 @@ import sys
 
 import pygame
 
-from Bonus import bonus
-from Bullet import bullet
-from Enemy import enemy
-from Explosion import explosion
-from Fuel import fuel
-from Gamestate import GameState
-from Jetman import jetman
-from Ledge import ledge
-from Particle import particle
-from Rocket import rocket
-from StarLayerOne import starlayerone
+from bonus import bonus
+from bullet import bullet
+from enemy import enemy
+from explosion import explosion
+from fuel import fuel
+from game_state import GameState
+from jet_man import jetman
+from ledge import ledge
+from particle import particle
+from rocket import rocket
+from star_layer_one import starlayerone
 
 
 class JetPac:
