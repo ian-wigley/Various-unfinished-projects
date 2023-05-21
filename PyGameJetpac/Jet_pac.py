@@ -19,6 +19,7 @@ from jet_man import jetman
 from ledge import ledge
 from particle import particle
 from rocket import rocket
+from sprite_sheet import SpriteSheet
 from star_layer_one import starlayerone
 
 
@@ -101,6 +102,7 @@ class JetPac:
         self.master_list = []
         self.master_rects = []
 
+
     def load_images(self):
 
         self.bonus_images = pygame.image.load("Images/bonus.png").convert_alpha()
@@ -117,16 +119,6 @@ class JetPac:
         self.rocket_images = pygame.image.load("Images/rocket_sprites.png").convert_alpha()
         self.star_image = pygame.image.load("Images/star.png").convert_alpha()
 
-        enemies = pygame.sprite.Group()
-        rockets = pygame.sprite.Group()
-        self.all = pygame.sprite.RenderUpdates()
-
-        jetman.containers = self.all
-        enemy.containers = enemies, self.all
-        rocket.containers = rockets, self.all
-
-        self.jet_man = jetman(200, 200, pygame.Vector2(200, 200), self.jetman_images)
-
         # # self.m_rockets.append(rocket(0, 0, pygame.Vector2(422, 443), self.rocket_images, 0, 75, 61))
         # # self.m_rockets.append(rocket(0, 0, pygame.Vector2(110, 139), self.rocket_images, 4, 75, 61))
         # # self.m_rockets.append(rocket(0, 0, pygame.Vector2(510, 75), self.rocket_images, 8, 75, 61))
@@ -137,11 +129,29 @@ class JetPac:
         # for x in range(5):
         #     self.master_list.append(enemy(0, 0, pygame.Vector2(422, 443), self.meteor_images, 0, 0, 0))
 
-        # # self.master_list.append(ledge(0, 0, pygame.Vector2(60, 200), self.m_ledge_1_texture, 0, 0, 0))
-        # # self.master_list.append(ledge(0, 0, pygame.Vector2(310, 265), self.m_ledge_2_texture, 0, 0, 0))
-        # # self.master_list.append(ledge(0, 0, pygame.Vector2(490, 136), self.m_ledge_1_texture, 0, 0, 0))
-        # # self.master_list.append(ledge(0, 0, pygame.Vector2(0, 500), self.m_floor_texture, 0, 0, 0))
         # # self.master_list.append(bonus(0, 0, pygame.Vector2(0, 0), self.bonus_images, 0, 0, 0))
+
+        enemies = pygame.sprite.Group()
+        rockets = pygame.sprite.Group()
+        ledges = pygame.sprite.Group()
+        self.all = pygame.sprite.RenderUpdates()
+
+        jetman.containers = self.all
+        enemy.containers = enemies, self.all
+        rocket.containers = rockets, self.all
+        ledge.containers = ledges, self.all
+
+        ledge(0, 0, pygame.Vector2(60, 200), self.m_ledge_1_texture, 0, 0, 0)
+        ledge(0, 0, pygame.Vector2(310, 265), self.m_ledge_2_texture, 0, 0, 0)
+        ledge(0, 0, pygame.Vector2(490, 136), self.m_ledge_1_texture, 0, 0, 0)
+        ledge(0, 30, pygame.Vector2(0, 500), self.m_floor_texture, 0, 0, 0)
+
+        # self.sprite_sheet = SpriteSheet()
+        jet_man_sprites = SpriteSheet("Images/sprites.png")
+        jet_man_rect = (0, 0, 36, 52)
+        jet_man_image = jet_man_sprites.image_at(jet_man_rect)
+
+        self.jet_man = jetman(200, 200, pygame.Vector2(200, 200), jet_man_image)
 
         self.myfont = pygame.font.SysFont("Comic Sans MS", 15)
         self.textsurface = self.myfont.render("Score : 0000", False, (100, 100, 100))
@@ -473,7 +483,7 @@ class JetPac:
     def check_enemy_collisions(self):
         for alien in self.m_enemies:
             if (
-                alien.get_rect().colliderect(self.jet_man.JetmanRect())
+                alien.get_rect().colliderect(self.jet_man.jetman_rect())
                 and self.game_state == GameState.GAME_ON.value
             ):
                 self.m_explosion.append(
@@ -512,13 +522,13 @@ class JetPac:
             for ledge in self.m_ledges:
                 if bonus.BonRect().colliderect(ledge.LedgeRect()):
                     bonus.bonus_landed(True)
-                if self.jet_man.JetmanRect().colliderect(bonus.BonRect()):
+                if self.jet_man.jetman_rect().colliderect(bonus.BonRect()):
                     bonus.Reset()
                     self.m_score += 100
 
     def check_rocket_collsions(self):
         if (
-            self.jet_man.JetmanRect().colliderect(self.m_rockets[1].RocketRect())
+            self.jet_man.jetman_rect().colliderect(self.m_rockets[1].RocketRect())
             and not self.m_first_section_lowering
         ):
             if self.jet_man.m_x != self.m_rocket_lower_position:
@@ -527,7 +537,7 @@ class JetPac:
                 self.m_first_section_lowering = True
 
         if (
-            self.jet_man.JetmanRect().colliderect(self.m_rockets[2].RocketRect())
+            self.jet_man.jetman_rect().colliderect(self.m_rockets[2].RocketRect())
             and self.m_first_section_complete
             and not self.m_second_section_lowering
         ):
@@ -538,11 +548,11 @@ class JetPac:
 
     def check_jetman_ledge_collsions(self):
         for ledge in self.m_ledges:
-            if self.jet_man.JetmanRect().colliderect(ledge.LedgeRect()):
+            if self.jet_man.jetman_rect().colliderect(ledge.LedgeRect()):
                 if (
-                    self.jet_man.JetmanRect().bottom - 3 == ledge.LedgeRect().top
-                    or self.jet_man.JetmanRect().bottom - 2 == ledge.LedgeRect().top
-                    or self.jet_man.JetmanRect().bottom - 1 == ledge.LedgeRect().top
+                    self.jet_man.jetman_rect().bottom - 3 == ledge.LedgeRect().top
+                    or self.jet_man.jetman_rect().bottom - 2 == ledge.LedgeRect().top
+                    or self.jet_man.jetman_rect().bottom - 1 == ledge.LedgeRect().top
                 ):
 
                     self.jet_man.m_y -= 1
@@ -554,17 +564,17 @@ class JetPac:
                 else:
                     self.m_on_ground = False
 
-                if self.jet_man.JetmanRect().top + 1 == ledge.LedgeRect().bottom:
+                if self.jet_man.jetman_rect().top + 1 == ledge.LedgeRect().bottom:
                     self.jet_man.m_y += 2
 
-                if self.jet_man.JetmanRect().right - 2 == ledge.LedgeRect().left:
+                if self.jet_man.jetman_rect().right - 2 == ledge.LedgeRect().left:
                     self.jet_man.m_x -= 2
 
-                if self.jet_man.JetmanRect().left + 1 == ledge.LedgeRect().right:
+                if self.jet_man.jetman_rect().left + 1 == ledge.LedgeRect().right:
                     self.jet_man.m_x += 2
 
     def check_fuel_collisions(self, fuel):
-        if self.jet_man.JetmanRect().colliderect(fuel.FuelRect()):
+        if self.jet_man.jetman_rect().colliderect(fuel.FuelRect()):
             if (
                 self.jet_man.m_x != self.m_fuel_lower_position
                 and not self.m_fuel_lowering
