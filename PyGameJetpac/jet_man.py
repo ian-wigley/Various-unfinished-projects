@@ -23,8 +23,8 @@ class jetman(BaseObject):
     #     elif facing == "left":
     #         screen.blit(self.left_facing_image, (self.m_x, self.m_y, 600, 800), (146,0,36,52))
 
-    def JetmanRect(self):
+    def jetman_rect(self):
         return pygame.Rect(self.m_x, self.m_y, 36, 52)
 
-    def JetmanPosition(self):
+    def jetman_position(self):
         return self.m_position
