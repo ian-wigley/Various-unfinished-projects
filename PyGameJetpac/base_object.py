@@ -17,5 +17,5 @@ class BaseObject(pygame.sprite.Sprite):
 
         self.rect = pygame.Rect(self.m_frame * self.m_width, 0, self.m_width, self.m_height)
         self.type = ''
-        self.position = pygame.Vector2(0,0)
+        # self.position = pygame.Vector2(0,0)
         self.images = []
