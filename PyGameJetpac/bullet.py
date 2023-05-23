@@ -14,6 +14,7 @@ class bullet(BaseObject):
             self.m_position.x -= 3
         if (self.m_position.x >= 800 or self.m_position.x <= -40):
             self.m_offscreen = True
+        self.rect = pygame.Rect(self.m_position.x, self.m_position.y, self.image.get_width(), self.image.get_height())
 
     def offscreen(self):
         return self.m_offscreen
