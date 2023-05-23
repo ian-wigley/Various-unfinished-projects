@@ -15,6 +15,7 @@ class enemy(BaseObject):
     def update(self):
         if self.m_position.x > -70:
             self.m_position.x -= 1
+            self.rect = pygame.Rect(self.m_position.x, self.m_position.y, self.image.get_width(), self.image.get_height())
             #self.m_rect.x -= 1
         else:
             self.reset_enemy()
