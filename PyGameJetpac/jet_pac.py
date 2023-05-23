@@ -123,6 +123,7 @@ class JetPac:
         rockets = pygame.sprite.Group()
         ledges = pygame.sprite.Group()
         bonuses = pygame.sprite.Group()
+        bullets = pygame.sprite.Group()
         self.all = pygame.sprite.RenderUpdates()
 
         jetman.containers = self.all
@@ -130,6 +131,7 @@ class JetPac:
         rocket.containers = rockets, self.all
         ledge.containers = ledges, self.all
         bonus.containers = bonuses, self.all
+        bullet.containers = bullets, self.all
 
         ledge(0, 0, pygame.Vector2(60, 200), self.m_ledge_1_texture, 0, 0, 0)
         ledge(0, 0, pygame.Vector2(310, 265), self.m_ledge_2_texture, 0, 0, 0)
@@ -421,9 +423,11 @@ class JetPac:
                                     0,
                                     0,
                                     pygame.Vector2(
-                                        self.jet_man.m_x,
-                                        self.jetman_images.get_height() / 4
-                                        + self.jet_man.m_y,
+                                        self.jet_man.jetman_position.x,
+                                        # self.jet_man.m_x,
+                                        self.jet_man.jetman_position.y,
+                                        # self.jetman_images.get_height() / 4
+                                        # + self.jet_man.m_y,
                                     ),
                                     self.bullet_image,
                                     0,
