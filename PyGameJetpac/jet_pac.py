@@ -423,11 +423,8 @@ class JetPac:
                                     0,
                                     0,
                                     pygame.Vector2(
-                                        self.jet_man.jetman_position.x,
-                                        # self.jet_man.m_x,
-                                        self.jet_man.jetman_position.y,
-                                        # self.jetman_images.get_height() / 4
-                                        # + self.jet_man.m_y,
+                                        self.jet_man.jetman_position[0],
+                                        self.jet_man.jetman_position[1],
                                     ),
                                     self.bullet_image,
                                     0,
@@ -442,9 +439,8 @@ class JetPac:
                                     0,
                                     0,
                                     pygame.Vector2(
-                                        self.jet_man.m_x,
-                                        self.jetman_images.get_height() / 4
-                                        + self.jet_man.m_y,
+                                        self.jet_man.jetman_position[0],
+                                        self.jet_man.jetman_position[1],
                                     ),
                                     self.bullet_image,
                                     0,
