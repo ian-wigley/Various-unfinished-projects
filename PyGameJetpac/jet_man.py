@@ -26,7 +26,7 @@ class jetman(BaseObject):
 
     def jetman_rect(self):
         return pygame.Rect(self.m_x, self.m_y, 36, 52)
+
     @property
-    def jetman_position(self) -> pygame.Vector2:
-        return pygame.Vector2(self.m_x, self.m_y)
-        #return self.m_position
+    def jetman_position(self) -> tuple[int, int]:
+        return self.rect.center
