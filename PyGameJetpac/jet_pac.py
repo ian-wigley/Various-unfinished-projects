@@ -105,19 +105,20 @@ class JetPac:
 
     def load_images(self):
 
-        self.bonus_images = pygame.image.load("Images/bonus.png").convert_alpha()
+        self.loading_image = pygame.image.load("Images/loading.png").convert_alpha()
         self.bullet_image = pygame.image.load("Images/bullet.png").convert_alpha()
-        self.explosion_images = pygame.image.load("Images/explosion.png").convert_alpha()
         self.m_floor_texture = pygame.image.load("Images/floor.png").convert_alpha()
-        self.fuel_cell_image = pygame.image.load("Images/fuel_cell.png").convert_alpha()
-        self.jetman_images = pygame.image.load("Images/sprites.png").convert_alpha()
         self.m_ledge_1_texture = pygame.image.load("Images/ledge1.png").convert_alpha()
         self.m_ledge_2_texture = pygame.image.load("Images/ledge2.png").convert_alpha()
-        self.loading_image = pygame.image.load("Images/loading.png").convert_alpha()
-        self.meteor_images = pygame.image.load("Images/meteor.png").convert_alpha()
         self.particle_image = pygame.image.load("Images/particle.png").convert_alpha()
-        self.rocket_images = pygame.image.load("Images/rocket_sprites.png").convert_alpha()
         self.star_image = pygame.image.load("Images/star.png").convert_alpha()
+
+        self.bonus_images = pygame.image.load("Images/bonus.png").convert_alpha()
+        self.explosion_images = pygame.image.load("Images/explosion.png").convert_alpha()
+        self.fuel_cell_image = pygame.image.load("Images/fuel_cell.png").convert_alpha()
+        self.jetman_images = pygame.image.load("Images/sprites.png").convert_alpha()
+        # self.rocket_images = pygame.image.load("Images/rocket_sprites.png").convert_alpha()
+        # self.meteor_images = pygame.image.load("Images/meteor.png").convert_alpha()
 
         enemies = pygame.sprite.Group()
         rockets = pygame.sprite.Group()
@@ -138,14 +139,20 @@ class JetPac:
         ledge(0, 0, pygame.Vector2(490, 136), self.m_ledge_1_texture, 0, 0, 0)
         ledge(0, 30, pygame.Vector2(0, 500), self.m_floor_texture, 0, 0, 0)
 
+        rocket_sprites = SpriteSheet("Images/rocket_sprites.png")
+        rocket_rect = (0, 0, 75, 61)
+        rocket_image = rocket_sprites.image_at(rocket_rect)
+        rocket(0, 0, pygame.Vector2(422, 443), rocket_image, 0, 75, 61)
+        rocket(0, 0, pygame.Vector2(110, 139), rocket_image, 4, 75, 61)
+        rocket(0, 0, pygame.Vector2(510, 75), rocket_image, 8, 75, 61)
+
+        enemy_sprites = SpriteSheet("Images/meteor.png")
+        enemy_rect = (0, 0, 36, 52)
+        enemy_image = enemy_sprites.image_at(enemy_rect)
         for _ in range(5):
-            enemy(0, 0, pygame.Vector2(422, 443), self.meteor_images, 0, 0, 0)
+            enemy(0, 0, pygame.Vector2(422, 443), enemy_image, 0, 0, 0)
 
         bonus(0, 0, pygame.Vector2(0, 0), self.bonus_images, 0, 0, 0)
-
-        rocket(0, 0, pygame.Vector2(422, 443), self.rocket_images, 0, 75, 61)
-        rocket(0, 0, pygame.Vector2(110, 139), self.rocket_images, 4, 75, 61)
-        rocket(0, 0, pygame.Vector2(510, 75), self.rocket_images, 8, 75, 61)
 
         # self.sprite_sheet = SpriteSheet()
         jet_man_sprites = SpriteSheet("Images/sprites.png")
