@@ -19,6 +19,7 @@ from jet_man import jetman
 from ledge import ledge
 from particle import particle
 from rocket import rocket
+from score_display import ScoreDisplay
 from sprite_sheet import SpriteSheet
 from star_layer_one import starlayerone
 
@@ -62,6 +63,7 @@ class JetPac:
         self.m_fuel_lower_position = 430
 
         self.game_state = GameState.GAME_OVER.value
+        self.myfont = pygame.font.SysFont("Comic Sans MS", 15)
 
         #SoundEffect died;
         #SoundEffect fire;
@@ -113,10 +115,10 @@ class JetPac:
         self.particle_image = pygame.image.load("Images/particle.png").convert_alpha()
         self.star_image = pygame.image.load("Images/star.png").convert_alpha()
 
-        self.bonus_images = pygame.image.load("Images/bonus.png").convert_alpha()
-        self.explosion_images = pygame.image.load("Images/explosion.png").convert_alpha()
-        self.fuel_cell_image = pygame.image.load("Images/fuel_cell.png").convert_alpha()
         self.jetman_images = pygame.image.load("Images/sprites.png").convert_alpha()
+        # self.bonus_images = pygame.image.load("Images/bonus.png").convert_alpha()
+        # self.explosion_images = pygame.image.load("Images/explosion.png").convert_alpha()
+        # self.fuel_cell_image = pygame.image.load("Images/fuel_cell.png").convert_alpha()
         # self.rocket_images = pygame.image.load("Images/rocket_sprites.png").convert_alpha()
         # self.meteor_images = pygame.image.load("Images/meteor.png").convert_alpha()
 
@@ -133,6 +135,7 @@ class JetPac:
         ledge.containers = ledges, self.all
         bonus.containers = bonuses, self.all
         bullet.containers = bullets, self.all
+        ScoreDisplay.containers = all
 
         ledge(0, 0, pygame.Vector2(60, 200), self.m_ledge_1_texture, 0, 0, 0)
         ledge(0, 0, pygame.Vector2(310, 265), self.m_ledge_2_texture, 0, 0, 0)
@@ -143,8 +146,8 @@ class JetPac:
         rocket_rect = (0, 0, 75, 61)
         rocket_image = rocket_sprites.image_at(rocket_rect)
         rocket(0, 0, pygame.Vector2(422, 443), rocket_image, 0, 75, 61)
-        rocket(0, 0, pygame.Vector2(110, 139), rocket_image, 4, 75, 61)
-        rocket(0, 0, pygame.Vector2(510, 75), rocket_image, 8, 75, 61)
+        rocket(0, 0, pygame.Vector2(110, 139), rocket_sprites.image_at((4 * 75, 0, 75, 61)), 4, 75, 61)
+        rocket(0, 0, pygame.Vector2(510, 75), rocket_sprites.image_at((8 * 75, 0, 75, 61)), 8, 75, 61)
 
         enemy_sprites = SpriteSheet("Images/meteor.png")
         enemy_rect = (0, 0, 36, 52)
@@ -152,7 +155,8 @@ class JetPac:
         for _ in range(5):
             enemy(0, 0, pygame.Vector2(422, 443), enemy_image, 0, 0, 0)
 
-        bonus(0, 0, pygame.Vector2(0, 0), self.bonus_images, 0, 0, 0)
+        bonus_sprites = SpriteSheet("Images/bonus.png")
+        bonus(0, 0, pygame.Vector2(100, 100), bonus_sprites.image_at((0, 0, 28, 28)), 0, 0, 0)
 
         # self.sprite_sheet = SpriteSheet()
         jet_man_sprites = SpriteSheet("Images/sprites.png")
@@ -161,8 +165,8 @@ class JetPac:
 
         self.jet_man = jetman(200, 200, pygame.Vector2(200, 200), jet_man_image)
 
-        self.myfont = pygame.font.SysFont("Comic Sans MS", 15)
-        self.textsurface = self.myfont.render("Score : 0000", False, (100, 100, 100))
+        if pygame.font:
+            self.all.add(ScoreDisplay())
 
     def main(self):
         pygame.key.set_repeat(10, 10)
