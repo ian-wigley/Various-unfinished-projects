@@ -23,7 +23,7 @@ class particle(BaseObject):
 #                           Color.Black };
 
 
-    def update(self):
+    def update(self)-> None:
         self.particleY += 1
 #         public void Update(int x, int y, bool facingLeft, bool showParticles)
 #         {
