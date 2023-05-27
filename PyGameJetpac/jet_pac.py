@@ -156,7 +156,7 @@ class JetPac:
             enemy(0, 0, pygame.Vector2(422, 443), enemy_image, 0, 0, 0)
 
         bonus_sprites = SpriteSheet("Images/bonus.png")
-        bonus(0, 0, pygame.Vector2(100, 100), bonus_sprites.image_at((0, 0, 28, 28)), 0, 0, 0)
+        bonus(0, 100, pygame.Vector2(100, 100), bonus_sprites.image_at((0, 0, 28, 28)), 0, 0, 0)
 
         # self.sprite_sheet = SpriteSheet()
         jet_man_sprites = SpriteSheet("Images/sprites.png")
