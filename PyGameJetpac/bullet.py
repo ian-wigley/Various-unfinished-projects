@@ -7,7 +7,7 @@ class bullet(BaseObject):
         self.m_left = left
         self.m_offscreen = False
 
-    def update(self):
+    def update(self)-> None:
         if (self.m_position.x < 800 and not self.m_left):
             self.m_position.x += 3
         elif (self.m_position.x > -40):
@@ -16,6 +16,6 @@ class bullet(BaseObject):
             self.m_offscreen = True
         self.rect = pygame.Rect(self.m_position.x, self.m_position.y, self.image.get_width(), self.image.get_height())
 
-    def offscreen(self):
+    def offscreen(self)-> None:
         return self.m_offscreen
 
