@@ -11,23 +11,23 @@ class fuel(BaseObject):
         self.m_rect = pygame.Rect(self.m_frame * self.m_width, 0, self.m_width, self.m_height)
         self.m_position = pygame.Vector2(random.randint(0, 750), random.randint(0, 0))
 
-    def Update(self, ledges):
+    def update(self, ledges)-> None:
         if (not self.landed_on_ledge):
             for ledge in ledges:
-                if (not self.FuelRect().colliderect(ledge.LedgeRect())):
+                if (not self.fuel_rect().colliderect(ledge.LedgeRect())):
                     self.m_position.y += 0.2
                 else:
                     self.landed_on_ledge = True
 
-    def UpdatePosition(self, x, y):
+    def update_position(self, x, y)-> None:
         self.m_position.x = x
         self.m_position.y = y
 
-    def LowerFuel(self):
+    def lower_fuel(self):
         self.m_position.x = 440
         if (self.m_position.y < 450):
             self.m_position.y += 1
         return self.m_position.y > 448
 
-    def FuelRect(self):
+    def fuel_rect(self):
         return pygame.Rect(self.m_position.x, self.m_position.y, self.m_width, self.m_height)
