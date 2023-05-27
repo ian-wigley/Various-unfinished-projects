@@ -11,12 +11,12 @@ class jetman(BaseObject):
         self.right_facing_image = image
         self.left_facing_image = pygame.transform.flip(image, True, False)
 
-    def move(self, position):
+    def move(self, position)-> None:
         self.m_position = position
         self.m_x += position.x
         self.m_y += position.y
 
-    def update(self):
+    def update(self)-> None:
         self.rect.move_ip(self.m_position.x, self.m_position.y)
         # def draw(self, screen, facing = "right"):
         #     if facing == "right":
