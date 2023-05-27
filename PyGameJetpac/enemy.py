@@ -12,7 +12,7 @@ class enemy(BaseObject):
         self.rect = pygame.Rect(position.x, position.y, image.get_width(), image.get_height())
         self.type = 'enemy'
 
-    def update(self):
+    def update(self)-> None:
         if self.m_position.x > -70:
             self.m_position.x -= 1
             self.rect = pygame.Rect(self.m_position.x, self.m_position.y, self.image.get_width(), self.image.get_height())
@@ -20,9 +20,9 @@ class enemy(BaseObject):
         else:
             self.reset_enemy()
 
-    def next_level(self, level):
+    def next_level(self, level)-> None:
         self.m_frame = level % 8
         self.m_rect = pygame.Rect(self.m_frame * self.m_width, 0, self.m_width, self.m_height)
 
-    def reset_enemy(self):
+    def reset_enemy(self)-> None:
         self.m_position = pygame.Vector2(random.randint(800, 1200), random.randint(50, 440))
