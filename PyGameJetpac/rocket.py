@@ -6,10 +6,6 @@ class rocket(BaseObject):
         super().__init__(x, y, position, image, frame, width, height)
         self.rect = pygame.Rect(position.x, position.y, image.get_width(), image.get_height())
 
-    def update(self, x, y)-> None:
-        self.m_position.x = x
-        self.m_position.y = y
-
     def lower_section_one(self):
         self.m_position.x = 422
         if self.m_position.y < 383:
@@ -28,3 +24,11 @@ class rocket(BaseObject):
 
     def rocket_rect(self):
         return pygame.Rect(self.m_position.x, self.m_position.y, self.m_width, self.m_height)
+
+    @property
+    def update_position(self):
+        return self.m_position
+
+    @update_position.setter
+    def update_position(self, value:pygame.Vector2):
+        self.m_position = value
