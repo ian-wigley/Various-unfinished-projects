@@ -1,8 +1,7 @@
 # /////////////////////////////////////////////////////////
 # //         JetPac - Written by Ian Wigley              //
-# //            Pygame re-write Nov 2020                 //
-# //    Static values removed & general code clean up    //
 # //        Project migrated to Python & Pygame          //
+# //            Pygame re-write Nov 2020                 //
 # /////////////////////////////////////////////////////////
 
 import sys
@@ -158,7 +157,6 @@ class JetPac:
         bonus_sprites = SpriteSheet("Images/bonus.png")
         bonus(0, 100, pygame.Vector2(100, 100), bonus_sprites.image_at((0, 0, 28, 28)), 0, 0, 0)
 
-        # self.sprite_sheet = SpriteSheet()
         jet_man_sprites = SpriteSheet("Images/sprites.png")
         jet_man_rect = (0, 0, 36, 52)
         jet_man_image = jet_man_sprites.image_at(jet_man_rect)
@@ -363,7 +361,9 @@ class JetPac:
 
         position = pygame.Vector2(0,0)
 
-        for event in pygame.event.get():
+        event_list = pygame.event.get()
+        keys = pygame.key.get_pressed()
+        for event in event_list:
 
             if event.type == pygame.QUIT:
                 self.game_on = False
@@ -390,7 +390,6 @@ class JetPac:
                     #     m_animation_timer = 0;
                     # }
                     position.x = 1.1
-                    self.jet_man.m_x += 2
                     self.m_flip = "right"
 
                 elif event.key == pygame.K_LEFT:
@@ -405,7 +404,6 @@ class JetPac:
                     #     m_animation_timer = 0;
                     # }
                     position.x = -1.1
-                    self.jet_man.m_x -= 2
                     self.m_flip = "left"
 
                 elif event.key == pygame.K_DOWN:
@@ -426,6 +424,7 @@ class JetPac:
 
                 elif event.key == pygame.K_LCTRL:
                     # fire.Play()
+                    print( keys )
                     self.m_delay_counter += self.m_elapsed_counter
                     if self.m_delay_counter > 0.4:
                         if self.m_flip == "right":
