@@ -1,8 +1,8 @@
 import pygame
 from base_object import BaseObject
 
-class jetman(BaseObject):
 
+class jetman(BaseObject):
     def __init__(self, x, y, position, image):
         super().__init__(x, y, position, image, 0, 36, 52)
         self.m_width = 36
@@ -10,13 +10,17 @@ class jetman(BaseObject):
         self.images = image
         self.right_facing_image = image
         self.left_facing_image = pygame.transform.flip(image, True, False)
+        self.rect = pygame.Rect(
+            position.x, position.y, image.get_width(), image.get_height()
+        )
+        self.m_position = pygame.Vector2(0, 0)
 
-    def move(self, position)-> None:
+    def move(self, position) -> None:
         self.m_position = position
         self.m_x += position.x
         self.m_y += position.y
 
-    def update(self)-> None:
+    def update(self) -> None:
         self.rect.move_ip(self.m_position.x, self.m_position.y)
         # def draw(self, screen, facing = "right"):
         #     if facing == "right":
