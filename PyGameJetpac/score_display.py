@@ -5,7 +5,7 @@ class ScoreDisplay(pygame.sprite.Sprite):
     def __init__(self):
         pygame.sprite.Sprite.__init__(self)
         self.font = pygame.Font(None, 20)
-        self.font.set_italic(1)
+        self.font.set_bold(1)
         self.color = "white"
         self.lastscore = -1
         self.score = 0
