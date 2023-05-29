@@ -155,13 +155,13 @@ class JetPac:
             enemy(0, 0, pygame.Vector2(422, 443), enemy_image, 0, 0, 0)
 
         bonus_sprites = SpriteSheet("Images/bonus.png")
-        bonus(0, 100, pygame.Vector2(100, 100), bonus_sprites.image_at((0, 0, 28, 28)), 0, 0, 0)
+        bonus(0, 0, pygame.Vector2(100, 100), bonus_sprites.image_at((0, 0, 28, 28)), 0, 0, 0)
 
         jet_man_sprites = SpriteSheet("Images/sprites.png")
         jet_man_rect = (0, 0, 36, 52)
         jet_man_image = jet_man_sprites.image_at(jet_man_rect)
 
-        self.jet_man = jetman(200, 200, pygame.Vector2(200, 200), jet_man_image)
+        self.jet_man = jetman(0, 0, pygame.Vector2(100, 300), jet_man_image)
 
         if pygame.font:
             self.all.add(ScoreDisplay())
