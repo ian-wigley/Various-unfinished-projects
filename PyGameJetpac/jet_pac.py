@@ -424,7 +424,6 @@ class JetPac:
 
                 elif event.key == pygame.K_LCTRL:
                     # fire.Play()
-                    print( keys )
                     self.m_delay_counter += self.m_elapsed_counter
                     if self.m_delay_counter > 0.4:
                         if self.m_flip == "right":
@@ -462,7 +461,7 @@ class JetPac:
                         self.m_delay_counter = 0
 
             self.jet_man.m_frame = self.m_current_frame
-        self.jet_man.move(position)
+        self.jet_man.move(position, self.m_flip)
     # m_jetman.Update(x, y, m_flip);
 
     def check_bullet_collisions(self):
