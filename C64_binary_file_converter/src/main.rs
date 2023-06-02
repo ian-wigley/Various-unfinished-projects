@@ -2,10 +2,14 @@ extern crate hex;
 
 use fltk::{
     app,
+    button::Button,
+    enums::{Font, FrameType, Shortcut},
+    menu,
     prelude::*,
     text::{TextBuffer, TextDisplay},
     window::Window,
 };
+
 use std::collections::HashMap;
 use std::env;
 use std::io::Read;
@@ -16,33 +20,71 @@ mod opcode;
 #[derive(Copy, Clone)]
 pub struct Opcode {}
 
+#[derive(Copy, Clone)]
+pub enum Message {
+    Changed,
+    SaveAs,
+}
+
+//https://www.reddit.com/r/rust/comments/q58q2n/fltkrs_textdisplay_how_to_update/
+
 fn main() {
     env::set_var("RUST_BACKTRACE", "full");
 
-    let app = app::App::default();
-    let mut wind = Window::new(100, 100, 800, 600, "C64 Binary to Assembly Converter");
-    let initial_display = TextDisplay::new(5, 5, 400, 550, None);
+    let app = app::App::default().load_system_fonts();
+    Font::set_font(Font::Helvetica, "Monospace");
+    app::set_font_size(10);
+
+    let mut wind = Window::new(100, 100, 820, 620, "C64 Binary to Assembly Converter");
+    let left_display = TextDisplay::new(5, 35, 400, 550, None);
+    let _right_display = TextDisplay::new(415, 35, 400, 550, None);
+
+    let (s, _r) = app::channel::<Message>();
+    let mut menu = menu::SysMenuBar::default().with_size(800, 35);
+    menu.set_frame(FrameType::FlatBox);
+    menu.add_emit(
+        "&File/Save as...\t",
+        Shortcut::Ctrl | 'w',
+        menu::MenuFlag::Normal,
+        s,
+        Message::SaveAs,
+    );
+    let mut but = Button::new(380, 590, 80, 20, "Add labels");
+
     wind.end();
     wind.show();
+
+    but.set_callback(move |_| click(wind.to_owned()));
 
     // Create a new OpCode Object
     let opcode = Opcode::new();
 
     // Populate the OpCode Map
     let opcodes = opcode.populate_opcodes();
-    // println!("Number of Opcodes: {}", opcodes.keys().len());
 
     // Load the external binary file
     let file_content: Vec<u8> = load_bin_file().unwrap();
 
     let hex_content = parse_content(file_content.clone());
 
-    iterate(hex_content, opcode, opcodes.clone(), file_content, initial_display);
+    convert_to_assembly(
+        hex_content,
+        opcode,
+        opcodes.clone(),
+        file_content,
+        left_display,
+    );
+
+    but.activate();
 
     app.run().unwrap();
 }
 
-fn iterate(
+fn click(wind: Window) {
+    wind.clone().set_label("TODO Add labels!");
+}
+
+fn convert_to_assembly(
     hex_content: Vec<String>,
     opcode: Opcode,
     opcodes: HashMap<&str, [&str; 5]>,
@@ -128,10 +170,7 @@ fn load_bin_file() -> std::io::Result<Vec<u8>> {
     // * none
     //
     let path = env::current_dir()?;
-    // println!("{:?}", path);
-    //if release ...
     let bin_path = path.join("Assets/C64_Binary.bin");
-    // println!("{:?}", bin_path);
     let mut file = std::fs::File::open(bin_path)?;
     let mut v: Vec<u8> = Vec::new();
     let _content = file.read_to_end(&mut v);
