@@ -1,10 +1,9 @@
 pub mod oc {
-    use std::collections::HashMap;
     use crate::Opcode;
+    use std::collections::HashMap;
 
     impl Opcode {
-
-        pub fn new() -> Opcode  {
+        pub fn new() -> Opcode {
             Opcode {}
         }
 
@@ -271,11 +270,14 @@ pub mod oc {
         }
 
         // Method to look for a match in the opcodes map and return the values array
-        pub(crate) fn get_match<'a>(self, opcode_mappings: HashMap<&str, [&'a str; 5]>, value:
-        &str) -> [&'a str; 5] {
+        pub(crate) fn get_match<'a>(
+            self,
+            opcode_mappings: HashMap<&str, [&'a str; 5]>,
+            value: &str,
+        ) -> [&'a str; 5] {
             let mut opcode_value: [&str; 5] = ["", "", "", "", ""];
             match opcode_mappings.get(value) {
-                Some(&row) => { opcode_value = row }
+                Some(&row) => opcode_value = row,
                 _ => {}
             };
             return opcode_value;
