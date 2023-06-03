@@ -82,6 +82,7 @@ fn main() {
 
 fn click(wind: Window) {
     wind.clone().set_label("TODO Add labels!");
+    add_labels("1000", "2000", true, 1, 2);
 }
 
 fn convert_to_assembly(
@@ -192,4 +193,157 @@ fn parse_content(bin: Vec<u8>) -> Vec<String> {
         opcode_mappings.push((*hop_code).parse().unwrap());
     }
     return opcode_mappings;
+}
+
+fn add_labels(
+    start: &str,
+    end: &str,
+    replace_illegal_opcodes: bool,
+    /*Dictionary<string, string[]> bucket,*/
+    first_occurance: i32,
+    last_occurrance: i32,
+) {
+    // textBox2.Clear();
+    // ClearRightWindow();
+    // passThree.Add("                *=$" + start);
+    // let originalFileContent = code;
+    let first_pass = true;
+    let count = 0;
+
+    // First pass parses the content looking for branch & jump conditions
+    while first_pass {
+        // Split each line into an array
+        //     var lineDetails = originalFileContent[count++].Split(' ');
+
+        //     if (lineDetails.Length > 1)
+        //     {
+        //         string[] dataValue;
+        //         // Replace the Illegal Opcodes with data statement
+        //         if (replaceIllegalOpcodes && bucket.TryGetValue(lineDetails[0], out dataValue))
+        //         {
+        //             foreach (string str in dataValue)
+        //             {
+        //                 passOne.Add(str);
+        //             }
+        //         }
+        //         else
+        //         {
+        //             switch (lineDetails[2].ToUpper())
+        //             {
+        //                 case "20": // JSR
+        //                 case "4C": // JMP
+        //                     if (!labelLoc.Keys.Contains(lineDetails[4] + lineDetails[3]))
+        //                     {
+        //                         labelLoc.Add(lineDetails[4] + lineDetails[3], label + labelCount++.ToString());
+        //                     }
+        //                     passOne.Add(lineDetails[8] + " " + lineDetails[9]);
+        //                     break;
+        //                 case "90": // BCC
+        //                 case "B0": // BCS
+        //                 case "F0": // BEQ
+        //                 case "30": // BMI
+        //                 case "D0": // BNE
+        //                 case "10": // BPL
+        //                 case "50": // BVC
+        //                 case "70": // BVS
+        //                     if (!branchLoc.Keys.Contains(lineDetails[11].Replace("$", "")))
+        //                     {
+        //                         branchLoc.Add(lineDetails[11].Replace("$", ""), branch + branchCount++.ToString());
+        //                     }
+        //                     passOne.Add(lineDetails[10] + " " + lineDetails[11]);
+        //                     break;
+        //                 default:
+        //                     if (lineDetails[3] == "" && lineDetails[4] == "")
+        //                     {
+        //                         passOne.Add(lineDetails[12]);
+        //                     }
+        //                     else if (lineDetails[3] != "" && lineDetails[4] == "")
+        //                     {
+        //                         passOne.Add(lineDetails[10] + " " + lineDetails[11]);
+        //                     }
+        //                     else if (lineDetails[3] != "" && lineDetails[4] != "")
+        //                     {
+        //                         passOne.Add(lineDetails[8] + " " + lineDetails[9]);
+        //                     }
+        //                     break;
+        //             }
+        //         }
+        //     }
+        //     if (count >= int.Parse(end, System.Globalization.NumberStyles.HexNumber) || count >= originalFileContent.Count || lineDetails[0].ToLower().Contains(end.ToLower()))
+        //     {
+        //         firstPass = false;
+        //     }
+    }
+
+    // Second pass iterates through first pass collection adding labels and branches into the code
+    // int counter = 0;
+    // for (int i = 0; i < passOne.Count; i++)
+    // {
+
+    //     string label = "";
+    //     string assembly = passOne[counter++];
+    //     foreach (KeyValuePair<String, String> memLocation in labelLoc)
+    //     {
+    //         if (passOne[i].ToUpper().Contains(memLocation.Key))
+    //         //   if (originalFileContent[i].ToUpper().Contains(memLocation.Key))
+    //         {
+    //             var dets = assembly.Split(' ');
+    //             if (dets[0].Contains("JSR") || dets[0].Contains("JMP"))
+    //             {
+    //                 assembly = dets[0] + " " + memLocation.Value;
+    //             }
+    //         }
+    //     }
+    //     foreach (KeyValuePair<String, String> memLocation in branchLoc)
+    //     {
+    //         if (originalFileContent[i].ToUpper().Contains(memLocation.Key))
+    //         {
+    //             var dets = assembly.Split(' ');
+    //             if (dets[0].Contains("BNE") || dets[0].Contains("BEQ") || dets[0].Contains("BPL"))
+    //             {
+    //                 assembly = dets[0] + " " + memLocation.Value;
+    //             }
+    //         }
+    //     }
+    //     passTwo.Add(label + assembly);
+    // }
+
+    // Add the labels to the front of the code
+    // counter = 0;
+    // for (int i = 0; i < passOne.Count; i++)
+    // {
+    //     var dets = originalFileContent[counter++].Split(' ');
+    //     string label = "                ";
+    //     foreach (KeyValuePair<String, String> memLocation in labelLoc)
+    //     {
+    //         if (dets[0].ToUpper().Contains(memLocation.Key))
+    //         {
+    //             label = memLocation.Value + "          ";
+    //             // The moemory address has been found add it another list
+    //             found.Add(memLocation.Key);
+    //         }
+    //     }
+
+    //     foreach (KeyValuePair<String, String> memLocation in branchLoc)
+    //     {
+    //         if (dets[0].ToUpper().Contains(memLocation.Key))
+    //         {
+    //             label = memLocation.Value + "         ";
+    //         }
+    //     }
+    //     passThree.Add(label + passTwo[i]);
+    // }
+
+    // // Finally iterate through the found list & add references to the address not found
+    // foreach (KeyValuePair<String, String> memLocation in labelLoc)
+    // {
+    //     if (!found.Contains(memLocation.Key))
+    //     {
+    //         passThree.Add(memLocation.Value + " = $" + memLocation.Key);
+    //     }
+    // }
+
+    // textBox2.Font = new Font(FontFamily.GenericMonospace, textBox2.Font.Size);
+    // textBox2.Lines = passThree.ToArray();
+    // rightWindowToolStripMenuItem.Enabled = true;
 }
