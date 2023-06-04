@@ -24,7 +24,6 @@ from star_layer_one import starlayerone
 
 
 class JetPac:
-
     def __init__(self):
         pygame.init()
         pygame.font.init()
@@ -33,15 +32,15 @@ class JetPac:
         self.clock = pygame.Clock()
         self.size = width, height = 800, 600
 
-        fullscreen = False
-        SCREENRECT = pygame.Rect(0, 0, 800, 600)
+        # fullscreen = False
+        SCREEN_RECT = pygame.Rect(0, 0, 800, 600)
         # Set the display mode
-        winstyle = 0  # |FULLSCREEN
-        bestdepth = pygame.display.mode_ok(SCREENRECT.size, winstyle, 32)
-        self.screen = pygame.display.set_mode(SCREENRECT.size, winstyle, bestdepth)
+        win_style = 0  # |FULLSCREEN
+        best_depth = pygame.display.mode_ok(SCREEN_RECT.size, win_style, 32)
+        self.screen = pygame.display.set_mode(SCREEN_RECT.size, win_style, best_depth)
 
         # create the background surface
-        self.background = pygame.Surface(SCREENRECT.size)
+        self.background = pygame.Surface(SCREEN_RECT.size)
         self.screen.blit(self.background, (0, 0))
         pygame.display.flip()
 
@@ -62,11 +61,11 @@ class JetPac:
         self.m_fuel_lower_position = 430
 
         self.game_state = GameState.GAME_OVER.value
-        self.myfont = pygame.font.SysFont("Comic Sans MS", 15)
+        self.my_font = pygame.font.SysFont("Comic Sans MS", 15)
 
-        #SoundEffect died;
-        #SoundEffect fire;
-        #SoundEffect hit;
+        # SoundEffect died;
+        # SoundEffect fire;
+        # SoundEffect hit;
 
         self.m_score_location = pygame.Vector2(11.0, 11.0)
         self.m_rocket_location_1 = None
@@ -103,9 +102,7 @@ class JetPac:
         self.master_list = []
         self.master_rects = []
 
-
-    def load_images(self):
-
+    def load_images(self) -> None:
         self.loading_image = pygame.image.load("Images/loading.png").convert_alpha()
         self.bullet_image = pygame.image.load("Images/bullet.png").convert_alpha()
         self.m_floor_texture = pygame.image.load("Images/floor.png").convert_alpha()
@@ -145,8 +142,24 @@ class JetPac:
         rocket_rect = (0, 0, 75, 61)
         rocket_image = rocket_sprites.image_at(rocket_rect)
         rocket(0, 0, pygame.Vector2(422, 443), rocket_image, 0, 75, 61)
-        rocket(0, 0, pygame.Vector2(110, 139), rocket_sprites.image_at((4 * 75, 0, 75, 61)), 4, 75, 61)
-        rocket(0, 0, pygame.Vector2(510, 75), rocket_sprites.image_at((8 * 75, 0, 75, 61)), 8, 75, 61)
+        rocket(
+            0,
+            0,
+            pygame.Vector2(110, 139),
+            rocket_sprites.image_at((4 * 75, 0, 75, 61)),
+            4,
+            75,
+            61,
+        )
+        rocket(
+            0,
+            0,
+            pygame.Vector2(510, 75),
+            rocket_sprites.image_at((8 * 75, 0, 75, 61)),
+            8,
+            75,
+            61,
+        )
 
         enemy_sprites = SpriteSheet("Images/meteor.png")
         enemy_rect = (0, 0, 36, 52)
@@ -155,7 +168,15 @@ class JetPac:
             enemy(0, 0, pygame.Vector2(422, 443), enemy_image, 0, 0, 0)
 
         bonus_sprites = SpriteSheet("Images/bonus.png")
-        bonus(0, 0, pygame.Vector2(100, 100), bonus_sprites.image_at((0, 0, 28, 28)), 0, 0, 0)
+        bonus(
+            0,
+            0,
+            pygame.Vector2(100, 100),
+            bonus_sprites.image_at((0, 0, 28, 28)),
+            0,
+            0,
+            0,
+        )
 
         jet_man_sprites = SpriteSheet("Images/sprites.png")
         jet_man_rect = (0, 0, 36, 52)
@@ -166,10 +187,9 @@ class JetPac:
         if pygame.font:
             self.all.add(ScoreDisplay())
 
-    def main(self):
+    def main(self) -> None:
         pygame.key.set_repeat(10, 10)
         while self.game_on:
-
             self.all.clear(self.screen, self.background)
 
             self.check_keys()
@@ -178,8 +198,7 @@ class JetPac:
 
             self.clock.tick(60)
 
-
-    def update(self):
+    def update(self) -> None:
         pass
 
         # if self.game_state == GameState.GAME_START.value:
@@ -269,10 +288,8 @@ class JetPac:
         #     self.ResetLevel()
         #     self.game_state = GameState.GAME_ON.value
 
-    def draw(self):
-
+    def draw(self) -> None:
         if self.game_on:
-
             if self.game_state == GameState.GAME_OVER.value:
                 self.screen.blit(
                     self.loading_image,
@@ -284,26 +301,25 @@ class JetPac:
                         self.loading_image.get_height(),
                     ),
                 )
-                intro_text_one = self.myfont.render(
+                intro_text_one = self.my_font.render(
                     "JetPac Remake (Pygame Version)", False, (100, 100, 100)
                 )
                 self.screen.blit(intro_text_one, (150, 440))
-                intro_text_two = self.myfont.render(
+                intro_text_two = self.my_font.render(
                     "Written by Ian Wigley", False, (100, 100, 100)
                 )
                 self.screen.blit(intro_text_two, (150, 460))
-                intro_text_three = self.myfont.render(
+                intro_text_three = self.my_font.render(
                     "In 2021", False, (100, 100, 100)
                 )
                 self.screen.blit(intro_text_three, (150, 480))
-                intro_text_four = self.myfont.render(
+                intro_text_four = self.my_font.render(
                     "Press X to start", False, (0, 155, 255)
                 )
                 self.screen.blit(intro_text_four, (150, 520))
                 pygame.display.update()
 
             else:
-
                 dirty = self.all.draw(self.screen)
                 pygame.display.update(dirty)
 
@@ -355,23 +371,24 @@ class JetPac:
             # pygame.display.flip()
             # pygame.display.update()
 
-            #pygame.time.delay(10)
+            # pygame.time.delay(10)
 
-    def check_keys(self):
-
-        position = pygame.Vector2(0,0)
+    def check_keys(self) -> None:
+        position = pygame.Vector2(0, 0)
 
         event_list = pygame.event.get()
         keys = pygame.key.get_pressed()
         for event in event_list:
-
             if event.type == pygame.QUIT:
                 self.game_on = False
                 pygame.quit()
                 sys.exit()
 
             if event.type == pygame.KEYDOWN:
-                if (event.key == pygame.K_x and self.game_state == GameState.GAME_OVER.value):
+                if (
+                    event.key == pygame.K_x
+                    and self.game_state == GameState.GAME_OVER.value
+                ):
                     self.game_state = GameState.GAME_START.value
                     self.reset_game()
                     self.screen.fill((0, 0, 0))
@@ -462,9 +479,10 @@ class JetPac:
 
             self.jet_man.m_frame = self.m_current_frame
         self.jet_man.move(position, self.m_flip)
+
     # m_jetman.Update(x, y, m_flip);
 
-    def check_bullet_collisions(self):
+    def check_bullet_collisions(self) -> None:
         bullet_to_remove = None
         for bullet in self.m_bullets:
             for alien in self.m_enemies:
@@ -488,7 +506,7 @@ class JetPac:
         if bullet_to_remove != None:
             self.m_bullets.remove(bullet_to_remove)
 
-    def check_enemy_collisions(self):
+    def check_enemy_collisions(self) -> None:
         for alien in self.m_enemies:
             if (
                 alien.get_rect().colliderect(self.jet_man.jetman_rect())
@@ -525,7 +543,7 @@ class JetPac:
                     alien.reset_enemy()
                     # hit.Play()
 
-    def check_bonus_collisions(self):
+    def check_bonus_collisions(self) -> None:
         for bonus in self.m_bonus:
             for ledge in self.m_ledges:
                 if bonus.BonRect().colliderect(ledge.LedgeRect()):
@@ -534,7 +552,7 @@ class JetPac:
                     bonus.Reset()
                     self.m_score += 100
 
-    def check_rocket_collsions(self):
+    def check_rocket_collsions(self) -> None:
         if (
             self.jet_man.jetman_rect().colliderect(self.m_rockets[1].RocketRect())
             and not self.m_first_section_lowering
@@ -554,7 +572,7 @@ class JetPac:
             else:
                 self.m_second_section_lowering = True
 
-    def check_jetman_ledge_collsions(self):
+    def check_jetman_ledge_collsions(self) -> None:
         for ledge in self.m_ledges:
             if self.jet_man.jetman_rect().colliderect(ledge.LedgeRect()):
                 if (
@@ -562,7 +580,6 @@ class JetPac:
                     or self.jet_man.jetman_rect().bottom - 2 == ledge.LedgeRect().top
                     or self.jet_man.jetman_rect().bottom - 1 == ledge.LedgeRect().top
                 ):
-
                     self.jet_man.m_y -= 1
                     self.m_on_ground = True
 
@@ -581,7 +598,7 @@ class JetPac:
                 if self.jet_man.jetman_rect().left + 1 == ledge.LedgeRect().right:
                     self.jet_man.m_x += 2
 
-    def check_fuel_collisions(self, fuel):
+    def check_fuel_collisions(self, fuel) -> None:
         if self.jet_man.jetman_rect().colliderect(fuel.FuelRect()):
             if (
                 self.jet_man.m_x != self.m_fuel_lower_position
@@ -591,7 +608,7 @@ class JetPac:
             else:
                 self.m_fuel_lowering = True
 
-    def lower_rocket_sections(self):
+    def lower_rocket_sections(self) -> None:
         # Lower the first rocket section into place
         if self.m_first_section_lowering and not self.m_first_section_complete:
             self.m_first_section_complete = self.m_rockets[1].LowerSectionOne()
@@ -599,7 +616,7 @@ class JetPac:
         if self.m_second_section_lowering and not self.m_second_section_complete:
             self.m_second_section_complete = self.m_rockets[2].LowerSectionTwo()
 
-    def add_fuel(self):
+    def add_fuel(self) -> None:
         self.m_fuel = []
         if self.m_fuel_level != 100:
             self.m_fuel.append(
@@ -609,7 +626,7 @@ class JetPac:
             self.game_state = GameState.TAKE_OFF.value
             self.m_score += 100
 
-    def check_screen_bounds(self):
+    def check_screen_bounds(self) -> None:
         if self.jet_man.m_y <= 50:
             self.jet_man.m_y = 50
         if self.jet_man.m_y >= 550:
@@ -620,7 +637,7 @@ class JetPac:
         if self.jet_man.m_x >= 750:
             self.jet_man.m_x = 750
 
-    def reset_game(self):
+    def reset_game(self) -> None:
         self.m_score = 0
         self.m_lives = 3
         self.m_level = 0
@@ -630,7 +647,7 @@ class JetPac:
         self.y = 300
         # self.reset_level()
 
-    def reset_level(self):
+    def reset_level(self) -> None:
         self.x = 150
         self.y = 300
         self.rocket_1x = 422
@@ -654,7 +671,9 @@ class JetPac:
         # # self.m_rockets.append(rocket(self.m_rocket_location_1.X, self.m_rocket_location_1.Y, self.m_rocketTexture, frame, 75, 61))
         # # self.m_rockets.append(rocket(self.m_rocket_location_2.X, self.m_rocket_location_2.Y, self.m_rocketTexture, frame + 4, 75, 61))
         # # self.m_rockets.append(rocket(self.m_rocket_location_3.X, self.m_rocket_location_3.Y, self.m_rocketTexture, frame + 8, 75, 61))
-        self.m_rockets.append(rocket(0, 0, pygame.Vector2(422, 443), self.rocket_images, frame, 75, 61))
+        self.m_rockets.append(
+            rocket(0, 0, pygame.Vector2(422, 443), self.rocket_images, frame, 75, 61)
+        )
         self.m_rockets.append(
             rocket(
                 0, 0, pygame.Vector2(110, 139), self.rocket_images, frame + 4, 75, 61
@@ -671,11 +690,11 @@ class JetPac:
                 obj.next_level(self.m_level)
 
 
-def main():
+def main() -> None:
     pygame.init()
-    jetpac = JetPac()
-    jetpac.load_images()
-    jetpac.main()
+    jet_pac = JetPac()
+    jet_pac.load_images()
+    jet_pac.main()
 
 
 main()
