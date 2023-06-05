@@ -2,7 +2,7 @@ import pygame
 from base_object import BaseObject
 
 
-class jetman(BaseObject):
+class jet_man(BaseObject):
     def __init__(self, x, y, position, image):
         super().__init__(x, y, position, image, 0, 36, 52)
         self.m_width = 36
@@ -27,9 +27,9 @@ class jetman(BaseObject):
     def update(self) -> None:
         self.rect.move_ip(self.m_position.x, self.m_position.y)
 
-    def jetman_rect(self):
+    def jet_man_rect(self) -> pygame.Rect:
         return pygame.Rect(self.m_x, self.m_y, 36, 52)
 
     @property
-    def jetman_position(self) -> tuple[int, int]:
+    def jet_man_position(self) -> tuple[int, int]:
         return self.rect.center
