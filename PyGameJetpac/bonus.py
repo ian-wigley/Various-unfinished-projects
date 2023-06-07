@@ -17,13 +17,13 @@ class bonus(BaseObject):
             self.m_position.y += 1
         self.m_rect = pygame.Rect(self.m_frame * self.m_width, 0, self.m_width, self.m_height)
 
-    def bonrect(self):
+    def bonus_rectangle(self) -> pygame.Rect:
         return pygame.Rect(self.m_position.x, self.m_position.y, self.m_width, self.m_height)
 
-    def bonus_landed(self, value):
+    def bonus_landed(self, value) -> None:
         self.bonusLanded = value
 
-    def reset(self):
+    def reset(self) -> None:
         self.m_prevFrame = self.m_frame
         self.m_frame = random.randint(0, 4)
         if (self.m_frame == self.m_prevFrame):
