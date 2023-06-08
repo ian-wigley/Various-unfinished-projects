@@ -23,11 +23,11 @@ class fuel(BaseObject):
         self.m_position.x = x
         self.m_position.y = y
 
-    def lower_fuel(self):
+    def lower_fuel(self) -> bool:
         self.m_position.x = 440
         if (self.m_position.y < 450):
             self.m_position.y += 1
         return self.m_position.y > 448
 
-    def fuel_rect(self):
+    def fuel_rect(self) -> pygame.Rect:
         return pygame.Rect(self.m_position.x, self.m_position.y, self.m_width, self.m_height)

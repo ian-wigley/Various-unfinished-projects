@@ -18,5 +18,5 @@ class explosion(BaseObject):
             else:
                 self.m_animationComplete = True
 
-    def animation_complete(self):
+    def animation_complete(self) -> bool:
         return self.m_animationComplete
