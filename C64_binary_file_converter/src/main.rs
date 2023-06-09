@@ -10,7 +10,7 @@ use fltk::{
     window::Window,
 };
 
-use std::{env, collections::HashMap};
+use std::{collections::HashMap, env};
 
 mod converter;
 mod opcode;
@@ -18,15 +18,13 @@ mod opcode;
 #[derive(Copy, Clone)]
 pub struct Opcode {}
 
-// #[derive(Copy, Clone)]
 #[derive(Clone)]
 struct Converter {
     opcode: Opcode,
-    // opcodes: HashMap<String, String>,
-    // opcodes: HashMap<&'static str, [&'static str]>,
     opcodes: HashMap<&'static str, [&'static str; 5]>,
     hex_content: Vec<String>,
     file_content: Vec<u8>,
+    assembly_code: Vec<String>,
 }
 
 #[derive(Copy, Clone)]
@@ -46,7 +44,7 @@ fn main() {
 
     let mut wind = Window::new(100, 100, 820, 620, "C64 Binary to Assembly Converter");
     let left_display = TextDisplay::new(5, 35, 400, 550, None);
-    let _right_display = TextDisplay::new(415, 35, 400, 550, None);
+    let right_display = TextDisplay::new(415, 35, 400, 550, None);
 
     let (s, _r) = app::channel::<Message>();
     let mut menu = menu::SysMenuBar::default().with_size(800, 35);
@@ -64,15 +62,22 @@ fn main() {
     wind.show();
 
     let mut converter = Converter::new();
-    converter.init(left_display);
+    converter.init();
+    converter.convert_to_assembly(left_display);
 
-    but.set_callback(move |_| click(wind.to_owned(), converter.to_owned()));
+    but.set_callback(move |_| {
+        click(
+            wind.to_owned(),
+            converter.to_owned(),
+            right_display.to_owned(),
+        )
+    });
     but.activate();
 
     app.run().unwrap();
 }
 
-fn click(wind: Window, converter: Converter) {
+fn click(wind: Window, converter: Converter, right_display: TextDisplay) {
     wind.clone().set_label("TODO Add labels!");
-    converter.add_labels("1000", "2000", true, 1, 2);
+    converter.add_labels("1000", "2000", true, 1, 2, right_display);
 }
