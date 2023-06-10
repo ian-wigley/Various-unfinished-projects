@@ -39,7 +39,7 @@ fn main() {
     env::set_var("RUST_BACKTRACE", "full");
 
     let app = app::App::default().load_system_fonts();
-    Font::set_font(Font::Helvetica, "Monospace");
+    Font::set_font(Font::Courier, "Monospace");
     app::set_font_size(10);
 
     let mut wind = Window::new(100, 100, 820, 620, "C64 Binary to Assembly Converter");
