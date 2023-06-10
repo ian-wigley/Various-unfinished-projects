@@ -224,9 +224,9 @@ pub mod con {
                             // default:
                             _ => {
                                 // if (lineDetails[3] == "" && lineDetails[4] == "")
-                                // {
-                                //     passOne.Add(lineDetails[12]);
-                                // }
+                                if line_detail[2]!= "" {
+                                    passOne.push(line_detail[2].to_string());
+                                }
                                 // else if (lineDetails[3] != "" && lineDetails[4] == "")
                                 // {
                                 //     passOne.Add(lineDetails[10] + " " + lineDetails[11]);
@@ -235,7 +235,7 @@ pub mod con {
                                 // {
                                 //     passOne.Add(lineDetails[8] + " " + lineDetails[9]);
                                 // }
-                                println!("Default!")
+                                // println!("Default!")
                             }
                         }
                     }
@@ -294,7 +294,7 @@ pub mod con {
             //         if (dets[0].ToUpper().Contains(memLocation.Key))
             //         {
             //             label = memLocation.Value + "          ";
-            //             // The moemory address has been found add it another list
+            //             // The memory address has been found add it another list
             //             found.Add(memLocation.Key);
             //         }
             //     }
