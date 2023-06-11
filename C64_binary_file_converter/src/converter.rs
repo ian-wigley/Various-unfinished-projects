@@ -167,7 +167,7 @@ pub mod con {
             // ClearRightWindow();
             // passThree.Add("                *=$" + start);
             // let originalFileContent = code;
-
+            let mut buf = TextBuffer::default();
             let mut first_pass = true;
             let mut count = 0;
             let mut passOne: Vec<String> = Vec::new();
@@ -318,6 +318,15 @@ pub mod con {
             //     }
             // }
 
+            // TO-DO
+            let code = format!(
+                "{}\n",
+                &passOne[0],
+
+            );
+            buf.append(&code);
+            let mut disp = right_display.clone();
+            disp.set_buffer(buf.clone());
             // textBox2.Font = new Font(FontFamily.GenericMonospace, textBox2.Font.Size);
             // textBox2.Lines = passThree.ToArray();
             // rightWindowToolStripMenuItem.Enabled = true;
