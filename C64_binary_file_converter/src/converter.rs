@@ -2,6 +2,7 @@ pub mod con {
 
     use std::collections::HashMap;
     use std::env;
+    use std::fmt::format;
     use std::io::Read;
     use std::str::FromStr;
 
@@ -167,10 +168,12 @@ pub mod con {
             // ClearRightWindow();
             // passThree.Add("                *=$" + start);
             // let originalFileContent = code;
-
+            let mut branch_loc: HashMap<String, String> = HashMap::new();
+            let mut buf = TextBuffer::default();
             let mut first_pass = true;
             let mut count = 0;
-            let mut passOne: Vec<String> = Vec::new();
+            let mut pass_one: Vec<String> = Vec::new();
+            let label = "label";
             // First pass parses the content looking for branch & jump conditions
             while first_pass {
                 // Split each line into an array
@@ -189,44 +192,47 @@ pub mod con {
                         //   passOne.Add(str);
                         // }
                     } else {
-                        let value = line_detail[1].to_ascii_lowercase();
+                        let value = line_detail[1].to_ascii_uppercase();
                         match value.as_str() {
                             "20" | "4C" => {
-                                // case "20": // JSR
-                                // case "4C": // JMP
+                                // "20": JSR | "4C": JMP
                                 // if (!labelLoc.Keys.Contains(lineDetails[4] + lineDetails[3]))
                                 // {
                                 //      labelLoc.Add(lineDetails[4] + lineDetails[3], label + labelCount++.ToString());
                                 // }
-                                // passOne.Add(lineDetails[8] + " " + lineDetails[9]);
-                                passOne.push(value);
-                                println!("Jumps")
+                                pass_one.push(format!("{} {}", line_detail[4], line_detail[5]));
                             }
 
                             "90" | "B0" | "F0" | "30" | "D0" | "10" | "50" | "70" => {
-                                // case "90": // BCC
-                                // case "B0": // BCS
-                                // case "F0": // BEQ
-                                // case "30": // BMI
-                                // case "D0": // BNE
-                                // case "10": // BPL
-                                // case "50": // BVC
-                                // case "70": // BVS
+                                // "90": BCC | "B0": BCS | "F0": BEQ | "30": BMI
+                                // "D0": BNE | "10": BPL | "50": BVC | "70": BVS
                                 // if (!branchLoc.Keys.Contains(lineDetails[11].Replace("$", "")))
-                                // {
-                                //     branchLoc.Add(lineDetails[11].Replace("$", ""), branch + branchCount++.ToString());
-                                // }
-                                // passOne.Add(lineDetails[10] + " " + lineDetails[11]);
-                                passOne.push(value);
-                                println!("Branches")
+                                if !branch_loc
+                                    .contains_key(&format!("{}", line_detail[4].replace("$", "")))
+                                {
+                                    branch_loc.insert(
+                                        format!("{}", line_detail[4].replace("$", "")),
+                                        format!("branch{}", 0), // branchCount++.ToString());
+                                    );
+                                }
+                                pass_one.push(format!("{} {}", line_detail[3], line_detail[4]));
                             }
 
-                            // default:
                             _ => {
+                                // default:
                                 // if (lineDetails[3] == "" && lineDetails[4] == "")
-                                if line_detail[2]!= "" {
-                                    passOne.push(line_detail[2].to_string());
+                                // println!("Vec Length: {}", line_detail.len());
+                                if line_detail.len() == 3 {
+                                    pass_one.push(line_detail[2].to_string());
+                                } else if line_detail.len() == 5 {
+                                    pass_one.push(line_detail[3].to_string());
+                                } else if line_detail.len() == 6 {
+                                    pass_one.push(line_detail[4].to_string());
                                 }
+
+                                // if line_detail[2] != "" {
+                                //     passOne.push(line_detail[2].to_string());
+                                // }
                                 // else if (lineDetails[3] != "" && lineDetails[4] == "")
                                 // {
                                 //     passOne.Add(lineDetails[10] + " " + lineDetails[11]);
@@ -252,7 +258,7 @@ pub mod con {
 
             // Second pass iterates through first pass collection adding labels and branches into the code
             // let counter = 0;
-            for i in 1..passOne.len() {
+            for i in 1..pass_one.len() {
                 // for (int i = 0; i < passOne.Count; i++)
 
                 //     let label = "";
@@ -318,6 +324,11 @@ pub mod con {
             //     }
             // }
 
+            // TO-DO
+            let code = format!("{}\n", &pass_one[0],);
+            buf.append(&code);
+            let mut disp = right_display.clone();
+            disp.set_buffer(buf.clone());
             // textBox2.Font = new Font(FontFamily.GenericMonospace, textBox2.Font.Size);
             // textBox2.Lines = passThree.ToArray();
             // rightWindowToolStripMenuItem.Enabled = true;
