@@ -169,7 +169,7 @@ pub mod con {
             // passThree.Add("                *=$" + start);
             // let originalFileContent = code;
             let mut branch_loc: HashMap<String, String> = HashMap::new();
-            let mut buf = TextBuffer::default();
+            let mut buf = TextBuffer::default();            let mut buf = TextBuffer::default();
             let mut first_pass = true;
             let mut count = 0;
             let mut pass_one: Vec<String> = Vec::new();
@@ -326,6 +326,15 @@ pub mod con {
 
             // TO-DO
             let code = format!("{}\n", &pass_one[0],);
+            buf.append(&code);
+            let mut disp = right_display.clone();
+            disp.set_buffer(buf.clone());
+            // TO-DO
+            let code = format!(
+                "{}\n",
+                &passOne[0],
+
+            );
             buf.append(&code);
             let mut disp = right_display.clone();
             disp.set_buffer(buf.clone());
