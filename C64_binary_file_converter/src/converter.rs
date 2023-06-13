@@ -164,23 +164,28 @@ pub mod con {
             last_occurrance: i32,
             right_display: TextDisplay,
         ) {
-            // textBox2.Clear();
-            // ClearRightWindow();
-            // passThree.Add("                *=$" + start);
-            // let originalFileContent = code;
+            let label = "label";
+            let branch = "branch";
+            let mut labelCount = 0;
+            let mut branchCount = 0;
+
+            let mut label_loc: HashMap<String, String> = HashMap::new();
             let mut branch_loc: HashMap<String, String> = HashMap::new();
-            let mut buf = TextBuffer::default();            let mut buf = TextBuffer::default();
+
+            // let mut buf = TextBuffer::default();
+            let mut buf = TextBuffer::default();
             let mut first_pass = true;
             let mut count = 0;
             let mut pass_one: Vec<String> = Vec::new();
+            let mut pass_two: Vec<String> = Vec::new();
+            let mut pass_three: Vec<String> = Vec::new();
             let label = "label";
+            pass_three.push(format!("                *=${}", start));
+
             // First pass parses the content looking for branch & jump conditions
             while first_pass {
-                // Split each line into an array
+                // Split each line into an Vector<&str>
                 let line_detail: Vec<&str> = self.assembly_code[count].split_whitespace().collect();
-                // let lineDetails = originalFileContent[count++].Split(' ');
-                // println!("Vec Length: ");
-
                 if line_detail.len() > 1 {
                     // string[] dataValue;
                     // Replace the Illegal Opcodes with data statement
@@ -196,32 +201,37 @@ pub mod con {
                         match value.as_str() {
                             "20" | "4C" => {
                                 // "20": JSR | "4C": JMP
-                                // if (!labelLoc.Keys.Contains(lineDetails[4] + lineDetails[3]))
-                                // {
-                                //      labelLoc.Add(lineDetails[4] + lineDetails[3], label + labelCount++.ToString());
-                                // }
+
+                                // Populate the Jump labels
+                                if !label_loc.contains_key(&format!("{}", line_detail[5])) {
+                                    // let address = line_detail[5].replace("$", "");
+                                    label_loc.insert(
+                                        format!("{}", line_detail[5].replace("$", "")),
+                                        format!("{}{}", label, labelCount),
+                                    );
+                                    labelCount += 1;
+                                }
                                 pass_one.push(format!("{} {}", line_detail[4], line_detail[5]));
                             }
 
                             "90" | "B0" | "F0" | "30" | "D0" | "10" | "50" | "70" => {
                                 // "90": BCC | "B0": BCS | "F0": BEQ | "30": BMI
                                 // "D0": BNE | "10": BPL | "50": BVC | "70": BVS
-                                // if (!branchLoc.Keys.Contains(lineDetails[11].Replace("$", "")))
+
+                                // Populate the Branch labels
                                 if !branch_loc
                                     .contains_key(&format!("{}", line_detail[4].replace("$", "")))
                                 {
                                     branch_loc.insert(
                                         format!("{}", line_detail[4].replace("$", "")),
-                                        format!("branch{}", 0), // branchCount++.ToString());
+                                        format!("{}{}", branch, branchCount),
                                     );
+                                    branchCount += 1;
                                 }
                                 pass_one.push(format!("{} {}", line_detail[3], line_detail[4]));
                             }
 
                             _ => {
-                                // default:
-                                // if (lineDetails[3] == "" && lineDetails[4] == "")
-                                // println!("Vec Length: {}", line_detail.len());
                                 if line_detail.len() == 3 {
                                     pass_one.push(line_detail[2].to_string());
                                 } else if line_detail.len() == 5 {
@@ -229,19 +239,6 @@ pub mod con {
                                 } else if line_detail.len() == 6 {
                                     pass_one.push(line_detail[4].to_string());
                                 }
-
-                                // if line_detail[2] != "" {
-                                //     passOne.push(line_detail[2].to_string());
-                                // }
-                                // else if (lineDetails[3] != "" && lineDetails[4] == "")
-                                // {
-                                //     passOne.Add(lineDetails[10] + " " + lineDetails[11]);
-                                // }
-                                // else if (lineDetails[3] != "" && lineDetails[4] != "")
-                                // {
-                                //     passOne.Add(lineDetails[8] + " " + lineDetails[9]);
-                                // }
-                                // println!("Default!")
                             }
                         }
                     }
@@ -249,71 +246,68 @@ pub mod con {
                 count += 1;
                 if count >= self.assembly_code.len() {
                     // if (count >= int.Parse(end, System.Globalization.NumberStyles.HexNumber) || count >= originalFileContent.Count || lineDetails[0].ToLower().Contains(end.ToLower()))
-                    // {
-                    //       firstPass = false;
-                    // }
                     first_pass = false;
                 }
             }
 
-            // Second pass iterates through first pass collection adding labels and branches into the code
-            // let counter = 0;
+            // Second pass iterates through first pass collection adding labels and branches details into the code
+            let counter = 0;
             for i in 1..pass_one.len() {
-                // for (int i = 0; i < passOne.Count; i++)
-
-                //     let label = "";
-                //     let assembly = passOne[counter++];
-                //     foreach (KeyValuePair<String, String> memLocation in labelLoc)
-                //     {
-                //         if (passOne[i].ToUpper().Contains(memLocation.Key))
-                //         //   if (originalFileContent[i].ToUpper().Contains(memLocation.Key))
-                //         {
-                //             var dets = assembly.Split(' ');
-                //             if (dets[0].Contains("JSR") || dets[0].Contains("JMP"))
-                //             {
-                //                 assembly = dets[0] + " " + memLocation.Value;
-                //             }
-                //         }
-                //     }
-                //     foreach (KeyValuePair<String, String> memLocation in branchLoc)
-                //     {
-                //         if (originalFileContent[i].ToUpper().Contains(memLocation.Key))
-                //         {
-                //             var dets = assembly.Split(' ');
-                //             if (dets[0].Contains("BNE") || dets[0].Contains("BEQ") || dets[0].Contains("BPL"))
-                //             {
-                //                 assembly = dets[0] + " " + memLocation.Value;
-                //             }
-                //         }
-                //     }
-                //     passTwo.Add(label + assembly);
+                let mut assembly = pass_one[counter].clone();
+                let copy = pass_one[counter].clone();
+                for ele in label_loc.clone() {
+                    if pass_one[i].contains(&ele.0) {
+                        let detail = copy.split_whitespace();
+                        for value in detail {
+                            if value.contains("JSR") || value.contains("JMP") {
+                                assembly = format!("{} {}", value, ele.1);
+                            }
+                        }
+                    }
+                }
+                for ele in branch_loc.clone() {
+                    if pass_one[i].contains(&ele.0) {
+                        let detail = copy.split_whitespace();
+                        for value in detail {
+                            if value.contains("BNE")
+                                || value.contains("BEQ")
+                                || value.contains("BPL")
+                            {
+                                assembly = format!("{} {}", value, ele.1);
+                            }
+                        }
+                    }
+                }
+                pass_two.push(assembly);
             }
 
-            // Add the labels to the front of the code
+            // Third pass add the labels to the front of the code
             // counter = 0;
-            // for (int i = 0; i < passOne.Count; i++)
-            // {
-            //     var dets = originalFileContent[counter++].Split(' ');
-            //     string label = "                ";
-            //     foreach (KeyValuePair<String, String> memLocation in labelLoc)
-            //     {
-            //         if (dets[0].ToUpper().Contains(memLocation.Key))
-            //         {
-            //             label = memLocation.Value + "          ";
-            //             // The memory address has been found add it another list
-            //             found.Add(memLocation.Key);
-            //         }
-            //     }
+            for i in 1..pass_one.len() {
+                // for (int i = 0; i < passOne.Count; i++)
+                // {
+                // var dets = originalFileContent[counter++].Split(' ');
+                let label = "                ";
+                // foreach (KeyValuePair<String, String> memLocation in labelLoc)
+                for ele in label_loc.clone() {
+                    // if (dets[0].ToUpper().Contains(memLocation.Key))
+                    // {
+                    //     label = memLocation.Value + "          ";
+                    //     // The memory address has been found add it another list
+                    //     found.Add(memLocation.Key);
+                    // }
+                }
 
-            //     foreach (KeyValuePair<String, String> memLocation in branchLoc)
-            //     {
-            //         if (dets[0].ToUpper().Contains(memLocation.Key))
-            //         {
-            //             label = memLocation.Value + "         ";
-            //         }
-            //     }
-            //     passThree.Add(label + passTwo[i]);
-            // }
+                // foreach (KeyValuePair<String, String> memLocation in branchLoc)
+                for ele in branch_loc.clone() {
+                    // if (dets[0].ToUpper().Contains(memLocation.Key))
+                    // {
+                    //     label = memLocation.Value + "         ";
+                    // }
+                }
+                pass_three.push(format!("{}{}", label, pass_two[i].clone()));
+                //     passThree.Add(label + passTwo[i]);
+            }
 
             // // Finally iterate through the found list & add references to the address not found
             // foreach (KeyValuePair<String, String> memLocation in labelLoc)
@@ -325,11 +319,7 @@ pub mod con {
             // }
 
             // TO-DO
-            let code = format!(
-                "{}\n",
-                &pass_one[0],
-
-            );
+            let code = format!("{}\n", &pass_one[0],);
             buf.append(&code);
             let mut disp = right_display.clone();
             disp.set_buffer(buf.clone());
