@@ -179,6 +179,7 @@ pub mod con {
             let mut pass_one: Vec<String> = Vec::new();
             let mut pass_two: Vec<String> = Vec::new();
             let mut pass_three: Vec<String> = Vec::new();
+            let mut found: Vec<String> = Vec::new();
             let label = "label";
             pass_three.push(format!("                *=${}", start));
 
@@ -251,7 +252,7 @@ pub mod con {
             }
 
             // Second pass iterates through first pass collection adding labels and branches details into the code
-            let counter = 0;
+            let mut counter = 0;
             for i in 1..pass_one.len() {
                 let mut assembly = pass_one[counter].clone();
                 let copy = pass_one[counter].clone();
@@ -282,41 +283,48 @@ pub mod con {
             }
 
             // Third pass add the labels to the front of the code
-            // counter = 0;
+            counter = 0;
             for i in 1..pass_one.len() {
                 // for (int i = 0; i < passOne.Count; i++)
-                // {
+                let copy = pass_one[counter].clone();
                 // var dets = originalFileContent[counter++].Split(' ');
-                let label = "                ";
+                let detail = copy.split_whitespace();
+                let mut label = String::from("                ");
                 // foreach (KeyValuePair<String, String> memLocation in labelLoc)
-                for ele in label_loc.clone() {
-                    // if (dets[0].ToUpper().Contains(memLocation.Key))
-                    // {
-                    //     label = memLocation.Value + "          ";
-                    //     // The memory address has been found add it another list
-                    //     found.Add(memLocation.Key);
-                    // }
+                for memLocation in label_loc.clone() {
+                    for value in detail.clone() {
+                        // if (dets[0].ToUpper().Contains(memLocation.Key))
+                        let comp = memLocation.clone();
+                        if value.to_string().contains(&comp.0) {
+                            label = format!("{}           ", memLocation.1);
+                            // The memory address has been found add it another list
+                            found.push(comp.0);
+                        }
+                    }
                 }
 
                 // foreach (KeyValuePair<String, String> memLocation in branchLoc)
-                for ele in branch_loc.clone() {
+                for memLocation in branch_loc.clone() {
                     // if (dets[0].ToUpper().Contains(memLocation.Key))
-                    // {
-                    //     label = memLocation.Value + "         ";
-                    // }
+                    let comp = memLocation.clone();
+                    if value.to_string().contains(&comp.0) {
+                        // label = memLocation.Value + "         ";
+                        label = format!("{}           ", memLocation.1);
+                    }
                 }
                 pass_three.push(format!("{}{}", label, pass_two[i].clone()));
-                //     passThree.Add(label + passTwo[i]);
+                // passThree.Add(label + passTwo[i]);
             }
 
-            // // Finally iterate through the found list & add references to the address not found
+            // Finally iterate through the found list & add references to the address not found
             // foreach (KeyValuePair<String, String> memLocation in labelLoc)
-            // {
-            //     if (!found.Contains(memLocation.Key))
-            //     {
-            //         passThree.Add(memLocation.Value + " = $" + memLocation.Key);
-            //     }
-            // }
+            for memLocation in label_loc.clone() {
+                // if (!found.Contains(memLocation.Key))
+                if !found.contains(&memLocation.0) {
+                    pass_three.push(format!("{} = ${}", memLocation.1, memLocation.0));
+                    // passThree.Add(memLocation.Value + " = $" + memLocation.Key);
+                }
+            }
 
             // TO-DO
             let code = format!("{}\n", &pass_one[0],);
