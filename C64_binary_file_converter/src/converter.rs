@@ -157,17 +157,17 @@ pub mod con {
         pub(crate) fn add_labels(
             self,
             start: &str,
-            end: &str,
-            replace_illegal_opcodes: bool,
+            _end: &str,
+            _replace_illegal_opcodes: bool,
             /*Dictionary<string, string[]> bucket,*/
-            first_occurance: i32,
-            last_occurrance: i32,
+            _first_occurance: i32,
+            _last_occurrance: i32,
             right_display: TextDisplay,
         ) {
-            let label = "label";
+            // let label = "label";
             let branch = "branch";
-            let mut labelCount = 0;
-            let mut branchCount = 0;
+            let mut label_count = 0;
+            let mut branch_count = 0;
 
             let mut label_loc: HashMap<String, String> = HashMap::new();
             let mut branch_loc: HashMap<String, String> = HashMap::new();
@@ -208,9 +208,9 @@ pub mod con {
                                     // let address = line_detail[5].replace("$", "");
                                     label_loc.insert(
                                         format!("{}", line_detail[5].replace("$", "")),
-                                        format!("{}{}", label, labelCount),
+                                        format!("{}{}", label, label_count),
                                     );
-                                    labelCount += 1;
+                                    label_count += 1;
                                 }
                                 pass_one.push(format!("{} {}", line_detail[4], line_detail[5]));
                             }
@@ -225,9 +225,9 @@ pub mod con {
                                 {
                                     branch_loc.insert(
                                         format!("{}", line_detail[4].replace("$", "")),
-                                        format!("{}{}", branch, branchCount),
+                                        format!("{}{}", branch, branch_count),
                                     );
-                                    branchCount += 1;
+                                    branch_count += 1;
                                 }
                                 pass_one.push(format!("{} {}", line_detail[3], line_detail[4]));
                             }
@@ -253,9 +253,10 @@ pub mod con {
 
             // Second pass iterates through first pass collection adding labels and branches details into the code
             let mut counter = 0;
-            for i in 1..pass_one.len() {
+            for i in 0..pass_one.len() {
                 let mut assembly = pass_one[counter].clone();
                 let copy = pass_one[counter].clone();
+                counter += 1;
                 for ele in label_loc.clone() {
                     if pass_one[i].contains(&ele.0) {
                         let detail = copy.split_whitespace();
@@ -284,56 +285,46 @@ pub mod con {
 
             // Third pass add the labels to the front of the code
             counter = 0;
-            for i in 1..pass_one.len() {
-                // for (int i = 0; i < passOne.Count; i++)
+            for i in 0..pass_one.len() - 1 {
                 let copy = pass_one[counter].clone();
-                // var dets = originalFileContent[counter++].Split(' ');
                 let detail = copy.split_whitespace();
                 let mut label = String::from("                ");
-                // foreach (KeyValuePair<String, String> memLocation in labelLoc)
-                for memLocation in label_loc.clone() {
+                for mem_location in label_loc.clone() {
                     for value in detail.clone() {
-                        // if (dets[0].ToUpper().Contains(memLocation.Key))
-                        let comp = memLocation.clone();
+                        let comp = mem_location.clone();
                         if value.to_string().contains(&comp.0) {
-                            label = format!("{}           ", memLocation.1);
+                            label = format!("{}           ", mem_location.1);
                             // The memory address has been found add it another list
                             found.push(comp.0);
                         }
                     }
                 }
 
-                // foreach (KeyValuePair<String, String> memLocation in branchLoc)
-                for memLocation in branch_loc.clone() {
-                    // if (dets[0].ToUpper().Contains(memLocation.Key))
-                    let comp = memLocation.clone();
-                    if value.to_string().contains(&comp.0) {
-                        // label = memLocation.Value + "         ";
-                        label = format!("{}           ", memLocation.1);
+                for mem_location in branch_loc.clone() {
+                    for value in detail.clone() {
+                        let comp = mem_location.clone();
+                        if value.to_string().contains(&comp.0) {
+                            label = format!("{}           ", mem_location.1);
+                        }
                     }
                 }
                 pass_three.push(format!("{}{}", label, pass_two[i].clone()));
-                // passThree.Add(label + passTwo[i]);
             }
 
             // Finally iterate through the found list & add references to the address not found
-            // foreach (KeyValuePair<String, String> memLocation in labelLoc)
-            for memLocation in label_loc.clone() {
-                // if (!found.Contains(memLocation.Key))
-                if !found.contains(&memLocation.0) {
-                    pass_three.push(format!("{} = ${}", memLocation.1, memLocation.0));
-                    // passThree.Add(memLocation.Value + " = $" + memLocation.Key);
+            for mem_location in label_loc.clone() {
+                if !found.contains(&mem_location.0) {
+                    pass_three.push(format!("{} = ${}", mem_location.1, mem_location.0));
                 }
             }
 
             // TO-DO
-            let code = format!("{}\n", &pass_one[0],);
-            buf.append(&code);
+            for i in 0..100 {
+                let code = format!("{}\n", &pass_three[i]);
+                buf.append(&code);
+            }
             let mut disp = right_display.clone();
             disp.set_buffer(buf.clone());
-            // textBox2.Font = new Font(FontFamily.GenericMonospace, textBox2.Font.Size);
-            // textBox2.Lines = passThree.ToArray();
-            // rightWindowToolStripMenuItem.Enabled = true;
         }
     }
 }
