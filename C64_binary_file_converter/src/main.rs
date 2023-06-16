@@ -33,8 +33,6 @@ pub enum Message {
     SaveAs,
 }
 
-//https://www.reddit.com/r/rust/comments/q58q2n/fltkrs_textdisplay_how_to_update/
-
 fn main() {
     env::set_var("RUST_BACKTRACE", "full");
 
