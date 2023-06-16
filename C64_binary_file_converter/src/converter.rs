@@ -2,7 +2,6 @@ pub mod con {
 
     use std::collections::HashMap;
     use std::env;
-    use std::fmt::format;
     use std::io::Read;
     use std::str::FromStr;
 
@@ -32,8 +31,8 @@ pub mod con {
             self.hex_content = self.parse_content(self.file_content.clone());
         }
 
-        pub(crate) fn convert_to_assembly(&mut self, disp: TextDisplay) {
-            let mut diplay_text = disp;
+        pub(crate) fn convert_to_assembly(&mut self, display: TextDisplay) {
+            let mut display_text = display;
             let mut buf = TextBuffer::default();
 
             let mut file_position = 0;
@@ -46,15 +45,15 @@ pub mod con {
                 let values = self
                     .opcode
                     .get_match(self.opcodes.clone(), op_code.as_str());
-                let nmenonic = values[0];
-                let incrementer = i32::from_str(values[1]).unwrap_or(1);
+                let mnemonic = values[0];
+                let incrementor = i32::from_str(values[1]).unwrap_or(1);
 
                 let mut _two: String = String::from("  ");
                 let mut _three: String = String::from("  ");
                 let mut _padding: String = String::new();
 
-                if incrementer == 2 {
-                    if self.is_branch(nmenonic) {
+                if incrementor == 2 {
+                    if self.is_branch(mnemonic) {
                         let mut _u: u8 = self.file_content[pc + 1];
                         let mut _v: i8 = _u as i8;
                         let _w = (_v + 2) as i32;
@@ -69,7 +68,7 @@ pub mod con {
                         _three = self.hex_content[pc + 1].clone().to_uppercase();
                     }
                 }
-                if incrementer == 3 {
+                if incrementor == 3 {
                     _two = self.hex_content[pc + 2]
                         .to_uppercase()
                         .as_str()
@@ -84,7 +83,7 @@ pub mod con {
                 }
 
                 // increment the pc
-                pc += incrementer as usize;
+                pc += incrementor as usize;
 
                 let code = format!(
                     "{:04X} {} {} {}        {} {}{}{}{}\n",
@@ -92,7 +91,7 @@ pub mod con {
                     op_code,
                     _three,
                     _two,
-                    nmenonic,
+                    mnemonic,
                     values[2],
                     _padding,
                     _three,
@@ -101,26 +100,26 @@ pub mod con {
                 buf.append(&code);
                 self.assembly_code.push(code);
 
-                file_position += incrementer as usize;
+                file_position += incrementor as usize;
             }
-            diplay_text.set_buffer(buf.clone());
+            display_text.set_buffer(buf.clone());
         }
 
-        fn is_branch(&mut self, nmenonic: &str) -> bool {
+        fn is_branch(&mut self, mnemonic: &str) -> bool {
             //
             // Method returns if there is a match between the supplied &str & the values below.
             //
             // # Arguments
-            // * `nmenonic` string
+            // * `mnemonic` string
             //
-            return nmenonic == "BCC"
-                || nmenonic == "BCS"
-                || nmenonic == "BEQ"
-                || nmenonic == "BMI"
-                || nmenonic == "BNE"
-                || nmenonic == "BPL"
-                || nmenonic == "BVC"
-                || nmenonic == "BVS";
+            return mnemonic == "BCC"
+                || mnemonic == "BCS"
+                || mnemonic == "BEQ"
+                || mnemonic == "BMI"
+                || mnemonic == "BNE"
+                || mnemonic == "BPL"
+                || mnemonic == "BVC"
+                || mnemonic == "BVS";
         }
 
         fn load_bin_file(&mut self) -> std::io::Result<Vec<u8>> {
@@ -160,22 +159,22 @@ pub mod con {
             _end: &str,
             _replace_illegal_opcodes: bool,
             /*Dictionary<string, string[]> bucket,*/
-            _first_occurance: i32,
-            _last_occurrance: i32,
+            _first_occurrence: i32,
+            _last_occurrence: i32,
             right_display: TextDisplay,
         ) {
             // let label = "label";
             let branch = "branch";
-            let mut label_count = 0;
-            let mut branch_count = 0;
+            let label_count = 0;
+            let branch_count = 0;
 
-            let mut label_loc: HashMap<String, String> = HashMap::new();
-            let mut branch_loc: HashMap<String, String> = HashMap::new();
+            let mut jump_label_locations: HashMap<String, String> = HashMap::new();
+            let mut branch_lable_locations: HashMap<String, String> = HashMap::new();
 
             // let mut buf = TextBuffer::default();
             let mut buf = TextBuffer::default();
-            let mut first_pass = true;
-            let mut count = 0;
+            let first_pass = true;
+            let count = 0;
             let mut pass_one: Vec<String> = Vec::new();
             let mut pass_two: Vec<String> = Vec::new();
             let mut pass_three: Vec<String> = Vec::new();
@@ -183,6 +182,62 @@ pub mod con {
             let label = "label";
             pass_three.push(format!("                *=${}", start));
 
+            self.first_pass(
+                first_pass,
+                count,
+                &mut jump_label_locations,
+                label,
+                label_count,
+                &mut pass_one,
+                &mut branch_lable_locations,
+                branch,
+                branch_count,
+            );
+
+            second_pass(
+                &pass_one,
+                &jump_label_locations,
+                &branch_lable_locations,
+                &mut pass_two,
+            );
+
+            third_pass(
+                &pass_one,
+                &jump_label_locations,
+                &mut found,
+                branch_lable_locations,
+                &mut pass_three,
+                pass_two,
+            );
+
+            // Finally iterate through the found list & add references to the address not found
+            for mem_location in jump_label_locations.clone() {
+                if !found.contains(&mem_location.0) {
+                    pass_three.push(format!("{} = ${}", mem_location.1, mem_location.0));
+                }
+            }
+
+            // TO-DO
+            for i in 0..100 {
+                let code = format!("{}\n", &pass_three[i]);
+                buf.append(&code);
+            }
+            let mut display = right_display.clone();
+            display.set_buffer(buf.clone());
+        }
+
+        fn first_pass(
+            self,
+            mut first_pass: bool,
+            mut count: usize,
+            label_loc: &mut HashMap<String, String>,
+            label: &str,
+            mut label_count: i32,
+            pass_one: &mut Vec<String>,
+            branch_loc: &mut HashMap<String, String>,
+            branch: &str,
+            mut branch_count: i32,
+        ) {
             // First pass parses the content looking for branch & jump conditions
             while first_pass {
                 // Split each line into an Vector<&str>
@@ -250,81 +305,82 @@ pub mod con {
                     first_pass = false;
                 }
             }
+        }
+    }
 
-            // Second pass iterates through first pass collection adding labels and branches details into the code
-            let mut counter = 0;
-            for i in 0..pass_one.len() {
-                let mut assembly = pass_one[counter].clone();
-                let copy = pass_one[counter].clone();
-                counter += 1;
-                for ele in label_loc.clone() {
-                    if pass_one[i].contains(&ele.0) {
-                        let detail = copy.split_whitespace();
-                        for value in detail {
-                            if value.contains("JSR") || value.contains("JMP") {
-                                assembly = format!("{} {}", value, ele.1);
-                            }
+    fn second_pass(
+        pass_one: &Vec<String>,
+        label_loc: &HashMap<String, String>,
+        branch_loc: &HashMap<String, String>,
+        pass_two: &mut Vec<String>,
+    ) {
+        // Second pass iterates through first pass collection adding labels and branches details into the code
+        let mut counter = 0;
+        for i in 0..pass_one.len() {
+            let mut assembly = pass_one[counter].clone();
+            let copy = pass_one[counter].clone();
+            counter += 1;
+            for ele in label_loc.clone() {
+                if pass_one[i].contains(&ele.0) {
+                    let detail = copy.split_whitespace();
+                    for value in detail {
+                        if value.contains("JSR") || value.contains("JMP") {
+                            assembly = format!("{} {}", value, ele.1);
                         }
                     }
                 }
-                for ele in branch_loc.clone() {
-                    if pass_one[i].contains(&ele.0) {
-                        let detail = copy.split_whitespace();
-                        for value in detail {
-                            if value.contains("BNE")
-                                || value.contains("BEQ")
-                                || value.contains("BPL")
-                            {
-                                assembly = format!("{} {}", value, ele.1);
-                            }
+            }
+            for ele in branch_loc.clone() {
+                if pass_one[i].contains(&ele.0) {
+                    let detail = copy.split_whitespace();
+                    for value in detail {
+                        if value.contains("BNE") || value.contains("BEQ") || value.contains("BPL") {
+                            assembly = format!("{} {}", value, ele.1);
                         }
                     }
                 }
-                pass_two.push(assembly);
             }
+            pass_two.push(assembly);
+        }
+    }
 
-            // Third pass add the labels to the front of the code
-            counter = 0;
-            for i in 0..pass_one.len() - 1 {
-                let copy = pass_one[counter].clone();
-                let detail = copy.split_whitespace();
-                let mut label = String::from("                ");
-                for mem_location in label_loc.clone() {
-                    for value in detail.clone() {
-                        let comp = mem_location.clone();
-                        if value.to_string().contains(&comp.0) {
-                            label = format!("{}           ", mem_location.1);
-                            // The memory address has been found add it another list
-                            found.push(comp.0);
-                        }
+    fn third_pass(
+        pass_one: &Vec<String>,
+        jump_label_loc: &HashMap<String, String>,
+        found: &mut Vec<String>,
+        branch_label_loc: HashMap<String, String>,
+        pass_three: &mut Vec<String>,
+        pass_two: Vec<String>,
+    ) {
+        // Third pass add the labels to the front of the code
+        let mut counter = 0;
+        for i in 0..pass_one.len() - 1 {
+            let copy = pass_one[counter].clone();
+            counter += 1;
+            let detail = copy.split_whitespace();
+            let mut label = String::from("                ");
+            for mem_location in jump_label_loc.clone() {
+                for value in detail.clone() {
+                    // println!("{}", value);
+                    let comp = mem_location.clone();
+                    if value.to_string().contains(&comp.0) {
+                        label = format!("{}           ", mem_location.1);
+                        // The memory address has been found add it another list
+                        found.push(comp.0);
                     }
                 }
+            }
 
-                for mem_location in branch_loc.clone() {
-                    for value in detail.clone() {
-                        let comp = mem_location.clone();
-                        if value.to_string().contains(&comp.0) {
-                            label = format!("{}           ", mem_location.1);
-                        }
+            for mem_location in branch_label_loc.clone() {
+                for value in detail.clone() {
+                    let comp = mem_location.clone();
+                    // println!("{} {}", comp.0, comp.1);
+                    if value.to_string().contains(&comp.0) {
+                        label = format!("{}           ", mem_location.1);
                     }
                 }
-                pass_three.push(format!("{}{}", label, pass_two[i].clone()));
             }
-
-            // Finally iterate through the found list & add references to the address not found
-            for mem_location in label_loc.clone() {
-                if !found.contains(&mem_location.0) {
-                    pass_three.push(format!("{} = ${}", mem_location.1, mem_location.0));
-                }
-            }
-
-            // TO-DO
-            for i in 0..100 {
-                let code = format!("{}\n", &pass_three[i]);
-                buf.append(&code);
-            }
-            let mut disp = right_display.clone();
-            disp.set_buffer(buf.clone());
+            pass_three.push(format!("{}{}", label, pass_two[i].clone()));
         }
     }
 }
