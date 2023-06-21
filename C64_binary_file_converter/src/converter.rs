@@ -33,34 +33,34 @@ pub mod con {
 
         pub(crate) fn convert_to_assembly(&mut self, display: TextDisplay) {
             let mut display_text = display;
-            let mut buf = TextBuffer::default();
+            let mut buf: TextBuffer = TextBuffer::default();
 
-            let mut file_position = 0;
+            let mut file_position: usize = 0;
             let mut pc: usize = 0;
 
             while file_position < 1000
             //hex.len()
             {
-                let op_code = self.hex_content[file_position].clone().to_uppercase();
-                let values = self
+                let op_code: String = self.hex_content[file_position].clone().to_uppercase();
+                let values: [&str; 5] = self
                     .opcode
                     .get_match(self.opcodes.clone(), op_code.as_str());
-                let mnemonic = values[0];
-                let incrementor = i32::from_str(values[1]).unwrap_or(1);
+                let mnemonic: String = values[0].to_string();
+                let incrementor: i32 = i32::from_str(values[1]).unwrap_or(1);
 
-                let mut _two: String = String::from("  ");
-                let mut _three: String = String::from("  ");
+                let mut _two: String = String::new();
+                let mut _three: String = String::new();
                 let mut _padding: String = String::new();
 
                 if incrementor == 2 {
-                    if self.is_branch(mnemonic) {
+                    if self.is_branch(&mnemonic) {
                         let mut _u: u8 = self.file_content[pc + 1];
                         let mut _v: i8 = _u as i8;
-                        let _w = (_v + 2) as i32;
-                        let mut _s = (pc as i32) + _w;
+                        let _w: i32 = (_v + 2) as i32;
+                        let mut _s: i32 = (pc as i32) + _w;
 
                         let mut _vv: i8 = ((self.file_content[pc + 1]) as i8) + 2;
-                        let mut _ss = (pc as i32) + _vv as i32;
+                        let mut _ss: i32 = (pc as i32) + _vv as i32;
 
                         _two = "".to_owned();
                         _three = format!("{:04X}", _s);
@@ -85,8 +85,8 @@ pub mod con {
                 // increment the pc
                 pc += incrementor as usize;
 
-                let code = format!(
-                    "{:04X} {} {} {}        {} {}{}{}{}\n",
+                let code: String = format!(
+                    "{:04X} {} {} {:<20} {} {}{}{}{}\n",
                     file_position,
                     op_code,
                     _three,
@@ -105,7 +105,7 @@ pub mod con {
             display_text.set_buffer(buf.clone());
         }
 
-        fn is_branch(&mut self, mnemonic: &str) -> bool {
+        fn is_branch(&mut self, mnemonic: &String) -> bool {
             //
             // Method returns if there is a match between the supplied &str & the values below.
             //
@@ -129,11 +129,11 @@ pub mod con {
             // # Arguments
             // * none
             //
-            let path = env::current_dir()?;
-            let bin_path = path.join("Assets/C64_Binary.bin");
-            let mut file = std::fs::File::open(bin_path)?;
+            let path: std::path::PathBuf = env::current_dir()?;
+            let bin_path: std::path::PathBuf = path.join("Assets/C64_Binary.bin");
+            let mut file: std::fs::File = std::fs::File::open(bin_path)?;
             let mut v: Vec<u8> = Vec::new();
-            let _content = file.read_to_end(&mut v);
+            let _content: Result<usize, std::io::Error> = file.read_to_end(&mut v);
             Ok(v)
         }
 
@@ -142,13 +142,13 @@ pub mod con {
             // Method to iterate through each object in the Vector to Populate a HashMap.
             //
             // # Arguments
-            // * bin
+            // * bin: Vec<u8>
             //
-            let mut opcode_mappings = Vec::new();
+            let mut opcode_mappings: Vec<String> = Vec::new();
             for n in bin.iter() {
-                let num_usize = [*n as u8];
-                let hop_code = hex::encode(num_usize);
-                opcode_mappings.push((*hop_code).parse().unwrap());
+                let num_usize: [u8; 1] = [*n as u8];
+                let op_code: String = hex::encode(num_usize);
+                opcode_mappings.push((*op_code).parse().unwrap());
             }
             return opcode_mappings;
         }
@@ -163,49 +163,45 @@ pub mod con {
             _last_occurrence: i32,
             right_display: TextDisplay,
         ) {
-            // let label = "label";
-            let branch = "branch";
-            let label_count = 0;
-            let branch_count = 0;
-
+            let branch: &str = "branch";
+            let label_count: i32 = 0;
+            let branch_count: i32 = 0;
             let mut jump_label_locations: HashMap<String, String> = HashMap::new();
-            let mut branch_lable_locations: HashMap<String, String> = HashMap::new();
-
-            // let mut buf = TextBuffer::default();
-            let mut buf = TextBuffer::default();
-            let first_pass = true;
-            let count = 0;
+            let mut branch_label_locations: HashMap<String, String> = HashMap::new();
+            let mut buf: TextBuffer = TextBuffer::default();
+            let first_pass: bool = true;
+            let count: usize = 0;
             let mut pass_one: Vec<String> = Vec::new();
             let mut pass_two: Vec<String> = Vec::new();
             let mut pass_three: Vec<String> = Vec::new();
             let mut found: Vec<String> = Vec::new();
-            let label = "label";
-            pass_three.push(format!("                *=${}", start));
+            let label: &str = "label";
+            pass_three.push(format!("{:<20}*=${}", "", start));
 
-            self.first_pass(
+            self.clone().first_pass(
                 first_pass,
                 count,
                 &mut jump_label_locations,
                 label,
                 label_count,
                 &mut pass_one,
-                &mut branch_lable_locations,
+                &mut branch_label_locations,
                 branch,
                 branch_count,
             );
 
-            second_pass(
+            self.clone().second_pass(
                 &pass_one,
                 &jump_label_locations,
-                &branch_lable_locations,
+                &branch_label_locations,
                 &mut pass_two,
             );
 
-            third_pass(
+            self.clone().third_pass(
                 &pass_one,
                 &jump_label_locations,
                 &mut found,
-                branch_lable_locations,
+                branch_label_locations,
                 &mut pass_three,
                 pass_two,
             );
@@ -253,7 +249,7 @@ pub mod con {
                         //   passOne.Add(str);
                         // }
                     } else {
-                        let value = line_detail[1].to_ascii_uppercase();
+                        let value: String = line_detail[1].to_ascii_uppercase();
                         match value.as_str() {
                             "20" | "4C" => {
                                 // "20": JSR | "4C": JMP
@@ -291,9 +287,9 @@ pub mod con {
                                 if line_detail.len() == 3 {
                                     pass_one.push(line_detail[2].to_string());
                                 } else if line_detail.len() == 5 {
-                                    pass_one.push(line_detail[3].to_string());
+                                    pass_one.push(format!("{} {}", line_detail[3], line_detail[4]));
                                 } else if line_detail.len() == 6 {
-                                    pass_one.push(line_detail[4].to_string());
+                                    pass_one.push(format!("{} {}", line_detail[4], line_detail[5]));
                                 }
                             }
                         }
@@ -306,81 +302,77 @@ pub mod con {
                 }
             }
         }
-    }
 
-    fn second_pass(
-        pass_one: &Vec<String>,
-        label_loc: &HashMap<String, String>,
-        branch_loc: &HashMap<String, String>,
-        pass_two: &mut Vec<String>,
-    ) {
-        // Second pass iterates through first pass collection adding labels and branches details into the code
-        let mut counter = 0;
-        for i in 0..pass_one.len() {
-            let mut assembly = pass_one[counter].clone();
-            let copy = pass_one[counter].clone();
-            counter += 1;
-            for ele in label_loc.clone() {
-                if pass_one[i].contains(&ele.0) {
-                    let detail = copy.split_whitespace();
-                    for value in detail {
-                        if value.contains("JSR") || value.contains("JMP") {
-                            assembly = format!("{} {}", value, ele.1);
+        fn second_pass(
+            self,
+            pass_one: &Vec<String>,
+            label_loc: &HashMap<String, String>,
+            branch_loc: &HashMap<String, String>,
+            pass_two: &mut Vec<String>,
+        ) {
+            // Second pass iterates through first pass collection adding labels and branches details into the code
+            let mut counter: usize = 0;
+            for i in 0..pass_one.len() {
+                let mut assembly: String = pass_one[counter].clone();
+                let copy: String = pass_one[counter].clone();
+                counter += 1;
+                for ele in label_loc.clone() {
+                    if pass_one[i].contains(&ele.0) {
+                        let detail: std::str::SplitWhitespace<'_> = copy.split_whitespace();
+                        for value in detail {
+                            if value.contains("JSR") || value.contains("JMP") {
+                                assembly = format!("{} {}", value, ele.1);
+                            }
                         }
                     }
                 }
-            }
-            for ele in branch_loc.clone() {
-                if pass_one[i].contains(&ele.0) {
-                    let detail = copy.split_whitespace();
-                    for value in detail {
-                        if value.contains("BNE") || value.contains("BEQ") || value.contains("BPL") {
-                            assembly = format!("{} {}", value, ele.1);
+                for ele in branch_loc.clone() {
+                    if pass_one[i].contains(&ele.0) {
+                        let detail = copy.split_whitespace();
+                        for value in detail {
+                            if value.contains("BNE")
+                                || value.contains("BEQ")
+                                || value.contains("BPL")
+                            {
+                                assembly = format!("{} {}", value, ele.1);
+                            }
                         }
                     }
                 }
+                pass_two.push(assembly);
             }
-            pass_two.push(assembly);
         }
-    }
 
-    fn third_pass(
-        pass_one: &Vec<String>,
-        jump_label_loc: &HashMap<String, String>,
-        found: &mut Vec<String>,
-        branch_label_loc: HashMap<String, String>,
-        pass_three: &mut Vec<String>,
-        pass_two: Vec<String>,
-    ) {
-        // Third pass add the labels to the front of the code
-        let mut counter = 0;
-        for i in 0..pass_one.len() - 1 {
-            let copy = pass_one[counter].clone();
-            counter += 1;
-            let detail = copy.split_whitespace();
-            let mut label = String::from("                ");
-            for mem_location in jump_label_loc.clone() {
-                for value in detail.clone() {
-                    // println!("{}", value);
-                    let comp = mem_location.clone();
-                    if value.to_string().contains(&comp.0) {
-                        label = format!("{}           ", mem_location.1);
-                        // The memory address has been found add it another list
-                        found.push(comp.0);
+        fn third_pass(
+            self,
+            pass_one: &Vec<String>,
+            jump_label_loc: &HashMap<String, String>,
+            found: &mut Vec<String>,
+            branch_label_loc: HashMap<String, String>,
+            pass_three: &mut Vec<String>,
+            pass_two: Vec<String>,
+        ) {
+            // Third pass adds the branch labels to the front of the code
+            let mut counter: usize = 0;
+            for i in 0..pass_one.len() - 1 {
+                let copy: String = self.assembly_code[counter].clone();
+                counter += 1;
+                let detail: Vec<String> = copy.split_whitespace().map(str::to_string).collect();
+                let mut label: String = String::from("                ");
+                if detail.len() > 1 {
+                    let key: String = format!("{}", detail[0].clone().replace("$", ""));
+                    if jump_label_loc.contains_key(&key) {
+                        label = format!("{} ", jump_label_loc.get(&key).unwrap());
+                        // Store the memory address into the found vector
+                        found.push(key);
+                    }
+                    let new_key: String = format!("{}", detail[0].clone().replace("$", ""));
+                    if branch_label_loc.contains_key(&new_key) {
+                        label = format!("{} ", branch_label_loc.get(&new_key).unwrap());
                     }
                 }
+                pass_three.push(format!("{:<20}{}", label, pass_two[i].clone()));
             }
-
-            for mem_location in branch_label_loc.clone() {
-                for value in detail.clone() {
-                    let comp = mem_location.clone();
-                    // println!("{} {}", comp.0, comp.1);
-                    if value.to_string().contains(&comp.0) {
-                        label = format!("{}           ", mem_location.1);
-                    }
-                }
-            }
-            pass_three.push(format!("{}{}", label, pass_two[i].clone()));
         }
     }
 }
