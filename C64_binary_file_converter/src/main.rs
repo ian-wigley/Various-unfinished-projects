@@ -36,16 +36,17 @@ pub enum Message {
 fn main() {
     env::set_var("RUST_BACKTRACE", "full");
 
-    let app = app::App::default().load_system_fonts();
+    let app: app::App = app::App::default().load_system_fonts();
     Font::set_font(Font::Courier, "Monospace");
     app::set_font_size(10);
 
-    let mut wind = Window::new(100, 100, 820, 620, "C64 Binary to Assembly Converter");
-    let left_display = TextDisplay::new(5, 35, 400, 550, None);
-    let right_display = TextDisplay::new(415, 35, 400, 550, None);
+    let mut wind: fltk::window::DoubleWindow =
+        Window::new(100, 100, 820, 620, "C64 Binary to Assembly Converter");
+    let left_display: TextDisplay = TextDisplay::new(5, 35, 400, 550, None);
+    let right_display: TextDisplay = TextDisplay::new(415, 35, 400, 550, None);
 
     let (s, _r) = app::channel::<Message>();
-    let mut menu = menu::SysMenuBar::default().with_size(800, 35);
+    let mut menu: menu::SysMenuBar = menu::SysMenuBar::default().with_size(800, 35);
     menu.set_frame(FrameType::FlatBox);
     menu.add_emit(
         "&File/Save as...\t",
@@ -54,12 +55,12 @@ fn main() {
         s,
         Message::SaveAs,
     );
-    let mut but = Button::new(380, 590, 80, 20, "Add labels");
+    let mut but: Button = Button::new(380, 590, 80, 20, "Add labels");
 
     wind.end();
     wind.show();
 
-    let mut converter = Converter::new();
+    let mut converter: Converter = Converter::new();
     converter.init();
     converter.convert_to_assembly(left_display);
 
