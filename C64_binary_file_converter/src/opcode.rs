@@ -8,7 +8,7 @@ pub mod oc {
         }
 
         pub(crate) fn populate_opcodes(self) -> HashMap<&'static str, [&'static str; 5]> {
-            let mut opcode_mappings = HashMap::new();
+            let mut opcode_mappings: HashMap<&str, [&str; 5]> = HashMap::new();
             opcode_mappings.insert("00", ["BRK", "1", "", "", "false"]);
             opcode_mappings.insert("01", ["ORA", "2", "($", ",X)", "false"]);
             opcode_mappings.insert("02", ["JAM", "1", "", "", "true"]);
