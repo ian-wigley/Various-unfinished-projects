@@ -38,8 +38,8 @@ pub mod con {
             let mut file_position: usize = 0;
             let mut pc: usize = 0;
 
-            while file_position < 1000
-            //hex.len()
+            while file_position < 0x2000
+            // while file_position < self.hex_content.len()
             {
                 let op_code: String = self.hex_content[file_position].clone().to_uppercase();
                 let values: [&str; 5] = self
@@ -214,7 +214,7 @@ pub mod con {
             }
 
             // TO-DO
-            for i in 0..100 {
+            for i in 0..pass_three.len() {
                 let code = format!("{}\n", &pass_three[i]);
                 buf.append(&code);
             }
@@ -306,37 +306,26 @@ pub mod con {
         fn second_pass(
             self,
             pass_one: &Vec<String>,
-            label_loc: &HashMap<String, String>,
-            branch_loc: &HashMap<String, String>,
+            label_locations: &HashMap<String, String>,
+            branch_locations: &HashMap<String, String>,
             pass_two: &mut Vec<String>,
         ) {
             // Second pass iterates through first pass collection adding labels and branches details into the code
-            let mut counter: usize = 0;
             for i in 0..pass_one.len() {
-                let mut assembly: String = pass_one[counter].clone();
-                let copy: String = pass_one[counter].clone();
-                counter += 1;
-                for ele in label_loc.clone() {
-                    if pass_one[i].contains(&ele.0) {
-                        let detail: std::str::SplitWhitespace<'_> = copy.split_whitespace();
-                        for value in detail {
-                            if value.contains("JSR") || value.contains("JMP") {
-                                assembly = format!("{} {}", value, ele.1);
-                            }
-                        }
+                let mut assembly: String = pass_one[i].clone();
+                let detail: Vec<&str> = pass_one[i].split_whitespace().collect();
+                if detail.len() > 1 {
+                    let key: String = format!("{}", detail[1].clone().replace("$", ""));
+                    if label_locations.contains_key(&key) && detail[0].contains("JSR")
+                        || detail[0].contains("JMP")
+                    {
+                        assembly = format!("{} {}", detail[0], label_locations[&key].clone());
                     }
-                }
-                for ele in branch_loc.clone() {
-                    if pass_one[i].contains(&ele.0) {
-                        let detail = copy.split_whitespace();
-                        for value in detail {
-                            if value.contains("BNE")
-                                || value.contains("BEQ")
-                                || value.contains("BPL")
-                            {
-                                assembly = format!("{} {}", value, ele.1);
-                            }
-                        }
+                    if branch_locations.contains_key(&key) && detail[0].contains("BNE")
+                        || detail[0].contains("BEQ")
+                        || detail[0].contains("BPL")
+                    {
+                        assembly = format!("{} {}", detail[0], branch_locations[&key].clone());
                     }
                 }
                 pass_two.push(assembly);
@@ -358,7 +347,7 @@ pub mod con {
                 let copy: String = self.assembly_code[counter].clone();
                 counter += 1;
                 let detail: Vec<String> = copy.split_whitespace().map(str::to_string).collect();
-                let mut label: String = String::from("                ");
+                let mut label: String = String::from("");
                 if detail.len() > 1 {
                     let key: String = format!("{}", detail[0].clone().replace("$", ""));
                     if jump_label_loc.contains_key(&key) {
@@ -371,7 +360,8 @@ pub mod con {
                         label = format!("{} ", branch_label_loc.get(&new_key).unwrap());
                     }
                 }
-                pass_three.push(format!("{:<20}{}", label, pass_two[i].clone()));
+                let offset: usize = if label.len() == 0 { 20 } else { 20 - (label.len() - 2) };
+                pass_three.push(format!("{:offset$}{}", label, pass_two[i].clone()));
             }
         }
     }
