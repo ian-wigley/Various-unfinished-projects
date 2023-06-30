@@ -9,8 +9,16 @@ pub mod con {
     use fltk::text::TextBuffer;
     use fltk::text::TextDisplay;
 
-    use crate::Converter;
     use crate::Opcode;
+
+    #[derive(Clone)]
+    pub(crate) struct Converter {
+        opcode: Opcode,
+        opcodes: HashMap<&'static str, [&'static str; 5]>,
+        hex_content: Vec<String>,
+        file_content: Vec<u8>,
+        assembly_code: Vec<String>,
+    }
 
     impl Converter {
         pub fn new() -> Converter {
@@ -360,7 +368,11 @@ pub mod con {
                         label = format!("{} ", branch_label_loc.get(&new_key).unwrap());
                     }
                 }
-                let offset: usize = if label.len() == 0 { 20 } else { 20 - (label.len() - 2) };
+                let offset: usize = if label.len() == 0 {
+                    20
+                } else {
+                    20 - (label.len() - 2)
+                };
                 pass_three.push(format!("{:offset$}{}", label, pass_two[i].clone()));
             }
         }
