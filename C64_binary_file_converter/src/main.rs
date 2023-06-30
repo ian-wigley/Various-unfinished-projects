@@ -1,5 +1,7 @@
 extern crate hex;
 
+use converter::con::Converter;
+use opcode::oc::Opcode;
 use fltk::{
     app,
     button::Button,
@@ -9,23 +11,10 @@ use fltk::{
     text::TextDisplay,
     window::Window,
 };
-
-use std::{collections::HashMap, env};
+use std::env;
 
 mod converter;
 mod opcode;
-
-#[derive(Copy, Clone)]
-pub struct Opcode {}
-
-#[derive(Clone)]
-struct Converter {
-    opcode: Opcode,
-    opcodes: HashMap<&'static str, [&'static str; 5]>,
-    hex_content: Vec<String>,
-    file_content: Vec<u8>,
-    assembly_code: Vec<String>,
-}
 
 #[derive(Copy, Clone)]
 pub enum Message {
