@@ -1,6 +1,8 @@
 pub mod oc {
-    use crate::Opcode;
     use std::collections::HashMap;
+
+    #[derive(Copy, Clone)]
+    pub(crate) struct Opcode {}
 
     impl Opcode {
         pub fn new() -> Opcode {
