@@ -40,7 +40,7 @@ pub mod con {
         }
 
         pub(crate) fn convert_to_assembly(&mut self, display: TextDisplay) {
-            let mut display_text = display;
+            let mut display_text: TextDisplay = display;
             let mut buf: TextBuffer = TextBuffer::default();
 
             let mut file_position: usize = 0;
