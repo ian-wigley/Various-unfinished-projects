@@ -415,6 +415,9 @@ export class JetPacReloaded extends Game {
     }
 
     private CheckScreenBounds(): void {
+        if (this.y > 850) {
+            this.y = 850;
+        }
     }
 
     private CheckKeyboard(): void {
@@ -681,10 +684,10 @@ export class JetPacReloaded extends Game {
             this.m_spriteBatch.DrawString(this.m_font, "SCORE : " + this.m_score, this.scoreLocation, Color.Yellow);
             // this.m_spriteBatch.DrawString(this.m_font, "FUEL : " + this.m_fuelLevel + "%", this.scoreLocation + new Vector2(350.0f, 1.0f), Color.Yellow);
             // this.m_spriteBatch.DrawString(this.m_font, "LIVES : " + this.m_lives, this.scoreLocation + new Vector2(700.0f, 1.0f), Color.Yellow);
-            // this.m_spriteBatch.DrawString(this.m_font, "x : " + this.x + " y : " + this.y, this.scoreLocation + new Vector2(1.0f, 15.0f), Color.Yellow);
+            this.m_spriteBatch.DrawString(this.m_font, "x : " + this.x + " y : " + this.y, new Vector2(10, this.scoreLocation.Y + 15), Color.Yellow);
             // this.m_spriteBatch.DrawString(this.m_font, "x scroll : " + this.m_srollX + " y scroll : " + this.m_srollY, this.scoreLocation + new Vector2(1.0f, 30.0f), Color.Yellow);
             this.m_spriteBatch.DrawString(this.m_font, "x camera : " + this.m_camera.CameraPos.X + " y camera : " + this.m_camera.CameraPos.Y, new Vector2(10, this.scoreLocation.Y + 45), Color.Yellow);
-            this.m_spriteBatch.DrawString(this.m_font, "x : " + this.m_jetman.JetmanRect.X + " y : " + this.m_jetman.JetmanRect.Y, new Vector2(10, this.scoreLocation.Y + 60), Color.Yellow);
+            this.m_spriteBatch.DrawString(this.m_font, "x : " + this.m_jetman.JetmanPosition.X + " y : " + this.m_jetman.JetmanPosition.Y, new Vector2(10, this.scoreLocation.Y + 60), Color.Yellow);
             // this.m_spriteBatch.End();
         }
         super.Draw(gameTime);
