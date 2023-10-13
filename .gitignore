@@ -6,7 +6,9 @@ JetpacReloaded/JetpacReloaded/.vs/
 JetpacReloaded/JetpacReloaded/obj/
 JetpacReloaded/JetpacReloaded/Content/obj/
 JetpacReloaded/JetpacReloaded/app.manifest
-
+JetpacReloaded/Typescript version/out/
+JetpacReloaded/Typescript version/ts_lib/
+JetpacReloaded/Typescript version/ts/CS/
 
 C64_binary_file_converter/pkg/
 Zig_Emulator/zig-cache/
@@ -15,3 +17,4 @@ Zig_Emulator/main.exe
 Zig_Emulator/main.exe.obj
 Zig_Emulator/main.pdb
 *.pyc
+
