@@ -16,6 +16,7 @@ import { LevelManager } from "./levelManager.js";
 import { Jetman } from "./jetman.js";
 import { GraphicsDeviceManager } from "../ts_lib/graphicsdevicemanager.js";
 import { Keys, Keyboard } from "../ts_lib/keyboardstate.js";
+import { Rocket } from "./rocket.js";
 
 export enum GameState {
     gameStart,
@@ -109,6 +110,7 @@ export class JetPacReloaded extends Game {
     // private List<Particle> m_particles = new List<Particle>();
     // private List<Bullet> m_bullets = new List<Bullet>();
     // private List<Rocket> m_rockets = new List<Rocket>();
+    private m_rockets = [];
     // private List<Fuel> m_fuel = new List<Fuel>();
     // private List<Ledge> m_ledge = new List<Ledge>();
     // private List<Bonus> m_bonus = new List<Bonus>();
@@ -129,9 +131,9 @@ export class JetPacReloaded extends Game {
         // this.m_graphics.PreferredBackBufferWidth = 1024;
         // this.m_graphics.PreferredBackBufferHeight = 768;
         // this.m_graphics.ApplyChanges();
-        // this.rocketLocation1 = new Vector2(this.m_rocket1X, this.m_rocket1Y);
-        // this.rocketLocation2 = new Vector2(this.m_rocket2X, this.m_rocket2Y);
-        // this.rocketLocation3 = new Vector2(this.m_rocket3X, this.m_rocket3Y);
+        this.rocketLocation1 = new Vector2(this.m_rocket1X, this.m_rocket1Y);
+        this.rocketLocation2 = new Vector2(this.m_rocket2X, this.m_rocket2Y);
+        this.rocketLocation3 = new Vector2(this.m_rocket3X, this.m_rocket3Y);
         this.m_jetManPosition = new Vector2(this.x, this.y);
         // this._texture = new Texture2D(GraphicsDevice, 1, 1);
         // this._texture.SetData(Color.DarkSlateGray);
@@ -170,9 +172,9 @@ export class JetPacReloaded extends Game {
         // this.hit = Content.Load<SoundEffect>("hit");
 
         this.m_jetman = new Jetman(400, 300, this.m_jetmanTexture, this._texture);
-        // this.m_rockets.Add(new Rocket(<number>this.rocketLocation1.X, <number>this.rocketLocation1.Y, this.m_rocketTexture, 0, 75, 61));
-        // this.m_rockets.Add(new Rocket(<number>this.rocketLocation2.X, <number>this.rocketLocation2.Y, this.m_rocketTexture, 4, 75, 61));
-        // this.m_rockets.Add(new Rocket(<number>this.rocketLocation3.X, <number>this.rocketLocation3.Y, this.m_rocketTexture, 8, 75, 61));
+        // this.m_rockets.push(new Rocket(this.rocketLocation1.X, this.rocketLocation1.Y, this.m_rocketTexture, 0, 75, 61));
+        // this.m_rockets.push(new Rocket(this.rocketLocation2.X, this.rocketLocation2.Y, this.m_rocketTexture, 4, 75, 61));
+        // this.m_rockets.push(new Rocket(this.rocketLocation3.X, this.rocketLocation3.Y, this.m_rocketTexture, 8, 75, 61));
         // this.m_bonus.Add(new Bonus(this.m_bonusTexture));
         // for (var i: number = 0; i < 10; i++) {
         //     this.m_enemies.Add(new Enemy(this.m_enemyTexture));
@@ -342,47 +344,6 @@ export class JetPacReloaded extends Game {
         // }
     }
 
-    private CheckJetManLedgeCollsions(tile: Tile): void {
-        // this.m_wallCollsion = false;
-        // var ledge: Rectangle = tile.TileRect;
-        // if (this.m_jetman.JetmanRect.Intersects(tile.TileRect)) {
-        //     if (tile.GetTileCollisionType.Equals(TileCollisionType.Wall)) {
-        //         this.m_wallCollsion = true;
-        //         var halfWidthA: number = ledge.Width / 2.0;
-        //         var halfHeightA: number = ledge.Height;
-        //         var halfWidthB: number = this.m_jetman.JetmanRect.Width / 2.0;
-        //         var halfHeightB: number = this.m_jetman.JetmanRect.Height;
-        //         var centerA: Vector2 = new Vector2(ledge.Left + halfWidthA, ledge.Top + halfHeightA);
-        //         var centerB: Vector2 = new Vector2(this.m_jetman.JetmanRect.Left + halfWidthB, this.m_jetman.JetmanRect.Top + halfHeightB);
-        //         var distanceX: number = centerA.X - centerB.X;
-        //         var distanceY: number = centerA.Y - centerB.Y;
-        //         var minDistanceX: number = halfWidthA + halfWidthB;
-        //         var minDistanceY: number = halfHeightA + halfHeightB;
-        //         var depthX: number = distanceX > 0 ? minDistanceX - distanceX : -minDistanceX - distanceX;
-        //         var depthY: number = distanceY > 0 ? minDistanceY - distanceY : -minDistanceY - distanceY;
-        //         if (depthX >= -2 && depthX <= 2) {
-        //             this.m_wallCollsion = true;
-        //             this.x -= <number>Math.ceil(depthX) - 6;
-        //             this.x = 64;
-        //             if (centerA.X < centerB.X) {
-        //                 this.x = ledge.Right + 2;
-        //             }
-        //             if (centerA.X > centerB.X) {
-        //                 this.x = this.m_jetman.JetmanRect.Left - 4;
-        //             }
-        //         }
-        //         if (depthY < -50) {
-        //             var i: number = 0;
-        //             this.y = this.m_jetman.JetmanRect.Top + 4;
-        //         }
-        //     }
-        //     if (tile.GetTileCollisionType.Equals(TileCollisionType.Platform)) {
-        //         this.y = this.m_jetman.JetmanRect.Top - 4;
-        //     }
-        //     this.m_jetManPosition = new Vector2(this.x, this.y);
-        // }
-    }
-
     private CheckFuelCollisions(fuel: Fuel): void {
         // if (this.m_jetman.JetmanRect.Intersects(fuel.FuelRect)) {
         //     if (<number>this.m_jetman.JetmanPosition.X != this.fuelLowerPosition && !this.m_fuelLowering) {
@@ -415,9 +376,9 @@ export class JetPacReloaded extends Game {
     }
 
     private CheckScreenBounds(): void {
-        if (this.y > 850) {
-            this.y = 850;
-        }
+        // if (this.y > 850) {
+        //     this.y = 850;
+        // }
     }
 
     private CheckKeyboard(): void {
@@ -511,7 +472,7 @@ export class JetPacReloaded extends Game {
     }
 
     private checkForHorizontalIntersections(increment: number): number {
-        let testRect: Rectangle = new Rectangle((this.m_jetman.JetmanPosition.X + increment), this.m_jetman.JetmanPosition.Y, this.m_jetman.JetmanRect.Width, this.m_jetman.JetmanRect.Height - 5);
+        let testRect: Rectangle = new Rectangle((this.x + increment), this.y, this.m_jetman.JetmanRect.Width, this.m_jetman.JetmanRect.Height - 5);
         this.m_graphicsManager.TileList.forEach(function (tile) {
             if (testRect.Intersects(tile.TileRect)) {
                 increment = 0;
@@ -522,7 +483,7 @@ export class JetPacReloaded extends Game {
     }
 
     private checkForVerticalIntersections(increment: number): number {
-        let testRect: Rectangle = new Rectangle(this.m_jetman.JetmanPosition.X, (this.m_jetman.JetmanPosition.Y + increment), this.m_jetman.JetmanRect.Width, this.m_jetman.JetmanRect.Height - 5);
+        let testRect: Rectangle = new Rectangle(this.x, (this.y + increment), this.m_jetman.JetmanRect.Width, this.m_jetman.JetmanRect.Height - 5);
         this.m_graphicsManager.TileList.forEach(function (tile) {
             if (testRect.Intersects(tile.TileRect)) {
                 increment = 0;
@@ -658,9 +619,9 @@ export class JetPacReloaded extends Game {
             //     this.m_bonus.forEach(function (bonus) {
             //         bonus.Draw(this.m_spriteBatch);
             //     });
-            //     this.m_rockets.forEach(function (rocket) {
-            //         rocket.Draw(this.m_spriteBatch);
-            //     });
+            this.m_rockets.forEach(rocket => {
+                rocket.Draw(this.m_spriteBatch);
+            });
             //     this.m_ledge.forEach(function (ledge) {
             //         ledge.Draw(this.m_spriteBatch);
             //     });
