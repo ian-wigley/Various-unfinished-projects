@@ -1,0 +1,73 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JetPacReloaded</title>
+    <link rel="stylesheet" href="app.css" type="text/css" />
+</head>
+
+<body>
+
+    <script id="shader-vs" type="x-shader/x-vertex">
+        attribute vec3 aVertexPosition;
+        attribute vec2 aTextureCoord;
+
+        uniform mat4 mVMatrix;
+        uniform mat4 pMatrix;
+
+        varying vec2 vTextureCoord;
+
+        void main(void) {
+        gl_Position = pMatrix * mVMatrix * vec4(aVertexPosition, 1.0);
+        vTextureCoord = aTextureCoord;
+        }
+    </script>
+
+    <script id="shader-fs" type="x-shader/x-fragment">
+        precision mediump float;
+        varying highp vec2 vTextureCoord;
+        uniform sampler2D uSampler;
+
+        void main(void) {
+        gl_FragColor = texture2D(uSampler, vTextureCoord);
+        }
+    </script>
+
+
+    <div id="container">
+        <canvas id="canvas" width="1280" height="720"></canvas>
+    </div>
+
+    <img id="bonus" src="Content/images/bonus.png" alt="" />
+    <img id="bullet" src="Content/images/bullet.PNG" alt="" />
+    <img id="enemies" src="Content/images/enemies.png" alt="" />
+    <img id="explosion" src="Content/images/explosion.png" alt="" />
+    <img id="fuel" src="Content/images/fuel.png" alt="" />
+    <img id="man" src="Content/images/man.png" alt="" />
+    <img id="rusty" src="Content/images/rusty.png" alt="" />
+    <img id="undergroundTiles" src="Content/images/undergroundTiles.png" alt="" />
+
+    <script type="module">
+        import { JetPacReloaded } from "./out/ts/jetpacReloaded.js"
+        let game = new JetPacReloaded();
+        game.Initialize();
+        game.RunGame(true);
+        game.Tick();
+    </script>
+
+</html>
+
+
+
+
+
+
+
+
+
+
+</body>
+
+</html>
