@@ -68,7 +68,7 @@ export class LevelManager {
             xhr.send();
         }
         catch (e) {
-            console.log("The following error occured while attempting to read the file: " + e.Message);
+            console.log("The following error occurred while attempting to read the file: " + e.Message);
         }
     }
 

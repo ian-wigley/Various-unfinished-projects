@@ -25,7 +25,7 @@ export class Particle extends BaseObject {
         super();
         this.m_image = image;
     }
-    
+
     public Update(x: number, y: number, facingLeft: boolean, showParticles: boolean): void {
         if (showParticles == true) {
             if (this.particleY < this.length) {
@@ -71,6 +71,7 @@ export class Particle extends BaseObject {
             this.length = 0;
         }
     }
+
     // public Draw(spriteBatch: SpriteBatch, camera: Camera): void {
     //     spriteBatch.Begin(SpriteSortMode.Immediate, BlendState.Additive,/*transformMatrix:*/camera.Transform);
     //     let particleLocation: Vector2 = new Vector2(this.particleX, this.particleY);
