@@ -18,3 +18,7 @@ Zig_Emulator/main.exe
 Zig_Emulator/main.exe.obj
 Zig_Emulator/main.pdb
 *.pyc
+TS_JT-Reader/C\#_JT-Reader_Vis-Studio/.vs
+TS_JT-Reader/C\#_JT-Reader_Vis-Studio/Backup
+TS_JT-Reader/C\#_JT-Reader_Vis-Studio/C sharp JT-Reader/bin
+TS_JT-Reader/C\#_JT-Reader_Vis-Studio/C sharp JT-Reader/obj
