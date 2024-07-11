@@ -1,12 +1,18 @@
 pub mod oc {
     use std::collections::HashMap;
 
+    use quick_xml::Reader;
+
     #[derive(Copy, Clone)]
     pub(crate) struct Opcode {}
 
     impl Opcode {
         pub fn new() -> Opcode {
             Opcode {}
+        }
+
+        pub(crate) fn load_xml(file_name: &str) {
+            let mut reader = Reader::from_file(file_name).unwrap();
         }
 
         pub(crate) fn populate_opcodes(self) -> HashMap<&'static str, [&'static str; 5]> {
