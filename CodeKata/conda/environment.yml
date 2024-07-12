@@ -1,0 +1,8 @@
+name: code_kata
+
+dependencies:
+  - python=3.12.4
+  - maturin
+  - faker
+  - pandas
+  - pyarrow
