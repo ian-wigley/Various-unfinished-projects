@@ -11,8 +11,11 @@ pub mod oc {
             Opcode {}
         }
 
-        pub(crate) fn load_xml(file_name: &str) {
+        pub(crate) fn load_xml(self, file_name: &str) {
             let mut reader = Reader::from_file(file_name).unwrap();
+            let mut buffer = Vec::new();
+
+            //https://amacal.medium.com/learn-rust-parsing-big-xml-files-67ec923f6977
         }
 
         pub(crate) fn populate_opcodes(self) -> HashMap<&'static str, [&'static str; 5]> {
