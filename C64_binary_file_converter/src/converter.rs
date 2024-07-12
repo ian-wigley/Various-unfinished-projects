@@ -33,6 +33,7 @@ pub mod con {
 
         pub(crate) fn init(&mut self) {
             // Populate the OpCode Map
+            self.opcode.load_xml("Assets/6502-codes.xml");
             self.opcodes = self.opcode.populate_opcodes();
             // Load the external binary file
             self.file_content = self.load_bin_file().unwrap().clone();
