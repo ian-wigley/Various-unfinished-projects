@@ -1,6 +1,6 @@
 pub mod oc {
     use std::collections::HashMap;
-
+    use quick_xml::events::Event;
     use quick_xml::Reader;
 
     #[derive(Copy, Clone)]
@@ -16,6 +16,15 @@ pub mod oc {
             let mut buffer = Vec::new();
 
             //https://amacal.medium.com/learn-rust-parsing-big-xml-files-67ec923f6977
+
+            loop {
+                match reader.read_event_into(&mut buffer) {
+                    Ok(Event::Eof) => { break println!("Done") }
+                    Ok(Event::Start(node)) => {}
+                    Err(_) => {}
+                    _ => {}
+                }
+            }
         }
 
         pub(crate) fn populate_opcodes(self) -> HashMap<&'static str, [&'static str; 5]> {
