@@ -1,6 +1,6 @@
 pub mod oc {
     use std::collections::HashMap;
-    use quick_xml::events::Event;
+    use quick_xml::events::{BytesStart, Event};
     use quick_xml::Reader;
 
     #[derive(Copy, Clone)]
@@ -11,20 +11,80 @@ pub mod oc {
             Opcode {}
         }
 
+        fn print_results(self, seen: &HashMap<String, usize>, counter: &usize) {
+            let mut keys: Vec<&String> = seen.keys().into_iter().collect();
+            keys.sort();
+
+            for item in keys {
+                println!("{}: {:?}", item, seen.get(item).unwrap());
+            }
+
+            println!("Found not considered nodes: {}", counter);
+        }
+
+        fn increment_counters(self, seen: &mut HashMap<String, usize>, key: String) {
+            if let Some(value) = seen.get_mut(&key) {
+                (*value) += 1;
+            } else {
+                seen.insert(key, 1);
+            }
+        }
+
+        fn process_attributes(self, seen: &mut HashMap<String, usize>, path: &mut Vec<String>, node: BytesStart) {
+            path.push("@attribute".into());
+
+            for attribute in node.attributes() {
+                path.push(format!(
+                    "{:?}",
+                    String::from_utf8(attribute.unwrap().key.0.to_vec()).unwrap()
+                ));
+                self.increment_counters(seen, path.join(" / "));
+                path.pop();
+            }
+            path.pop();
+        }
+
+
+        // https://amacal.medium.com/learn-rust-parsing-big-xml-files-67ec923f6977
         pub(crate) fn load_xml(self, file_name: &str) {
             let mut reader = Reader::from_file(file_name).unwrap();
-            let mut buffer = Vec::new();
 
-            //https://amacal.medium.com/learn-rust-parsing-big-xml-files-67ec923f6977
+            let mut path = Vec::new();
+            let mut seen = HashMap::new();
+
+            let mut buffer = Vec::new();
+            let mut counter = 0;
 
             loop {
                 match reader.read_event_into(&mut buffer) {
-                    Ok(Event::Eof) => { break println!("Done") }
-                    Ok(Event::Start(node)) => {}
-                    Err(_) => {}
-                    _ => {}
+                    Err(error) => break println!("{}", error),
+                    Ok(Event::Eof) => break println!("Completed."),
+                    Ok(Event::Start(node)) => {
+                        path.push(format!("{:?}", String::from_utf8(node.name().0.to_vec()).unwrap()));
+                        self.increment_counters(&mut seen, path.join(" / "));
+                        self.process_attributes(&mut seen, &mut path, node);
+                    }
+                    Ok(Event::End(_)) => {
+                        path.pop();
+                    }
+                    Ok(Event::Text(_)) => {
+                        path.push("@text".into());
+                        self.increment_counters(&mut seen, path.join(" / "));
+                        path.pop();
+                    }
+                    Ok(Event::Empty(node)) => {
+                        path.push(format!("{:?}", String::from_utf8(node.name().0.to_vec()).unwrap()));
+                        self.increment_counters(&mut seen, path.join(" / "));
+                        self.process_attributes(&mut seen, &mut path, node);
+                        path.pop();
+                    }
+                    Ok(_) => counter += 1,
                 }
+
+                buffer.clear();
             }
+
+            self.print_results(&seen, &counter);
         }
 
         pub(crate) fn populate_opcodes(self) -> HashMap<&'static str, [&'static str; 5]> {
