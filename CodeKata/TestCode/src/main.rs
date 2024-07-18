@@ -47,20 +47,21 @@ mod tests {
     use super::*;
 
     #[test]
-    fn get_birthdays() {
+    fn test_get_birthdays() {
         let result = get_birthdays();
         assert_eq!(result.shape(), (100,3));
     }
 
     #[test]
-    fn read_scv() {
+    fn test_read_scv() {
         let result = read_csv();
         _ = result;
     }
 
     #[test]
-    fn get_detail_by_date_of_birth() {
-        let result = get_detail_by_date_of_birth();
-        _ = result;
+    fn test_get_detail_by_date_of_birth() {
+        let df = read_csv().unwrap();
+        let result = get_detail_by_date_of_birth(df, "1973-04-24");
+        assert_eq!(result.shape(), (100,3));
     }
 }
