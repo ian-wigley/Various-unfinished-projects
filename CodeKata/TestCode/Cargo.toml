@@ -5,5 +5,5 @@ edition = "2021"
 
 [dependencies]
 rand = "0.8.4"
-polars = "0.41.2"
-polars-lazy = "0.41.2"
+polars = "0.41.3"
+polars-lazy = "0.41.3"
