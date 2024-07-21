@@ -6,27 +6,26 @@ use pyo3_polars::PyDataFrame;
 use polars_lazy::prelude::*;
 
 #[pyfunction]
-fn get_birthdays() -> PyResult<PyDataFrame> {
-    let df= read_csv().unwrap();
-    let df2 = get_detail_by_date_of_birth(df, "1973-04-24");
-    // wrap the dataframe, and it will be automatically
-    // converted to a python polars dataframe
+fn get_birthdays(csv_file: &str, date: &str) -> PyResult<PyDataFrame> {
+    let df= read_csv(csv_file).unwrap();
+    let df2 = get_detail_by_date_of_birth(df, date);
     Ok(PyDataFrame(df2))
 }
 
 fn get_detail_by_date_of_birth(data_frame: DataFrame, date: &str) -> DataFrame {
     return data_frame
+        .clone()
         .lazy()
-        .select(&[col("Name"), col("Email"),
-            when(col("Date of birth").eq(lit(date)))
-                .then(1).otherwise(2)]).collect().unwrap();
+        .filter(col("Date of birth").eq(lit(date)))
+        .collect()
+        .unwrap();
 
 }
 
-fn read_csv() -> PolarsResult<DataFrame> {
+fn read_csv(csv_file: &str) -> PolarsResult<DataFrame> {
     CsvReadOptions::default()
         .with_has_header(true)
-        .try_into_reader_with_file_path(Some("birthdays.csv".into()))?
+        .try_into_reader_with_file_path(Some(csv_file.into()))?
         .finish()
 }
 
@@ -38,21 +37,3 @@ fn birthday(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(get_birthdays, m)?)?;
     Ok(())
 }
-
-
-// #[cfg(test)]
-// mod tests {
-//     use super::*;
-//
-//     // #[test]
-//     // fn it_works() {
-//     //     let result = adder(2, 2);
-//     //     assert_eq!(result, 4);
-//     // }
-//
-//     // #[test]
-//     // fn read_scv() {
-//     //     let _df = example();
-//     // }
-//
-// }
