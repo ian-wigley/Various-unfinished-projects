@@ -1,4 +1,5 @@
 import csv
+from pathlib import Path
 
 from birthday import get_birthdays
 from faker import Faker
@@ -35,5 +36,6 @@ if __name__ == "__main__":
     generate_csv = GenerateCsv()
     if not generate_csv.done:
         generate_csv.create_fakes()
-    rusty_df = get_birthdays()
+    csv_directory = Path(__file__).parents[1] / "assets" / "birthdays.csv"
+    rusty_df = get_birthdays(str(csv_directory), "1973-04-24")
     print(rusty_df)
