@@ -4,9 +4,9 @@ use polars::io::SerReader;
 use polars::prelude::{CsvReadOptions, PolarsResult};
 use polars_lazy::prelude::*;
 
-fn get_birthdays() -> DataFrame {
-    let df = read_csv().unwrap();
-    let df2 = get_detail_by_date_of_birth(df, "1973-04-24");
+fn get_birthdays(csv_file: &str, date: &str) -> DataFrame {
+    let df= read_csv(csv_file).unwrap();
+    let df2 = get_detail_by_date_of_birth(df, date);
     df2
 }
 
@@ -19,15 +19,11 @@ fn get_detail_by_date_of_birth(data_frame: DataFrame, date: &str) -> DataFrame {
         .unwrap();
 }
 
-fn read_csv() -> PolarsResult<DataFrame> {
+fn read_csv(csv_file: &str) -> PolarsResult<DataFrame> {
     CsvReadOptions::default()
         .with_has_header(true)
-        .try_into_reader_with_file_path(Some("assets/birthdays.csv".into()))?
+        .try_into_reader_with_file_path(Some(csv_file.into()))?
         .finish()
-}
-
-fn main() {
-    println!("Hello, world!");
 }
 
 #[cfg(test)]
@@ -36,19 +32,19 @@ mod tests {
 
     #[test]
     fn test_get_birthdays() {
-        let result = get_birthdays();
+        let result = get_birthdays("assets/birthdays.csv", "1973-04-24");
         assert_eq!(result.shape(), (1, 3));
     }
 
     #[test]
     fn test_read_scv() {
-        let result = read_csv().unwrap();
+        let result = read_csv("assets/birthdays.csv").unwrap();
         assert_eq!(result.shape(), (100, 3));
     }
 
     #[test]
     fn test_get_detail_by_date_of_birth() {
-        let df = read_csv().unwrap();
+        let df = read_csv("assets/birthdays.csv").unwrap();
         let date = "1990-03-28";
         let date_only = NaiveDate::parse_from_str(date, "%Y-%m-%d")
             .unwrap();
