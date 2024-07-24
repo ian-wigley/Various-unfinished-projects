@@ -12,11 +12,11 @@ crate-type = ["cdylib"]
 
 [dependencies]
 rand = "0.8.4"
-polars = "0.40.0"
-pyo3-polars = "0.14.0"
-polars-lazy = "0.40.0"
+polars = "0.41.3"
+pyo3-polars = "0.15.0"
+polars-lazy = "0.41.3"
 
 [dependencies.pyo3]
-version = "0.21.1"
+version = "0.22.2"
 # "abi3-py38" tells pyo3 (and maturin) to build using the stable ABI with minimum Python version 3.8
 features = ["abi3-py38"]
