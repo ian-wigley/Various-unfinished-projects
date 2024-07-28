@@ -1,0 +1,22 @@
+[package]
+name = "code_kata"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[lib]
+name = "birthday"
+# "cdylib" is necessary to produce a shared library for Python to import from.
+crate-type = ["cdylib"]
+
+[dependencies]
+rand = "0.8.5"
+polars = "0.41.3"
+pyo3-polars = "0.15.0"
+polars-lazy = "0.41.3"
+
+[dependencies.pyo3]
+version = "0.21.1"
+# "abi3-py38" tells pyo3 (and maturin) to build using the stable ABI with minimum Python version 3.8
+features = ["abi3-py38"]
