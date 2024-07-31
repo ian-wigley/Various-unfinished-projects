@@ -14,11 +14,9 @@ JetpacReloaded/Typescript version/HTML5Canvas/ts/CS/
 JetpacReloaded/Typescript version/WebGLCanvas/out/
 
 C64_binary_file_converter/pkg/
-Zig_Emulator/zig-cache/
-Zig_Emulator/zig-out/
-Zig_Emulator/main.exe
-Zig_Emulator/main.exe.obj
-Zig_Emulator/main.pdb
+C64_binary_file_converter/.idea/
+C64_binary_file_converter/*.lock
+C64_binary_file_converter/Cargo.lock
 
 TS_JT-Reader/C\#_JT-Reader_Vis-Studio/.vs
 TS_JT-Reader/C\#_JT-Reader_Vis-Studio/Backup
@@ -28,4 +26,13 @@ TS_JT-Reader/C\#_JT-Reader_Vis-Studio/C sharp JT-Reader/obj
 CodeKata/target/
 /CodeKata/CodeKata/target
 /CodeKata/TestCode/target
+
 Zig_8080_Emulator/.zig-cache
+Zig_8080_Emulator/main.exe*
+Zig_8080_Emulator/main.pdb
+
+Zig_Emulator/zig-cache/
+Zig_Emulator/zig-out/
+Zig_Emulator/main.exe
+Zig_Emulator/main.exe.obj
+Zig_Emulator/main.pdb
