@@ -5,7 +5,7 @@ const cpu = @import("CPU.zig");
 const print = std.log.info;
 
 pub fn main() anyerror!void {
-    var romData = try loadRom();
+    const romData = try loadRom();
     // print("Size of the array is: {any}", .{array.len});
     // print("Array index: {any}", .{array[1]});
 
@@ -37,7 +37,7 @@ fn loadRom() anyerror![]u8 {
     count = 0;
 
     while (count < in_stream.context.buf.len * 2) {
-        var b = try in_stream.readByte();
+        const b = try in_stream.readByte();
         // print("rom bytes: {any}", .{b});
         array[count] = b;
         count += 1;
@@ -46,16 +46,16 @@ fn loadRom() anyerror![]u8 {
     return &array;
 }
 
-// https://github.com/daneelsan/minimal-zig-wasm-canvas/blob/master/checkerboard.zig
-const checkerboard_size: usize = 8;
+// // https://github.com/daneelsan/minimal-zig-wasm-canvas/blob/master/checkerboard.zig
+// const checkerboard_size: usize = 8;
 
-// 8 x 8 pixels, where each pixel is 4 bytes (rgba)
-var checkerboard_buffer = std.mem.zeroes([checkerboard_size][checkerboard_size][4]u8);
+// // 8 x 8 pixels, where each pixel is 4 bytes (rgba)
+// var checkerboard_buffer = std.mem.zeroes([checkerboard_size][checkerboard_size][4]u8);
 
-// The returned pointer will be used as an offset integer to the wasm memory
-export fn getCheckerboardBufferPointer() [*]u8 {
-    return @ptrCast([*]u8, &checkerboard_buffer);
-}
+// // The returned pointer will be used as an offset integer to the wasm memory
+// export fn getCheckerboardBufferPointer() [*]u8 {
+//     return @ptrCast([*]u8, &checkerboard_buffer);
+// }
 
 fn DrawVertical() void {
     // if (rom.Count() > 0)
