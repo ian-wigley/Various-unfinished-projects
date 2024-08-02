@@ -1384,7 +1384,9 @@ pub const CPU = struct {
     }
 
     fn PerformDec(inSource: u16) u8 {
-        const value: u16 = @intCast(((inSource) - 1) & 0xFF);
+        // const value: u16 = @intCast((inSource - 1) & 0xFF);
+        const wtf: i16 = @intCast(inSource);
+        const value: u16 = @intCast((wtf - 1) & 0xFF);
         HALFCARRY = @intFromBool((value & 0x0F) == 0);
         ZERO = @intFromBool((value & 255) == 0);
         SIGN = @truncate(value & 128);
