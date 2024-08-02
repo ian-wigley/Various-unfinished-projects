@@ -148,7 +148,10 @@ test "StackPush" {}
 
 test "StackPop" {}
 
-test "PerformDec" {}
+test "PerformDec" {
+    const result = cpu.CPU.PerformDec(0);
+    try expect(result == 255);
+}
 
 test "PerformInc" {}
 
