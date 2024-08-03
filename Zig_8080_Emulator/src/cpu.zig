@@ -86,11 +86,12 @@ pub const CPU = struct {
     /// Method assists debugging.
     fn OutputInfo(opcode: [*:0]const u8) void {
         if (iteration == 11) {
-            print("Count: {any}, Opcode: {s}, PC: {any}, SP: {any}, A: {any}, B: {any}, C: {any}, D: {any}, E: {any}, H: {any}, L: {any}, BC: {any}, DE: {any}, HL: {any}, SIGN: {any}, ZERO: {any}, HALFCARRY: {any}, PARITY: {any}, CARRY: {any}, INTERRUPT: {any}, 9206: {any}, 9207: {any}, 9210: {any}, 9211: {any}, 9212: {any}, 9213: {any}, 9214: {any}, 9215: {any}", .{ count, opcode, m_PC, SP, A, B, C, D, E, H, L, BC, DE, HL, SIGN, ZERO, HALFCARRY, PARITY, CARRY, INTERRUPT, m_rom[9206], m_rom[9207], m_rom[9210], m_rom[9211], m_rom[9212], m_rom[9213], m_rom[9214], m_rom[9215] });
-        }
-        if (iteration == 12) {
             var stop: bool = true;
             _ = &stop;
+        }
+
+        if (iteration < 12) {
+            print("Count: {any}, Opcode: {s}, PC: {any}, SP: {any}, A: {any}, B: {any}, C: {any}, D: {any}, E: {any}, H: {any}, L: {any}, BC: {any}, DE: {any}, HL: {any}, SIGN: {any}, ZERO: {any}, HALFCARRY: {any}, PARITY: {any}, CARRY: {any}, INTERRUPT: {any}, 9206: {any}, 9207: {any}, 9210: {any}, 9211: {any}, 9212: {any}, 9213: {any}, 9214: {any}, 9215: {any}", .{ count, opcode, m_PC, SP, A, B, C, D, E, H, L, BC, DE, HL, SIGN, ZERO, HALFCARRY, PARITY, CARRY, INTERRUPT, m_rom[9206], m_rom[9207], m_rom[9210], m_rom[9211], m_rom[9212], m_rom[9213], m_rom[9214], m_rom[9215] });
         }
     }
 
@@ -1385,8 +1386,8 @@ pub const CPU = struct {
 
     fn PerformDec(inSource: u16) u8 {
         // const value: u16 = @intCast((inSource - 1) & 0xFF);
-        const wtf: i16 = @intCast(inSource);
-        const value: u16 = @intCast((wtf - 1) & 0xFF);
+        const cast: i16 = @intCast(inSource);
+        const value: u16 = @intCast((cast - 1) & 0xFF);
         HALFCARRY = @intFromBool((value & 0x0F) == 0);
         ZERO = @intFromBool((value & 255) == 0);
         SIGN = @truncate(value & 128);
@@ -1455,7 +1456,9 @@ pub const CPU = struct {
     }
 
     fn PerformCompSub(inValue: u16) void {
-        const value: i16 = @intCast((A - inValue) & 0xFF);
+        const cast: i16 = @intCast(inValue);
+        // const value: i16 = @intCast((A - inValue) & 0xFF);
+        const value: i16 = @intCast((A - cast) & 0xFF);
         if ((value >= A) and ToBooleanU16(inValue)) {
             CARRY = inValue;
         } else {
