@@ -1,7 +1,7 @@
 const std = @import("std");
 const fmt = std.fmt;
 const print = std.log.info;
-const m_io = @import("IO.zig");
+const m_io = @import("io.zig");
 
 pub const CPU = struct {
     var debug_stuff: [4000][]const u8 = undefined;
