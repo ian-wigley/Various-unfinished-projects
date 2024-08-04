@@ -1,7 +1,7 @@
 const std = @import("std");
 const mem = std.mem;
 const allocator = std.mem.Allocator;
-const cpu = @import("CPU.zig");
+const cpu = @import("cpu.zig");
 const print = std.log.info;
 
 pub fn main() anyerror!void {
