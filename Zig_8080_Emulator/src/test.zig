@@ -1,6 +1,6 @@
 const std = @import("std");
 const expect = std.testing.expect;
-const cpu = @import("CPU.zig");
+const cpu = @import("cpu.zig");
 
 //***********************************************************************//
 //
