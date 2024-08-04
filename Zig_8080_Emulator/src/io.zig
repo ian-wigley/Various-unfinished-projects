@@ -1,5 +1,5 @@
 const std = @import("std");
-const CPU = @import("CPU.zig");
+const CPU = @import("cpu.zig");
 
 pub const IO = struct {
     // Input and output ports
