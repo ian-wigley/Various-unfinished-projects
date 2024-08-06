@@ -24,12 +24,13 @@ TS_JT-Reader/C\#_JT-Reader_Vis-Studio/C sharp JT-Reader/bin
 TS_JT-Reader/C\#_JT-Reader_Vis-Studio/C sharp JT-Reader/obj
 
 CodeKata/target/
-/CodeKata/CodeKata/target
-/CodeKata/TestCode/target
+CodeKata/CodeKata/target
+CodeKata/TestCode/target
 
 Zig_8080_Emulator/.zig-cache
 Zig_8080_Emulator/main.exe*
 Zig_8080_Emulator/main.pdb
+Zig_8080_Emulator/.idea
 
 Zig_Emulator/zig-cache/
 Zig_Emulator/zig-out/
