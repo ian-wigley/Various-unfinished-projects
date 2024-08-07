@@ -7,7 +7,7 @@ pub const CPU = struct {
     var debug_stuff: [4000][]const u8 = undefined;
     var count: usize = 0;
 
-    var m_rom: []u8 = undefined;
+    var m_rom: [] u8 = undefined;
     var m_PC: u16 = 0; // Program Counter: This is the current instruction pointer. 16-bit register.
     var SP: u16 = 0; // Stack Pointer. 16-bit register
     var A: u8 = 0; // Accumulator. 8-bit register
@@ -86,8 +86,8 @@ pub const CPU = struct {
     /// Method assists debugging.
     fn OutputInfo(opcode: [*:0]const u8) void {
         if (iteration == 11) {
-            var stop: bool = true;
-            _ = &stop;
+            // var stop: bool = true;
+            // _ = &stop;
         }
 
         if (iteration < 12) {
@@ -1346,7 +1346,9 @@ pub const CPU = struct {
         bytes[0] = m_rom[m_PC + 0];
         bytes[1] = m_rom[m_PC + 1];
         m_PC += 2;
-        return std.math.shl(u16, (bytes[1] & 0xFF), 8) | (bytes[0] & 0xFF);
+        const result = std.math.shl(u16, (bytes[1] & 0xFF), 8) | (bytes[0] & 0xFF);
+        return result;
+        // return std.math.shl(u16, (bytes[1] & 0xFF), 8) | (bytes[0] & 0xFF);
     }
 
     fn ReadByte(counter: usize) u8 {
