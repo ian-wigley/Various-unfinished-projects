@@ -9,6 +9,8 @@ pub fn main() anyerror!void {
     // print("Size of the array is: {any}", .{array.len});
     // print("Array index: {any}", .{array[1]});
 
+
+
     cpu.CPU.New(romData);
 
     var crashed = false;
@@ -39,8 +41,8 @@ fn loadRom() anyerror![]u8 {
 
     while (count < in_stream.context.buf.len * 2) {
         const b = try in_stream.readByte();
-        // print("rom bytes: {any}", .{b});
         array[count] = b;
+        // print("rom bytes: {any} count: {any}", .{array[count], count});
         count += 1;
     }
     // print("array length: {any}", .{array.len});
