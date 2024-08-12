@@ -1,3 +1,19 @@
+// {
+//     "version": "0.2.0",
+//     "configurations": [
+//         {
+//             "type": "lldb",
+//             "request": "launch",
+//             "name": "Debug test",
+//             "program": "${workspaceFolder}/zig-out/bin/${fileBasenameNoExtension}-test",
+//             "args": [],
+//             "cwd": "${workspaceFolder}",
+//             "preLaunchTask": "test",
+//         }
+//     ]
+// }
+
+
 {
     // Use IntelliSense to learn about possible attributes.
     // Hover to view descriptions of existing attributes.
@@ -15,14 +31,16 @@
             "environment": [],
             "externalConsole": false,
             "preLaunchTask": "build"
+        },
+        {
+            // "type": "cppvsdbg",
+            "type": "lldb",
+            "request": "launch",
+            "name": "Test",
+            "program": "${workspaceFolder}/src/test.zig",
+            //"program": "main",
+            "args": ["zig test"],
+            "cwd": "${workspaceFolder}"
         }
-        // {
-        //     "type": "cppvsdbg",
-        //     "request": "launch",
-        //     "name": "Test",
-        //     "program": "${workspaceFolder}/zig-out/bin/my-test",
-        //     "args": ["zig test"],
-        //     "cwd": "${workspaceFolder}"
-        // }
     ]
 }
