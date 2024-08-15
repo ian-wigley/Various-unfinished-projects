@@ -5,8 +5,8 @@ const cpu = @import("cpu.zig");
 const print = std.log.info;
 
 pub fn main() anyerror!void {
-    // const romData = try loadRom();
-    // print("Size of the array is: {any}", .{array.len});
+    const romData = try loadRom();
+    print("Size of the array is: {any}", .{romData.len});
     // print("Array index: {any}", .{array[1]});
     
     print("Size of the array is: {any}", .{wrom.len});
@@ -49,8 +49,19 @@ fn loadRom() anyerror![]u8 {
     }
     print("array length: {any}", .{array.len});
     print("array data: {any}", .{array[9206]});
+
+    var buf: [8192]u8 = undefined;
+    while (try in_stream.readUntilDelimiterOrEof(&buf, '\n')) |line| {
+        // do something with line...
+        print("line: {any}", .{line});
+    }
     return &array;
 }
+
+fn save_memory() void {
+
+}
+
 
 // // https://github.com/daneelsan/minimal-zig-wasm-canvas/blob/master/checkerboard.zig
 // const checkerboard_size: usize = 8;
