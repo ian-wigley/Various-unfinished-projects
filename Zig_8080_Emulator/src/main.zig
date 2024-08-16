@@ -8,7 +8,7 @@ pub fn main() anyerror!void {
     const romData = try loadRom();
     print("Size of the array is: {any}", .{romData.len});
     // print("Array index: {any}", .{array[1]});
-    
+
     print("Size of the array is: {any}", .{wrom.len});
     // cpu.CPU.New(romData);
     cpu.CPU.New(&wrom);
@@ -17,6 +17,7 @@ pub fn main() anyerror!void {
     while (!crashed) {
         crashed = cpu.CPU.Run();
     }
+    try save_memory(&wrom);
     print("CPU has crashed. {any}", .{crashed});
 }
 
@@ -41,7 +42,7 @@ fn loadRom() anyerror![]u8 {
     print("array data: {any}", .{array[9206]});
 
     count = 0;
-    while (count < in_stream.context.buf.len) { //} * 2) {
+    while (count < 8192) { //in_stream.context.buf.len) { //} * 2) {
         const b = try in_stream.readByte();
         array[count] = b;
         // print("rom bytes: {any} count: {any}", .{array[count], count});
@@ -51,15 +52,21 @@ fn loadRom() anyerror![]u8 {
     print("array data: {any}", .{array[9206]});
 
     var buf: [8192]u8 = undefined;
-    while (try in_stream.readUntilDelimiterOrEof(&buf, '\n')) |line| {
-        // do something with line...
-        print("line: {any}", .{line});
-    }
+    const readed = std.fs.File.read(file, &buf);
+    print("line: {any}", .{readed});
+
     return &array;
 }
 
-fn save_memory() void {
+fn save_memory(rom: [] const u8) anyerror!void {
+    const file = try std.fs.cwd().createFile(
+            "crash_dump.bin",
+            .{ .read = true },
+        );
+    defer file.close();
 
+    const bytes_written = try file.writeAll(rom);
+    _ = bytes_written;
 }
 
 
