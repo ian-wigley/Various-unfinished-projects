@@ -4,10 +4,10 @@ const print = std.log.info;
 const m_io = @import("io.zig");
 
 pub const CPU = struct {
-    var debug_stuff: [4000][]const u8 = undefined;
-    var count: usize = 0;
 
+    var count: usize = 0;
     var m_rom: [] u8 = undefined;
+
     var m_PC: u16 = 0; // Program Counter: This is the current instruction pointer. 16-bit register.
     var SP: u16 = 0; // Stack Pointer. 16-bit register
     var A: u8 = 0; // Accumulator. 8-bit register
@@ -49,8 +49,27 @@ pub const CPU = struct {
     var m_instructionCounter: u16 = 0;
     var iteration: usize = 0;
 
-    pub fn New(rom: []u8) void {
+    pub fn GetIteration() usize {
+        return iteration;
+    }
+
+    pub fn New(rom: [] u8) void {
         m_rom = rom;
+        print("m_rom data: {any}", .{m_rom[9206]});
+
+        // count = 0;
+        // // Clear down the array
+        // while (count < rom.len) {
+        //     m_rom[count] = 0;
+        //     count += 1;
+        // }
+
+        // var counter: usize = 0;
+        // while (counter < rom.len) {
+        //     print("rom bytes: {any} count: {any}", .{m_rom[counter], counter});
+        //     counter += 1;
+        // }
+
         m_io.IO.New();
         half_instruction_per_frame = @as(u16, instruction_per_frame / 2);
         // print("half_instruction_per_frame: {any}", .{half_instruction_per_frame});
@@ -58,12 +77,9 @@ pub const CPU = struct {
     }
 
     pub fn Run() bool {
-        // print("Programme Counter: {any}", .{m_PC});
 
         count = 0;
         // clear the slice once per 4000 items
-        debug_stuff = undefined;
-
         while (count < instruction_per_frame) {
             ExecuteInstruction();
             count += 1;
@@ -78,19 +94,12 @@ pub const CPU = struct {
             print("Iteration: {any}", .{iteration});
         }
 
-        // // print("CPU iteration. {any}", .{iteration});
-        // // print("CRASHED: {any}", .{CRASHED});
         return CRASHED;
     }
 
-    /// Method assists debugging.
+    // Method assists debugging.
     fn OutputInfo(opcode: [*:0]const u8) void {
-        if (iteration == 11) {
-            // var stop: bool = true;
-            // _ = &stop;
-        }
-
-        if (iteration < 12) {
+        if (iteration > 635) {
             print("Count: {any}, Opcode: {s}, PC: {any}, SP: {any}, A: {any}, B: {any}, C: {any}, D: {any}, E: {any}, H: {any}, L: {any}, BC: {any}, DE: {any}, HL: {any}, SIGN: {any}, ZERO: {any}, HALFCARRY: {any}, PARITY: {any}, CARRY: {any}, INTERRUPT: {any}, 9206: {any}, 9207: {any}, 9210: {any}, 9211: {any}, 9212: {any}, 9213: {any}, 9214: {any}, 9215: {any}", .{ count, opcode, m_PC, SP, A, B, C, D, E, H, L, BC, DE, HL, SIGN, ZERO, HALFCARRY, PARITY, CARRY, INTERRUPT, m_rom[9206], m_rom[9207], m_rom[9210], m_rom[9211], m_rom[9212], m_rom[9213], m_rom[9214], m_rom[9215] });
         }
     }
@@ -1337,6 +1346,7 @@ pub const CPU = struct {
 
     fn FetchRomByte() u8 {
         const value = m_rom[m_PC];
+        // print("Value: {any}", .{value});
         m_PC += 1;
         return value;
     }
@@ -1361,7 +1371,9 @@ pub const CPU = struct {
 
     pub fn WriteShort(inAddress: u16, inWord: u16) void {
         m_rom[inAddress + 1] = @intCast(std.math.shr(u16, inWord, 8));
+        // print("m_rom[inAddress + 1]: {any}", .{m_rom[inAddress + 1]});
         m_rom[inAddress + 0] = @truncate(inWord);
+        // print("m_rom[inAddress + 0]: {any}", .{m_rom[inAddress + 0]});
     }
 
     fn WriteByte(inAddress: u16, inByte: u8) void {
@@ -1386,7 +1398,7 @@ pub const CPU = struct {
         return temp;
     }
 
-    fn PerformDec(inSource: u16) u8 {
+    pub fn PerformDec(inSource: u16) u8 {
         // const value: u16 = @intCast((inSource - 1) & 0xFF);
         const cast: i16 = @intCast(inSource);
         const value: u16 = @intCast((cast - 1) & 0xFF);
