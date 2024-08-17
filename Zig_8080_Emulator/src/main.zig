@@ -19,6 +19,7 @@ pub fn main() anyerror!void {
     }
     try save_memory(&wrom);
     print("CPU has crashed. {any}", .{crashed});
+    print("Iteration {any}", .{cpu.CPU.GetIteration()});
 }
 
 fn loadRom() anyerror![]u8 {
