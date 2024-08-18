@@ -28,6 +28,7 @@ CodeKata/CodeKata/target
 CodeKata/TestCode/target
 
 Zig_8080_Emulator/.zig-cache
+Zig_8080_Emulator/zig-cache
 Zig_8080_Emulator/main.exe*
 Zig_8080_Emulator/main.pdb
 Zig_8080_Emulator/.idea
@@ -37,3 +38,4 @@ Zig_Emulator/zig-out/
 Zig_Emulator/main.exe
 Zig_Emulator/main.exe.obj
 Zig_Emulator/main.pdb
+
