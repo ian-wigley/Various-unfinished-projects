@@ -366,18 +366,18 @@ pub const CPU = struct {
         }
     }
 
-    fn CallInterrupt(inAddress: u16) void {
+    pub fn CallInterrupt(inAddress: u16) void {
         // Call the interrupt by pushing current PC on the stack and then jump to interrupt address
         INTERRUPT = false;
         StackPush(m_PC);
         m_PC = inAddress;
     }
 
-    fn NOP() void {
+    pub fn NOP() void {
         // No Operation - Do nothing !
     }
 
-    fn Instruction_JMP(byte: u8) void {
+    pub fn Instruction_JMP(byte: u8) void {
         const data16: u16 = FetchRomShort();
         var m_condition = true;
 
@@ -410,7 +410,7 @@ pub const CPU = struct {
         }
     }
 
-    fn Instruction_LXI(byte: u8) void {
+    pub fn Instruction_LXI(byte: u8) void {
         switch (byte) {
             0x01 => {
                 SetBC(FetchRomShort());
@@ -428,7 +428,7 @@ pub const CPU = struct {
         }
     }
 
-    fn Instruction_MVI(byte: u8) void {
+    pub fn Instruction_MVI(byte: u8) void {
         switch (byte) {
             0x3e => {
                 SetA(FetchRomByte());
@@ -458,7 +458,7 @@ pub const CPU = struct {
         }
     }
 
-    fn Instruction_CALL(byte: u8) void {
+    pub fn Instruction_CALL(byte: u8) void {
         const data16: u16 = FetchRomShort();
         var m_condition = true;
         switch (byte) {
@@ -483,7 +483,7 @@ pub const CPU = struct {
         }
     }
 
-    fn Instruction_LDA(byte: u8) void {
+    pub fn Instruction_LDA(byte: u8) void {
         switch (byte) {
             0x0a => {
                 m_source = BC;
@@ -499,7 +499,7 @@ pub const CPU = struct {
         SetA(ReadByte(m_source));
     }
 
-    fn Instruction_MOVHL(byte: u8) void {
+    pub fn Instruction_MOVHL(byte: u8) void {
         switch (byte) {
             0x77 => {
                 WriteByte(HL, A);
@@ -526,7 +526,7 @@ pub const CPU = struct {
         }
     }
 
-    fn Instruction_INX(byte: u8) void {
+    pub fn Instruction_INX(byte: u8) void {
         switch (byte) {
             0x03 => {
                 SetBC(BC + 1);
@@ -544,7 +544,7 @@ pub const CPU = struct {
         }
     }
 
-    fn Instruction_DCX(byte: u8) void {
+    pub fn Instruction_DCX(byte: u8) void {
         switch (byte) {
             0x0b => {
                 SetBC(BC - 1);
@@ -562,7 +562,7 @@ pub const CPU = struct {
         }
     }
 
-    fn Instruction_DEC(byte: u8) void {
+    pub fn Instruction_DEC(byte: u8) void {
         switch (byte) {
             0x3d => {
                 SetA(PerformDec(A));
@@ -592,7 +592,7 @@ pub const CPU = struct {
         }
     }
 
-    fn Instruction_INC(byte: u8) void {
+    pub fn Instruction_INC(byte: u8) void {
         switch (byte) {
             0x3c => {
                 SetA(PerformInc(A));
@@ -622,7 +622,7 @@ pub const CPU = struct {
         }
     }
 
-    fn Instruction_RET(byte: u8) void {
+    pub fn Instruction_RET(byte: u8) void {
         var m_condition = true;
         switch (byte) {
             0xc9 => {},
@@ -645,7 +645,7 @@ pub const CPU = struct {
         }
     }
 
-    fn Instruction_MOV(byte: u8) void {
+    pub fn Instruction_MOV(byte: u8) void {
         switch (byte) {
             0x7F => {
                 SetA(A);
@@ -819,7 +819,7 @@ pub const CPU = struct {
         }
     }
 
-    fn Instruction_CMP(byte: u8) void {
+    pub fn Instruction_CMP(byte: u8) void {
         switch (byte) {
             0xbf => {
                 m_value = A;
@@ -853,7 +853,7 @@ pub const CPU = struct {
         PerformCompSub(m_value);
     }
 
-    fn Instruction_PUSH(byte: u8) void {
+    pub fn Instruction_PUSH(byte: u8) void {
         switch (byte) {
             0xc5 => {
                 m_value = BC;
@@ -877,7 +877,7 @@ pub const CPU = struct {
         StackPush(m_value);
     }
 
-    fn Instruction_POP(byte: u8) void {
+    pub fn Instruction_POP(byte: u8) void {
         const value = StackPop();
         switch (byte) {
             0xc1 => {
@@ -901,7 +901,7 @@ pub const CPU = struct {
         }
     }
 
-    fn Instruction_DAD(byte: u8) void {
+    pub fn Instruction_DAD(byte: u8) void {
         switch (byte) {
             0x09 => {
                 AddHL(BC);
@@ -919,12 +919,12 @@ pub const CPU = struct {
         }
     }
 
-    fn Instruction_XCHG() void {
+    pub fn Instruction_XCHG() void {
         SetDE(HL);
         SetHL(DE);
     }
 
-    fn Instruction_XTHL() void {
+    pub fn Instruction_XTHL() void {
         var temp = H;
         SetH(ReadByte(SP + 1));
         WriteByte((SP + 1), temp);
@@ -933,21 +933,21 @@ pub const CPU = struct {
         WriteByte(SP, temp);
     }
 
-    fn Instruction_OUTP() void {
+    pub fn Instruction_OUTP() void {
         const port = FetchRomByte();
         m_io.IO.OutputPort(port, A);
     }
 
-    fn Instruction_INP() void {
+    pub fn Instruction_INP() void {
         const port = FetchRomByte();
         SetA(m_io.IO.InputPort(port));
     }
 
-    fn Instruction_PCHL() void {
+    pub fn Instruction_PCHL() void {
         m_PC = HL;
     }
 
-    fn Instruction_RST(byte: u8) void {
+    pub fn Instruction_RST(byte: u8) void {
         var address: u16 = 0;
         switch (byte) {
             0xc7 => {
@@ -980,12 +980,12 @@ pub const CPU = struct {
         m_PC = address;
     }
 
-    fn Instruction_RLC() void {
+    pub fn Instruction_RLC() void {
         SetA(((A << 1) | (A >> 7)));
         CARRY = (A & BIT0);
     }
 
-    fn Instruction_RAL() void {
+    pub fn Instruction_RAL() void {
         SetA(A << 1);
         if (ToBooleanU16(CARRY)) {
             SetA(A | BIT0);
@@ -993,12 +993,12 @@ pub const CPU = struct {
         CARRY = A & 0x80;
     }
 
-    fn Instruction_RRC() void {
+    pub fn Instruction_RRC() void {
         SetA(((A >> 1) | (A << 7)));
         CARRY = (A & BIT7);
     }
 
-    fn Instruction_RAR() void {
+    pub fn Instruction_RAR() void {
         SetA((A >> 1));
         if (ToBooleanU16(CARRY)) {
             SetA(A | BIT7);
@@ -1006,7 +1006,7 @@ pub const CPU = struct {
         CARRY = (A & 1);
     }
 
-    fn Instruction_AND(byte: u8) void {
+    pub fn Instruction_AND(byte: u8) void {
         switch (byte) {
             0xa7 => {
                 PerformAnd(A);
@@ -1040,7 +1040,7 @@ pub const CPU = struct {
         }
     }
 
-    fn Instruction_ADD(byte: u8) void {
+    pub fn Instruction_ADD(byte: u8) void {
         switch (byte) {
             0x87 => {
                 PerformByteAdd(A, 0);
@@ -1074,7 +1074,7 @@ pub const CPU = struct {
         }
     }
 
-    fn Instruction_STA(byte: u8) void {
+    pub fn Instruction_STA(byte: u8) void {
         switch (byte) {
             0x02 => {
                 WriteByte(BC, A);
@@ -1090,7 +1090,7 @@ pub const CPU = struct {
         }
     }
 
-    fn Instruction_XOR(byte: u8) void {
+    pub fn Instruction_XOR(byte: u8) void {
         switch (byte) {
             0xaf => {
                 PerformXor(A);
@@ -1124,23 +1124,23 @@ pub const CPU = struct {
         }
     }
 
-    fn Instruction_DI() void {
+    pub fn Instruction_DI() void {
         INTERRUPT = false;
     }
 
-    fn Instruction_EI() void {
+    pub fn Instruction_EI() void {
         INTERRUPT = true;
     }
 
-    fn Instruction_STC() void {
+    pub fn Instruction_STC() void {
         CARRY = 1;
     }
 
-    fn Instruction_CMC() void {
+    pub fn Instruction_CMC() void {
         CARRY = 0;
     }
 
-    fn Instruction_OR(byte: u8) void {
+    pub fn Instruction_OR(byte: u8) void {
         switch (byte) {
             0xb7 => {
                 PerformOr(A);
@@ -1174,7 +1174,7 @@ pub const CPU = struct {
         }
     }
 
-    fn Instruction_SUB(byte: u8) void {
+    pub fn Instruction_SUB(byte: u8) void {
         switch (byte) {
             0x97 => {
                 PerformByteSub(A, 0);
@@ -1208,17 +1208,17 @@ pub const CPU = struct {
         }
     }
 
-    fn Instruction_LHLD() void {
+    pub fn Instruction_LHLD() void {
         const immediate = FetchRomShort();
         SetHL(ReadShort(immediate));
     }
 
-    fn Instruction_SHLD() void {
+    pub fn Instruction_SHLD() void {
         const immediate = FetchRomShort();
         WriteShort(immediate, HL);
     }
 
-    fn Instruction_SBBI() void {
+    pub fn Instruction_SBBI() void {
         const immediate = FetchRomByte();
         var carryvalue: u8 = 0;
         // TO-DO check
@@ -1228,7 +1228,7 @@ pub const CPU = struct {
         PerformByteSub(immediate, carryvalue);
     }
 
-    fn Instruction_DAA() void {
+    pub fn Instruction_DAA() void {
         // TO-DO check
         if (((A & 0x0F) > 9) or ToBooleanU16(HALFCARRY)) {
             A += 0x06;
@@ -1246,11 +1246,11 @@ pub const CPU = struct {
         SetFlagZeroSign();
     }
 
-    fn Instruction_CMA() void {
+    pub fn Instruction_CMA() void {
         SetA(A ^ 0xff);
     }
 
-    fn Instruction_ADC(byte: u8) void {
+    pub fn Instruction_ADC(byte: u8) void {
         var carryvalue: u8 = 0;
         if (ToBooleanU16(CARRY)) {
             carryvalue = 1;
@@ -1288,70 +1288,70 @@ pub const CPU = struct {
         }
     }
 
-    fn SetA(inByte: u8) void {
+    pub fn SetA(inByte: u8) void {
         A = inByte & 0xFF;
     }
 
-    fn SetB(inByte: u8) void {
+    pub fn SetB(inByte: u8) void {
         B = inByte & 0xFF;
         BC = std.math.shl(u16, B, 8) | C;
     }
 
-    fn SetC(inByte: u8) void {
+    pub fn SetC(inByte: u8) void {
         C = inByte & 0xFF;
         BC = std.math.shl(u16, B, 8) | C;
     }
 
-    fn SetD(inByte: u8) void {
+    pub fn SetD(inByte: u8) void {
         D = inByte;
         DE = std.math.shl(u16, D, 8) + E;
     }
 
-    fn SetE(inByte: u8) void {
+    pub fn SetE(inByte: u8) void {
         E = inByte;
         DE = std.math.shl(u16, D, 8) + E;
     }
 
-    fn SetH(inByte: u8) void {
+    pub fn SetH(inByte: u8) void {
         H = inByte;
         HL = std.math.shl(u16, H, 8) + L;
     }
 
-    fn SetL(inByte: u8) void {
+    pub fn SetL(inByte: u8) void {
         L = inByte;
         HL = std.math.shl(u16, H, 8) + L;
     }
 
-    fn SetBC(inShort: u16) void {
+    pub fn SetBC(inShort: u16) void {
         BC = inShort;
         B = @truncate(BC >> 8);
         C = @truncate(BC & 0xFF);
     }
 
-    fn SetDE(inShort: u16) void {
+    pub fn SetDE(inShort: u16) void {
         DE = inShort;
         D = @truncate(DE >> 8);
         E = @truncate(DE & 0xFF);
     }
 
-    fn SetHL(inShort: u16) void {
+    pub fn SetHL(inShort: u16) void {
         HL = inShort;
         H = @truncate(HL >> 8);
         L = @truncate(HL & 0xFF);
     }
 
-    fn SetSP(inShort: u16) void {
+    pub fn SetSP(inShort: u16) void {
         SP = inShort;
     }
 
-    fn FetchRomByte() u8 {
+    pub fn FetchRomByte() u8 {
         const value = m_rom[m_PC];
         // print("Value: {any}", .{value});
         m_PC += 1;
         return value;
     }
 
-    fn FetchRomShort() u16 {
+    pub fn FetchRomShort() u16 {
         var bytes: [2]u8 = [_]u8{ 0, 0 };
         bytes[0] = m_rom[m_PC + 0];
         bytes[1] = m_rom[m_PC + 1];
@@ -1361,11 +1361,11 @@ pub const CPU = struct {
         // return std.math.shl(u16, (bytes[1] & 0xFF), 8) | (bytes[0] & 0xFF);
     }
 
-    fn ReadByte(counter: usize) u8 {
+    pub fn ReadByte(counter: usize) u8 {
         return m_rom[counter];
     }
 
-    fn ReadShort(inAddress: u16) u16 {
+    pub fn ReadShort(inAddress: u16) u16 {
         return std.math.shl(u16, m_rom[inAddress + 1], 8) + (m_rom[inAddress + 0]);
     }
 
@@ -1376,7 +1376,7 @@ pub const CPU = struct {
         // print("m_rom[inAddress + 0]: {any}", .{m_rom[inAddress + 0]});
     }
 
-    fn WriteByte(inAddress: u16, inByte: u8) void {
+    pub fn WriteByte(inAddress: u16, inByte: u8) void {
         if (inAddress < m_rom.len) {
             m_rom[inAddress] = inByte;
         } else {
@@ -1385,14 +1385,14 @@ pub const CPU = struct {
         }
     }
 
-    fn StackPush(inValue: u16) void {
+    pub fn StackPush(inValue: u16) void {
         if (SP > 1) {
             SP -= 2;
             WriteShort(SP, inValue);
         }
     }
 
-    fn StackPop() u16 {
+    pub fn StackPop() u16 {
         const temp = ReadShort(SP);
         SP += 2;
         return temp;
@@ -1409,7 +1409,7 @@ pub const CPU = struct {
         return return_value;
     }
 
-    fn PerformInc(inSource: u8) u8 {
+    pub fn PerformInc(inSource: u8) u8 {
         const value = inSource + 1;
         HALFCARRY = @intFromBool(((value & 0xF) < 0) or ((value & 0xF) > 0));
         ZERO = @intFromBool((value & 255) == 0);
@@ -1417,19 +1417,19 @@ pub const CPU = struct {
         return value;
     }
 
-    fn SetFlagZeroSign() void {
+    pub fn SetFlagZeroSign() void {
         ZERO = @intFromBool(A == 0);
         SIGN = @truncate(A & 128);
     }
 
-    fn PerformAnd(inValue: u8) void {
+    pub fn PerformAnd(inValue: u8) void {
         SetA(A & inValue);
         CARRY = 0;
         HALFCARRY = 0;
         SetFlagZeroSign();
     }
 
-    fn PerformXor(inValue: u8) void {
+    pub fn PerformXor(inValue: u8) void {
         SetA(A ^ inValue);
         CARRY = 0;
         HALFCARRY = 0;
@@ -1443,7 +1443,7 @@ pub const CPU = struct {
         SetFlagZeroSign();
     }
 
-    fn PerformByteAdd(inValue: u8, inCarryValue: u8) void {
+    pub fn PerformByteAdd(inValue: u8, inCarryValue: u8) void {
         const value = A + inValue + inCarryValue;
         // HALFCARRY = @truncate((A ^ inValue ^ value) & 0x10);
         HALFCARRY = (A ^ inValue ^ value) & 0x10;
@@ -1456,7 +1456,7 @@ pub const CPU = struct {
         SetFlagZeroSign();
     }
 
-    fn PerformByteSub(inValue: u8, inCarryValue: u8) void {
+    pub fn PerformByteSub(inValue: u8, inCarryValue: u8) void {
         const value: u8 = (A - inValue - inCarryValue);
         if ((value >= A) and (inValue | inCarryValue) > 0) {
             CARRY = 1;
@@ -1469,7 +1469,7 @@ pub const CPU = struct {
         SetFlagZeroSign();
     }
 
-    fn PerformCompSub(inValue: u16) void {
+    pub fn PerformCompSub(inValue: u16) void {
         const cast: i16 = @intCast(inValue);
         // const value: i16 = @intCast((A - inValue) & 0xFF);
         const value: i16 = @intCast((A - cast) & 0xFF);
@@ -1536,7 +1536,7 @@ pub const CPU = struct {
         return value != 0;
     }
 
-    fn Reset() void {
+    pub fn Reset() void {
         m_PC = 0;
         A = 0;
         BC = 0;
