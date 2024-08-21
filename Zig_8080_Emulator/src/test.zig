@@ -23,7 +23,10 @@ test "CallInterrupt" {}
 
 test "NOP" {}
 
-test "Instruction_JMP" {}
+test "Instruction_JMP" {
+    cpu.CPU.Instruction_JMP(1);
+    try expect(cpu.CPU.m_PC == 1);
+}
 
 test "Instruction_LXI" {}
 
