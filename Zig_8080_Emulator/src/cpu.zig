@@ -1,7 +1,7 @@
 const std = @import("std");
+const io = @import("io.zig");
 const fmt = std.fmt;
 const print = std.log.info;
-const m_io = @import("io.zig");
 
 pub const CPU = struct {
 
@@ -43,10 +43,11 @@ pub const CPU = struct {
     var BIT6: u8 = 64;
     var BIT7: u8 = 128;
 
-    var m_source: u16 = 0;
-    var m_value: u16 = 0;
+    var source: u16 = 0;
+    var value: u16 = 0;
     var m_byte: u8 = 0;
-    var m_instructionCounter: u16 = 0;
+
+    var instructionCounter: u16 = 0;
     var iteration: usize = 0;
 
     pub fn GetIteration() usize {
@@ -70,7 +71,7 @@ pub const CPU = struct {
         //     counter += 1;
         // }
 
-        m_io.IO.New();
+        io.IO.New();
         half_instruction_per_frame = @as(u16, instruction_per_frame / 2);
         // print("half_instruction_per_frame: {any}", .{half_instruction_per_frame});
         Reset();
@@ -346,12 +347,12 @@ pub const CPU = struct {
                 },
             }
 
-            m_instructionCounter += 1;
+            instructionCounter += 1;
 
             // // print("m_instructionCounter : {any}", .{m_instructionCounter});
             // // print("half_instruction_per_frame : {any}", .{half_instruction_per_frame});
 
-            if (m_instructionCounter >= half_instruction_per_frame) {
+            if (instructionCounter >= half_instruction_per_frame) {
                 if (INTERRUPT) {
                     // There are two interrupts that occur every frame (address $08 and $10)
                     if (interrupt_alternate == 0) {
@@ -361,7 +362,7 @@ pub const CPU = struct {
                     }
                 }
                 interrupt_alternate = 1 - interrupt_alternate;
-                m_instructionCounter = 0;
+                instructionCounter = 0;
             }
         }
     }
@@ -379,33 +380,33 @@ pub const CPU = struct {
 
     pub fn Instruction_JMP(byte: u8) void {
         const data16: u16 = FetchRomShort();
-        var m_condition = true;
+        var condition = true;
 
         switch (byte) {
             0xc3 => {
                 // Do nothing apart from incrementing the Programme Counter
             },
             0xc2 => {
-                m_condition = !ToBooleanU8(ZERO);
+                condition = !ToBooleanU8(ZERO);
             },
             0xca => {
-                m_condition = ToBooleanU8(ZERO);
+                condition = ToBooleanU8(ZERO);
             },
             0xd2 => {
-                m_condition = !ToBooleanU16(CARRY);
+                condition = !ToBooleanU16(CARRY);
             },
             0xda => {
-                m_condition = ToBooleanU16(CARRY);
+                condition = ToBooleanU16(CARRY);
             },
             0xf2 => {
-                m_condition = !ToBooleanU8(SIGN);
+                condition = !ToBooleanU8(SIGN);
             },
             0xfa => {
-                m_condition = ToBooleanU8(SIGN);
+                condition = ToBooleanU8(SIGN);
             },
             else => {},
         }
-        if (m_condition) {
+        if (condition) {
             m_PC = data16;
         }
     }
@@ -460,24 +461,24 @@ pub const CPU = struct {
 
     pub fn Instruction_CALL(byte: u8) void {
         const data16: u16 = FetchRomShort();
-        var m_condition = true;
+        var condition = true;
         switch (byte) {
             0xcd => {},
             0xc4 => {
-                m_condition = !ToBooleanU8(ZERO);
+                condition = !ToBooleanU8(ZERO);
             },
             0xcc => {
-                m_condition = ToBooleanU8(ZERO);
+                condition = ToBooleanU8(ZERO);
             },
             0xd4 => {
-                m_condition = !ToBooleanU16(CARRY);
+                condition = !ToBooleanU16(CARRY);
             },
             0xdc => {
-                m_condition = ToBooleanU16(CARRY);
+                condition = ToBooleanU16(CARRY);
             },
             else => {},
         }
-        if (m_condition) {
+        if (condition) {
             StackPush(m_PC);
             m_PC = data16;
         }
@@ -486,17 +487,17 @@ pub const CPU = struct {
     pub fn Instruction_LDA(byte: u8) void {
         switch (byte) {
             0x0a => {
-                m_source = BC;
+                source = BC;
             },
             0x1a => {
-                m_source = DE;
+                source = DE;
             },
             0x3a => {
-                m_source = FetchRomShort();
+                source = FetchRomShort();
             },
             else => {},
         }
-        SetA(ReadByte(m_source));
+        SetA(ReadByte(source));
     }
 
     pub fn Instruction_MOVHL(byte: u8) void {
@@ -623,24 +624,24 @@ pub const CPU = struct {
     }
 
     pub fn Instruction_RET(byte: u8) void {
-        var m_condition = true;
+        var condition = true;
         switch (byte) {
             0xc9 => {},
             0xc0 => {
-                m_condition = !ToBooleanU8(ZERO);
+                condition = !ToBooleanU8(ZERO);
             },
             0xc8 => {
-                m_condition = ToBooleanU8(ZERO);
+                condition = ToBooleanU8(ZERO);
             },
             0xd0 => {
-                m_condition = !ToBooleanU16(CARRY);
+                condition = !ToBooleanU16(CARRY);
             },
             0xd8 => {
-                m_condition = ToBooleanU16(CARRY);
+                condition = ToBooleanU16(CARRY);
             },
             else => {},
         }
-        if (m_condition) {
+        if (condition) {
             m_PC = StackPop();
         }
     }
@@ -822,50 +823,50 @@ pub const CPU = struct {
     pub fn Instruction_CMP(byte: u8) void {
         switch (byte) {
             0xbf => {
-                m_value = A;
+                value = A;
             },
             0xb8 => {
-                m_value = B;
+                value = B;
             },
             0xb9 => {
-                m_value = C;
+                value = C;
             },
             0xba => {
-                m_value = D;
+                value = D;
             },
             0xbb => {
-                m_value = E;
+                value = E;
             },
             0xbc => {
-                m_value = H;
+                value = H;
             },
             0xbd => {
-                m_value = L;
+                value = L;
             },
             0xbe => {
-                m_value = ReadByte(HL);
+                value = ReadByte(HL);
             },
             0xfe => {
-                m_value = FetchRomByte();
+                value = FetchRomByte();
             },
             else => {},
         }
-        PerformCompSub(m_value);
+        PerformCompSub(value);
     }
 
     pub fn Instruction_PUSH(byte: u8) void {
         switch (byte) {
             0xc5 => {
-                m_value = BC;
+                value = BC;
             },
             0xd5 => {
-                m_value = DE;
+                value = DE;
             },
             0xe5 => {
-                m_value = HL;
+                value = HL;
             },
             0xf5 => {
-                m_value = std.math.shl(u16, A, 8);
+                value = std.math.shl(u16, A, 8);
                 SetValueU8(SIGN, BIT7);
                 SetValueU8(ZERO, BIT6);
                 SetValueInterrupt(INTERRUPT, BIT5);
@@ -874,11 +875,11 @@ pub const CPU = struct {
             },
             else => {},
         }
-        StackPush(m_value);
+        StackPush(value);
     }
 
     pub fn Instruction_POP(byte: u8) void {
-        const value = StackPop();
+        value = StackPop();
         switch (byte) {
             0xc1 => {
                 SetBC(value);
@@ -935,12 +936,12 @@ pub const CPU = struct {
 
     pub fn Instruction_OUTP() void {
         const port = FetchRomByte();
-        m_io.IO.OutputPort(port, A);
+        io.IO.OutputPort(port, A);
     }
 
     pub fn Instruction_INP() void {
         const port = FetchRomByte();
-        SetA(m_io.IO.InputPort(port));
+        SetA(io.IO.InputPort(port));
     }
 
     pub fn Instruction_PCHL() void {
@@ -1345,10 +1346,10 @@ pub const CPU = struct {
     }
 
     pub fn FetchRomByte() u8 {
-        const value = m_rom[m_PC];
+        const rom_value = m_rom[m_PC];
         // print("Value: {any}", .{value});
         m_PC += 1;
-        return value;
+        return rom_value;
     }
 
     pub fn FetchRomShort() u16 {
@@ -1401,19 +1402,19 @@ pub const CPU = struct {
     pub fn PerformDec(inSource: u16) u8 {
         // const value: u16 = @intCast((inSource - 1) & 0xFF);
         const cast: i16 = @intCast(inSource);
-        const value: u16 = @intCast((cast - 1) & 0xFF);
-        HALFCARRY = @intFromBool((value & 0x0F) == 0);
-        ZERO = @intFromBool((value & 255) == 0);
-        SIGN = @truncate(value & 128);
-        const return_value:u8 = @intCast(value);
+        const localValue: u16 = @intCast((cast - 1) & 0xFF);
+        HALFCARRY = @intFromBool((localValue & 0x0F) == 0);
+        ZERO = @intFromBool((localValue & 255) == 0);
+        SIGN = @truncate(localValue & 128);
+        const return_value:u8 = @intCast(localValue);
         return return_value;
     }
 
     pub fn PerformInc(inSource: u8) u8 {
-        const value = inSource + 1;
-        HALFCARRY = @intFromBool(((value & 0xF) < 0) or ((value & 0xF) > 0));
-        ZERO = @intFromBool((value & 255) == 0);
-        SIGN = @truncate(value & 128);
+        const localValue = inSource + 1;
+        HALFCARRY = @intFromBool(((localValue & 0xF) < 0) or ((localValue & 0xF) > 0));
+        ZERO = @intFromBool((localValue & 255) == 0);
+        SIGN = @truncate(localValue & 128);
         return value;
     }
 
@@ -1444,11 +1445,11 @@ pub const CPU = struct {
     }
 
     pub fn PerformByteAdd(inValue: u8, inCarryValue: u8) void {
-        const value = A + inValue + inCarryValue;
+        const localValue = A + inValue + inCarryValue;
         // HALFCARRY = @truncate((A ^ inValue ^ value) & 0x10);
-        HALFCARRY = (A ^ inValue ^ value) & 0x10;
-        SetA(value);
-        if (value > 255) {
+        HALFCARRY = (A ^ inValue ^ localValue) & 0x10;
+        SetA(localValue);
+        if (localValue > 255) {
             CARRY = 1;
         } else {
             CARRY = 0;
@@ -1457,22 +1458,22 @@ pub const CPU = struct {
     }
 
     pub fn PerformByteSub(inValue: u8, inCarryValue: u8) void {
-        const value: u8 = (A - inValue - inCarryValue);
-        if ((value >= A) and (inValue | inCarryValue) > 0) {
+        const localValue: u8 = (A - inValue - inCarryValue);
+        if ((localValue >= A) and (inValue | inCarryValue) > 0) {
             CARRY = 1;
         } else {
             CARRY = 0;
         }
         // HALFCARRY = @truncate((A ^ inValue ^ value) & 0x10);
-        HALFCARRY = (A ^ inValue ^ value) & 0x10;
-        SetA(value);
+        HALFCARRY = (A ^ inValue ^ localValue) & 0x10;
+        SetA(localValue);
         SetFlagZeroSign();
     }
 
     pub fn PerformCompSub(inValue: u16) void {
         const cast: i16 = @intCast(inValue);
         // const value: i16 = @intCast((A - inValue) & 0xFF);
-        const value: i16 = @intCast((A - cast) & 0xFF);
+        const localValue: i16 = @intCast((A - cast) & 0xFF);
         if ((value >= A) and ToBooleanU16(inValue)) {
             CARRY = inValue;
         } else {
@@ -1481,59 +1482,59 @@ pub const CPU = struct {
         // print("PerformCompSub CARRY: {any}", .{CARRY});
         // HALFCARRY = @truncate((A ^ inValue ^ value) & 0x10);
         const tempA: u16 = A;
-        const tempValue: u16 = @intCast(value);
+        const tempValue: u16 = @intCast(localValue);
         HALFCARRY = (tempA ^ inValue ^ tempValue) & 0x10;
 
         // print("PerformCompSub HALFCARRY: {any}", .{HALFCARRY});
-        ZERO = @intFromBool(value == 0);
+        ZERO = @intFromBool(localValue == 0);
         // print("PerformCompSub ZERO: {any}", .{ZERO});
         // SIGN = @truncate(value & 128);
-        SIGN = @intCast(value & 128);
+        SIGN = @intCast(localValue & 128);
         // print("PerformCompSub SIGN: {any}", .{SIGN});
     }
 
     pub fn AddHL(inValue: u16) void {
-        const value = HL + inValue;
-        SetHL(value);
-        CARRY = @intFromBool(value > 65535);
+        const localValue = HL + inValue;
+        SetHL(localValue);
+        CARRY = @intFromBool(localValue > 65535);
     }
 
     // TODO - Temp method
-    pub fn SetValueU8(value: u8, bit: u8) void {
-        const conv: u16 = @intCast(value);
+    pub fn SetValueU8(inValue: u8, bit: u8) void {
+        const conv: u16 = @intCast(inValue);
         if (conv != 0) {
-            m_value = (m_value | bit);
+            inValue = (inValue | bit);
         } else {
             _ = conv == 0;
         }
     }
 
     // TODO - Temp method
-    pub fn SetValueU16(value: u16, bit: u8) void {
-        const conv: u16 = @intCast(value);
+    pub fn SetValueU16(inValue: u16, bit: u8) void {
+        const conv: u16 = @intCast(inValue);
         if (conv != 0) {
-            m_value = (m_value | bit);
+            inValue = (inValue | bit);
         } else {
             _ = conv == 0;
         }
     }
 
-    pub fn SetValueInterrupt(value: bool, bit: u8) void {
-        const fudge: bool = value;
+    pub fn SetValueInterrupt(inValue: bool, bit: u8) void {
+        const fudge: bool = inValue;
         if (fudge) {
-            m_value = (m_value | bit);
+            inValue = (inValue | bit);
         } else {
             _ = fudge == false;
         }
     }
 
     // https://github.com/microsoft/referencesource/blob/master/mscorlib/system/convert.cs
-    pub fn ToBooleanU8(value: u8) bool {
-        return value != 0;
+    pub fn ToBooleanU8(inValue: u8) bool {
+        return inValue != 0;
     }
 
-    pub fn ToBooleanU16(value: u16) bool {
-        return value != 0;
+    pub fn ToBooleanU16(inValue: u16) bool {
+        return inValue != 0;
     }
 
     pub fn Reset() void {
