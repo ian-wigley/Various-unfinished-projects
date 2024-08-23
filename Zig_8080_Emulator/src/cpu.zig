@@ -8,17 +8,18 @@ pub const CPU = struct {
     var count: usize = 0;
     var m_rom: [] u8 = undefined;
 
-    var m_PC: u16 = 0; // Program Counter: This is the current instruction pointer. 16-bit register.
-    var SP: u16 = 0; // Stack Pointer. 16-bit register
-    var A: u8 = 0; // Accumulator. 8-bit register
-    var B: u8 = 0; // Register B. 8-bit register
-    var C: u8 = 0; // Register C. 8-bit register
-    var D: u8 = 0; // Register D. 8-bit register
-    var E: u8 = 0; // Register E. 8-bit register
-    var H: u8 = 0; // Register H. 8-bit register
-    var L: u8 = 0; // Register L. 8-bit register
-    var BC: u16 = 0; // Virtual register BC (16-bit) combinaison of registers B and C
-    var DE: u16 = 0; // Virtual register DE (16-bit) combinaison of registers D and E
+    var m_PC: u16 = 0;   // Program Counter: This is the current instruction pointer. 16-bit register.
+
+    var SP: u16 = 0;     // Stack Pointer. 16-bit register
+    var A: u8 = 0;       // Accumulator. 8-bit register
+    var B: u8 = 0;       // Register B. 8-bit register
+    var C: u8 = 0;       // Register C. 8-bit register
+    var D: u8 = 0;       // Register D. 8-bit register
+    var E: u8 = 0;       // Register E. 8-bit register
+    var H: u8 = 0;       // Register H. 8-bit register
+    var L: u8 = 0;       // Register L. 8-bit register
+    var BC: u16 = 0;     // Virtual register BC (16-bit) combinaison of registers B and C
+    var DE: u16 = 0;     // Virtual register DE (16-bit) combinaison of registers D and E
     pub var HL: u16 = 0; // Virtual register HL (16-bit) combinaison of registers H and L
 
     var SIGN: u8 = 0; // Sign flag
@@ -43,15 +44,19 @@ pub const CPU = struct {
     var BIT6: u8 = 64;
     var BIT7: u8 = 128;
 
-    var source: u16 = 0;
-    var value: u16 = 0;
     var m_byte: u8 = 0;
 
+    var source: u16 = 0;
+    var value: u16 = 0;
     var instructionCounter: u16 = 0;
     var iteration: usize = 0;
 
     pub fn GetIteration() usize {
         return iteration;
+    }
+
+    pub fn GetPC() u16 {
+        return m_PC;
     }
 
     pub fn New(rom: [] u8) void {
@@ -1415,7 +1420,7 @@ pub const CPU = struct {
         HALFCARRY = @intFromBool(((localValue & 0xF) < 0) or ((localValue & 0xF) > 0));
         ZERO = @intFromBool((localValue & 255) == 0);
         SIGN = @truncate(localValue & 128);
-        return value;
+        return localValue;
     }
 
     pub fn SetFlagZeroSign() void {
@@ -1503,7 +1508,7 @@ pub const CPU = struct {
     pub fn SetValueU8(inValue: u8, bit: u8) void {
         const conv: u16 = @intCast(inValue);
         if (conv != 0) {
-            inValue = (inValue | bit);
+            value = (value | bit);
         } else {
             _ = conv == 0;
         }
@@ -1513,7 +1518,7 @@ pub const CPU = struct {
     pub fn SetValueU16(inValue: u16, bit: u8) void {
         const conv: u16 = @intCast(inValue);
         if (conv != 0) {
-            inValue = (inValue | bit);
+            value = (value | bit);
         } else {
             _ = conv == 0;
         }
@@ -1522,7 +1527,7 @@ pub const CPU = struct {
     pub fn SetValueInterrupt(inValue: bool, bit: u8) void {
         const fudge: bool = inValue;
         if (fudge) {
-            inValue = (inValue | bit);
+            value = (value | bit);
         } else {
             _ = fudge == false;
         }
