@@ -6,7 +6,7 @@ const print = std.log.info;
 pub const CPU = struct {
 
     var count: usize = 0;
-    var m_rom: [] u8 = undefined;
+    var rom: [] u8 = undefined;
 
     var m_PC: u16 = 0;   // Program Counter: This is the current instruction pointer. 16-bit register.
 
@@ -59,9 +59,9 @@ pub const CPU = struct {
         return m_PC;
     }
 
-    pub fn New(rom: [] u8) void {
-        m_rom = rom;
-        print("m_rom data: {any}", .{m_rom[9206]});
+    pub fn New(inRom: [] u8) void {
+        rom = inRom;
+        print("m_rom data: {any}", .{rom[9206]});
 
         // count = 0;
         // // Clear down the array
@@ -106,7 +106,7 @@ pub const CPU = struct {
     // Method assists debugging.
     fn OutputInfo(opcode: [*:0]const u8) void {
         if (iteration > 635) {
-            print("Count: {any}, Opcode: {s}, PC: {any}, SP: {any}, A: {any}, B: {any}, C: {any}, D: {any}, E: {any}, H: {any}, L: {any}, BC: {any}, DE: {any}, HL: {any}, SIGN: {any}, ZERO: {any}, HALFCARRY: {any}, PARITY: {any}, CARRY: {any}, INTERRUPT: {any}, 9206: {any}, 9207: {any}, 9210: {any}, 9211: {any}, 9212: {any}, 9213: {any}, 9214: {any}, 9215: {any}", .{ count, opcode, m_PC, SP, A, B, C, D, E, H, L, BC, DE, HL, SIGN, ZERO, HALFCARRY, PARITY, CARRY, INTERRUPT, m_rom[9206], m_rom[9207], m_rom[9210], m_rom[9211], m_rom[9212], m_rom[9213], m_rom[9214], m_rom[9215] });
+            print("Count: {any}, Opcode: {s}, PC: {any}, SP: {any}, A: {any}, B: {any}, C: {any}, D: {any}, E: {any}, H: {any}, L: {any}, BC: {any}, DE: {any}, HL: {any}, SIGN: {any}, ZERO: {any}, HALFCARRY: {any}, PARITY: {any}, CARRY: {any}, INTERRUPT: {any}, 9206: {any}, 9207: {any}, 9210: {any}, 9211: {any}, 9212: {any}, 9213: {any}, 9214: {any}, 9215: {any}", .{ count, opcode, m_PC, SP, A, B, C, D, E, H, L, BC, DE, HL, SIGN, ZERO, HALFCARRY, PARITY, CARRY, INTERRUPT, rom[9206], rom[9207], rom[9210], rom[9211], rom[9212], rom[9213], rom[9214], rom[9215] });
         }
     }
 
@@ -1351,7 +1351,7 @@ pub const CPU = struct {
     }
 
     pub fn FetchRomByte() u8 {
-        const rom_value = m_rom[m_PC];
+        const rom_value = rom[m_PC];
         // print("Value: {any}", .{value});
         m_PC += 1;
         return rom_value;
@@ -1359,8 +1359,8 @@ pub const CPU = struct {
 
     pub fn FetchRomShort() u16 {
         var bytes: [2]u8 = [_]u8{ 0, 0 };
-        bytes[0] = m_rom[m_PC + 0];
-        bytes[1] = m_rom[m_PC + 1];
+        bytes[0] = rom[m_PC + 0];
+        bytes[1] = rom[m_PC + 1];
         m_PC += 2;
         const result = std.math.shl(u16, (bytes[1] & 0xFF), 8) | (bytes[0] & 0xFF);
         return result;
@@ -1368,25 +1368,25 @@ pub const CPU = struct {
     }
 
     pub fn ReadByte(counter: usize) u8 {
-        return m_rom[counter];
+        return rom[counter];
     }
 
     pub fn ReadShort(inAddress: u16) u16 {
-        return std.math.shl(u16, m_rom[inAddress + 1], 8) + (m_rom[inAddress + 0]);
+        return std.math.shl(u16, rom[inAddress + 1], 8) + (rom[inAddress + 0]);
     }
 
     pub fn WriteShort(inAddress: u16, inWord: u16) void {
-        m_rom[inAddress + 1] = @intCast(std.math.shr(u16, inWord, 8));
+        rom[inAddress + 1] = @intCast(std.math.shr(u16, inWord, 8));
         // print("m_rom[inAddress + 1]: {any}", .{m_rom[inAddress + 1]});
-        m_rom[inAddress + 0] = @truncate(inWord);
+        rom[inAddress + 0] = @truncate(inWord);
         // print("m_rom[inAddress + 0]: {any}", .{m_rom[inAddress + 0]});
     }
 
     pub fn WriteByte(inAddress: u16, inByte: u8) void {
-        if (inAddress < m_rom.len) {
-            m_rom[inAddress] = inByte;
+        if (inAddress < rom.len) {
+            rom[inAddress] = inByte;
         } else {
-            print("Overflow occurred: {any}", .{m_rom.len});
+            print("Overflow occurred: {any}", .{rom.len});
             print("Overflow occurred: {any}", .{inAddress});
         }
     }
