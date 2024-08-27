@@ -61,7 +61,7 @@ pub const CPU = struct {
 
     pub fn New(inRom: [] u8) void {
         rom = inRom;
-        print("m_rom data: {any}", .{rom[9206]});
+        print("rom data: {any}", .{rom[9206]});
 
         // count = 0;
         // // Clear down the array
