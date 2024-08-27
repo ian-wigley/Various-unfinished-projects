@@ -8,7 +8,7 @@ pub const CPU = struct {
     var count: usize = 0;
     var rom: [] u8 = undefined;
 
-    var m_PC: u16 = 0;   // Program Counter: This is the current instruction pointer. 16-bit register.
+    var PC: u16 = 0;   // Program Counter: This is the current instruction pointer. 16-bit register.
 
     var SP: u16 = 0;     // Stack Pointer. 16-bit register
     var A: u8 = 0;       // Accumulator. 8-bit register
@@ -56,7 +56,7 @@ pub const CPU = struct {
     }
 
     pub fn GetPC() u16 {
-        return m_PC;
+        return PC;
     }
 
     pub fn New(inRom: [] u8) void {
@@ -106,7 +106,12 @@ pub const CPU = struct {
     // Method assists debugging.
     fn OutputInfo(opcode: [*:0]const u8) void {
         if (iteration > 635) {
-            print("Count: {any}, Opcode: {s}, PC: {any}, SP: {any}, A: {any}, B: {any}, C: {any}, D: {any}, E: {any}, H: {any}, L: {any}, BC: {any}, DE: {any}, HL: {any}, SIGN: {any}, ZERO: {any}, HALFCARRY: {any}, PARITY: {any}, CARRY: {any}, INTERRUPT: {any}, 9206: {any}, 9207: {any}, 9210: {any}, 9211: {any}, 9212: {any}, 9213: {any}, 9214: {any}, 9215: {any}", .{ count, opcode, m_PC, SP, A, B, C, D, E, H, L, BC, DE, HL, SIGN, ZERO, HALFCARRY, PARITY, CARRY, INTERRUPT, rom[9206], rom[9207], rom[9210], rom[9211], rom[9212], rom[9213], rom[9214], rom[9215] });
+            print(
+                "Count: {any}, Opcode: {s}, PC: {any}, SP: {any}, A: {any}, B: {any}, C: {any}, D: {any}, E: {any}, H: {any}, L: {any}, BC: {any}, DE: {any}, HL: {any}, " ++
+                "SIGN: {any}, ZERO: {any}, HALFCARRY: {any}, PARITY: {any}, CARRY: {any}, INTERRUPT: {any}, 9206: {any}, 9207: {any}, 9210: {any}, 9211: {any}, 9212: {any}, " ++
+                "9213: {any}, 9214: {any}, 9215: {any}",
+                .{ count, opcode, PC, SP, A, B, C, D, E, H, L, BC, DE, HL, SIGN, ZERO, HALFCARRY, PARITY, CARRY, INTERRUPT,
+                rom[9206], rom[9207], rom[9210], rom[9211], rom[9212], rom[9213], rom[9214], rom[9215] });
         }
     }
 
@@ -375,8 +380,8 @@ pub const CPU = struct {
     pub fn CallInterrupt(inAddress: u16) void {
         // Call the interrupt by pushing current PC on the stack and then jump to interrupt address
         INTERRUPT = false;
-        StackPush(m_PC);
-        m_PC = inAddress;
+        StackPush(PC);
+        PC = inAddress;
     }
 
     pub fn NOP() void {
@@ -412,7 +417,7 @@ pub const CPU = struct {
             else => {},
         }
         if (condition) {
-            m_PC = data16;
+            PC = data16;
         }
     }
 
@@ -484,8 +489,8 @@ pub const CPU = struct {
             else => {},
         }
         if (condition) {
-            StackPush(m_PC);
-            m_PC = data16;
+            StackPush(PC);
+            PC = data16;
         }
     }
 
@@ -647,7 +652,7 @@ pub const CPU = struct {
             else => {},
         }
         if (condition) {
-            m_PC = StackPop();
+            PC = StackPop();
         }
     }
 
@@ -950,7 +955,7 @@ pub const CPU = struct {
     }
 
     pub fn Instruction_PCHL() void {
-        m_PC = HL;
+        PC = HL;
     }
 
     pub fn Instruction_RST(byte: u8) void {
@@ -982,8 +987,8 @@ pub const CPU = struct {
             },
             else => {},
         }
-        StackPush(m_PC);
-        m_PC = address;
+        StackPush(PC);
+        PC = address;
     }
 
     pub fn Instruction_RLC() void {
@@ -1351,17 +1356,17 @@ pub const CPU = struct {
     }
 
     pub fn FetchRomByte() u8 {
-        const rom_value = rom[m_PC];
+        const rom_value = rom[PC];
         // print("Value: {any}", .{value});
-        m_PC += 1;
+        PC += 1;
         return rom_value;
     }
 
     pub fn FetchRomShort() u16 {
         var bytes: [2]u8 = [_]u8{ 0, 0 };
-        bytes[0] = rom[m_PC + 0];
-        bytes[1] = rom[m_PC + 1];
-        m_PC += 2;
+        bytes[0] = rom[PC + 0];
+        bytes[1] = rom[PC + 1];
+        PC += 2;
         const result = std.math.shl(u16, (bytes[1] & 0xFF), 8) | (bytes[0] & 0xFF);
         return result;
         // return std.math.shl(u16, (bytes[1] & 0xFF), 8) | (bytes[0] & 0xFF);
@@ -1543,7 +1548,7 @@ pub const CPU = struct {
     }
 
     pub fn Reset() void {
-        m_PC = 0;
+        PC = 0;
         A = 0;
         BC = 0;
         DE = 0;
