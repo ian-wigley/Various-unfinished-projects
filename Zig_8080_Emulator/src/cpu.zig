@@ -5,37 +5,36 @@ const print = std.log.info;
 
 pub const CPU = struct {
 
-    var count: usize = 0;
-    var rom: [] u8 = undefined;
+    var PC: u16 = 0;             // Program Counter: This is the current instruction pointer. 16-bit register.
+    var SP: u16 = 0;             // Stack Pointer. 16-bit register
+    var A: u8 = 0;               // Accumulator. 8-bit register
+    var B: u8 = 0;               // Register B. 8-bit register
+    var C: u8 = 0;               // Register C. 8-bit register
+    var D: u8 = 0;               // Register D. 8-bit register
+    var E: u8 = 0;               // Register E. 8-bit register
+    var H: u8 = 0;               // Register H. 8-bit register
+    var L: u8 = 0;               // Register L. 8-bit register
+    var BC: u16 = 0;             // Virtual register BC (16-bit) combinaison of registers B and C
+    var DE: u16 = 0;             // Virtual register DE (16-bit) combinaison of registers D and E
+    pub var HL: u16 = 0;         // Virtual register HL (16-bit) combinaison of registers H and L
 
-    var PC: u16 = 0;   // Program Counter: This is the current instruction pointer. 16-bit register.
-
-    var SP: u16 = 0;     // Stack Pointer. 16-bit register
-    var A: u8 = 0;       // Accumulator. 8-bit register
-    var B: u8 = 0;       // Register B. 8-bit register
-    var C: u8 = 0;       // Register C. 8-bit register
-    var D: u8 = 0;       // Register D. 8-bit register
-    var E: u8 = 0;       // Register E. 8-bit register
-    var H: u8 = 0;       // Register H. 8-bit register
-    var L: u8 = 0;       // Register L. 8-bit register
-    var BC: u16 = 0;     // Virtual register BC (16-bit) combinaison of registers B and C
-    var DE: u16 = 0;     // Virtual register DE (16-bit) combinaison of registers D and E
-    pub var HL: u16 = 0; // Virtual register HL (16-bit) combinaison of registers H and L
-
-    var SIGN: u8 = 0; // Sign flag
-    var ZERO: u8 = 0; // Zero flag
-    var HALFCARRY: u16 = 0; // Half-carry (or Auxiliary Carry) flag
-    var CARRY: u16 = 0; // Carry flag
-    var PARITY: bool = false; // Parity flag
+    var SIGN: u8 = 0;            // Sign flag
+    var ZERO: u8 = 0;            // Zero flag
+    var CARRY: u16 = 0;          // Carry flag
+    var HALFCARRY: u16 = 0;      // Half-carry (or Auxiliary Carry) flag
+    var PARITY: bool = false;    // Parity flag
 
     var INTERRUPT: bool = false; // Interrupt Enabled flag
-    var CRASHED: bool = false; // Special flag that tells if the CPU is currently crashed (stopped)
+    var CRASHED: bool = false;   // Special flag that tells if the CPU is currently crashed (stopped)
 
     var instruction_per_frame: u16 = 4000; // Approximate real machine speed
 
     // Interrupt handling
     var interrupt_alternate: u16 = 0;
     var half_instruction_per_frame: u16 = 0;
+
+    var count: usize = 0;
+    var rom: [] u8 = undefined;
 
     // Addionnal debug fields, not used by CPU
     var BIT0: u8 = 1;
