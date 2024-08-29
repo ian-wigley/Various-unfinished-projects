@@ -122,7 +122,6 @@ pub const IO = struct {
             0x02 => {
                 // case 2:
                 OUT_PORT2 = value;
-                // break;
             },
 
             // Port 3 controls play of various sound effects
@@ -139,13 +138,11 @@ pub const IO = struct {
                 //     If((value & BIT4) And Not (OUT_PORT3 & BIT4)) sound.PlayExtraLife()
                 //     If((value & BIT5) And Not (OUT_PORT3 & BIT5)) sound.PlayBeginPlay()
                 //     OUT_PORT3 = value
-                //    break;
             },
             0x04 => {
                 // case 4:
                 OUT_PORT4LO = OUT_PORT4HI;
                 OUT_PORT4HI = value;
-                // break;
             },
             0x05 => {
                 // Port 5 also controls sound
@@ -156,7 +153,6 @@ pub const IO = struct {
                 // If((value & BIT3) And Not (OUT_PORT5 & BIT3)) sound.PlayWalk4()
                 // If((value & BIT4) And Not (OUT_PORT5 & BIT4)) sound.PlayUfoHit()
                 // OUT_PORT5 = value;
-                // break;
             },
             else => {},
         }
@@ -170,19 +166,16 @@ pub const IO = struct {
             0x01 => {
                 //case 1:
                 result = IN_PORT1;
-                //   break;
             },
             // Player 2 Input keys And dip switches:
             0x02 => {
                 // case 2:
                 result = IN_PORT2;
-                // break;
             },
             0x03 => {
                 // case 3:
                 // result = (byte)((((OUT_PORT4HI << 8) | OUT_PORT4LO) << OUT_PORT2) >> 8);
                 result = std.math.shr(u8, std.math.shl(u8, (std.math.shl(u8, OUT_PORT4HI, 8) | OUT_PORT4LO), OUT_PORT2), 8);
-                // break;
             },
             else => {},
         }
