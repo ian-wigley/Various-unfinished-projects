@@ -32,6 +32,7 @@ Zig_8080_Emulator/zig-cache
 Zig_8080_Emulator/main.exe*
 Zig_8080_Emulator/main.pdb
 Zig_8080_Emulator/.idea
+Zig_8080_Emulator/crash_dump.bin
 
 Zig_Emulator/zig-cache/
 Zig_Emulator/zig-out/
@@ -39,4 +40,5 @@ Zig_Emulator/main.exe
 Zig_Emulator/main.exe.obj
 Zig_Emulator/main.pdb
 
-Zig_8080_Emulator/crash_dump.bin
+WIP_Zig_Stuff/ZigStars/.zig-cache
+WIP_Zig_Stuff/ZigStars/zig-out
