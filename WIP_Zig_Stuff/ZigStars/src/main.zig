@@ -6,13 +6,10 @@ const std = @import("std");
 const sta = @import("stars.zig");
 // const star = sta.Star;
 
-
-
 // https://www.youtube.com/watch?v=V02EYPEtjFw
 // https://gist.github.com/bens/bd9ba0414fcf74bf05ecf7e6f75c4e97
 // https://codeberg.org/dude_the_builder/zig_in_depth
-
-
+// http://www.sunshine2k.de/coding/javascript/graphiceffects/03_textscrolling/03_textscrolling.html
 
 // This Zig struct uses 16 bytes (with padding) in an array.
 // In a `MultiArrayList` it would use 12 bytes (no padding needed).
@@ -20,9 +17,37 @@ const Foo = struct {
     a: u16,
     b: u64,
     c: u16,
+
+    pub fn new(x: u16, y: u16) Foo {
+        return Foo{ .a = x, .b = 1, .c = y };
+    }
+
+    pub fn update(self: *Foo) void {
+        self.a += 1;
+    }
 };
 
 pub fn main() !void {
+    var no: [10]Foo = undefined;
+
+    var count: usize = 0;
+
+    while (count < 10) {
+        no[count] = Foo.new(12, 255);
+        count += 1;
+    }
+
+    count = 0;
+    while (count < 10) {
+        var f = no[count];
+        f.update();
+        no[count] = f;
+        count += 1;
+    }
+
+    // for (no) |f| {
+    //     f.update();
+    // }
 
     // Set up our allocator.
     var gpa = std.heap.GeneralPurposeAllocator(.{}){};
@@ -47,20 +72,6 @@ pub fn main() !void {
     std.debug.print(".a: {any}\n", .{multi.items(.x)});
     std.debug.print(".b: {any}\n", .{multi.items(.y)});
     // std.debug.print(".c: {any}\n\n", .{multi.items(.c)});
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
     // var gpa = std.heap.GeneralPurposeAllocator(.{}){};
     // defer _ = gpa.deinit();
@@ -114,7 +125,6 @@ pub fn main() !void {
     // // // c.SDL_Delay(2000);
     // // // c.SDL_DestroyWindow(window);
     // // // c.SDL_Quit();
-
 
     // Prints to stderr (it's a shortcut based on `std.io.getStdErr()`)
     std.debug.print("All your {s} are belong to us.\n", .{"codebase"});
