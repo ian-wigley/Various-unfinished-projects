@@ -1,47 +1,24 @@
-// const c = @cImport({
-//     @cInclude("SDL2/SDL.h");
-// });
+const c = @cImport({
+    @cInclude("SDL2/SDL.h");
+});
 
 const std = @import("std");
-const sta = @import("stars.zig");
-// const star = sta.Star;
-
-// https://www.youtube.com/watch?v=V02EYPEtjFw
-// https://gist.github.com/bens/bd9ba0414fcf74bf05ecf7e6f75c4e97
-// https://codeberg.org/dude_the_builder/zig_in_depth
-// http://www.sunshine2k.de/coding/javascript/graphiceffects/03_textscrolling/03_textscrolling.html
-
-// This Zig struct uses 16 bytes (with padding) in an array.
-// In a `MultiArrayList` it would use 12 bytes (no padding needed).
-const Foo = struct {
-    a: u16,
-    b: u64,
-    c: u16,
-
-    pub fn new(x: u16, y: u16) Foo {
-        return Foo{ .a = x, .b = 1, .c = y };
-    }
-
-    pub fn update(self: *Foo) void {
-        self.a += 1;
-    }
-};
+const star = @import("stars.zig").Star;
 
 pub fn main() !void {
-    var no: [10]Foo = undefined;
-
+    var star_collection: [10]star = undefined;
     var count: usize = 0;
 
     while (count < 10) {
-        no[count] = Foo.new(12, 255);
+        star_collection[count] = star.new(12, 255);
         count += 1;
     }
 
     count = 0;
     while (count < 10) {
-        var f = no[count];
-        f.update();
-        no[count] = f;
+        var s = star_collection[count];
+        s.update();
+        star_collection[count] = s;
         count += 1;
     }
 
@@ -52,26 +29,26 @@ pub fn main() !void {
     // Set up our allocator.
     var gpa = std.heap.GeneralPurposeAllocator(.{}){};
     defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    // const allocator = gpa.allocator();
 
-    // Init our multi-array list.
-    var multi = std.MultiArrayList(sta.Star){};
-    defer multi.deinit(allocator);
+    // // Init our multi-array list.
+    // var multi = std.MultiArrayList(star.Star){};
+    // defer multi.deinit(allocator);
 
-    // Add an item, allocating if necessary.
-    try multi.append(allocator, .{ .x = 1.0, .y = 1.0 });
+    // // Add an item, allocating if necessary.
+    // try multi.append(allocator, .{ .x = 1.0, .y = 1.0 });
 
-    // Pre-allocate to add more items.
-    try multi.ensureUnusedCapacity(allocator, 2);
-    // Now we can add without the allocator or the `try`.
-    multi.appendAssumeCapacity(.{ .x = 2, .y = 2 });
-    multi.appendAssumeCapacity(.{ .x = 3, .y = 3 });
+    // // Pre-allocate to add more items.
+    // try multi.ensureUnusedCapacity(allocator, 2);
+    // // Now we can add without the allocator or the `try`.
+    // multi.appendAssumeCapacity(.{ .x = 2, .y = 2 });
+    // multi.appendAssumeCapacity(.{ .x = 3, .y = 3 });
 
-    // You can get a slice of a specific field from all the
-    // items in the list with `items`.
-    std.debug.print(".a: {any}\n", .{multi.items(.x)});
-    std.debug.print(".b: {any}\n", .{multi.items(.y)});
-    // std.debug.print(".c: {any}\n\n", .{multi.items(.c)});
+    // // You can get a slice of a specific field from all the
+    // // items in the list with `items`.
+    // std.debug.print(".a: {any}\n", .{multi.items(.x)});
+    // std.debug.print(".b: {any}\n", .{multi.items(.y)});
+    // // std.debug.print(".c: {any}\n\n", .{multi.items(.c)});
 
     // var gpa = std.heap.GeneralPurposeAllocator(.{}){};
     // defer _ = gpa.deinit();
