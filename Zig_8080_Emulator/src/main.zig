@@ -1,7 +1,7 @@
 const std = @import("std");
 const mem = std.mem;
 const allocator = std.mem.Allocator;
-const cpu = @import("cpu.zig");
+const cpu = @import("cpu.zig").CPU;
 const print = std.log.info;
 
 pub fn main() anyerror!void {
@@ -11,15 +11,15 @@ pub fn main() anyerror!void {
 
     print("Size of the array is: {any}", .{wrom.len});
     // cpu.CPU.New(romData);
-    cpu.CPU.New(&wrom);
+    cpu.New(&wrom);
 
     var crashed = false;
     while (!crashed) {
-        crashed = cpu.CPU.Run();
+        crashed = cpu.Run();
     }
     try save_memory(&wrom);
     print("CPU has crashed. {any}", .{crashed});
-    print("Iteration {any}", .{cpu.CPU.GetIteration()});
+    print("Iteration {any}", .{cpu.GetIteration()});
 }
 
 fn loadRom() anyerror![]u8 {
