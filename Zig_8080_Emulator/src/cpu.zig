@@ -1,3 +1,5 @@
+// The CPU emulation code
+
 const std = @import("std");
 const io = @import("io.zig");
 const fmt = std.fmt;
