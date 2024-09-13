@@ -1,7 +1,7 @@
 // The CPU emulation code
 
 const std = @import("std");
-const io = @import("io.zig");
+const io = @import("io.zig").IO;
 const fmt = std.fmt;
 const print = std.log.info;
 
@@ -62,22 +62,9 @@ pub const CPU = struct {
 
     pub fn New(inRom: [] u8) void {
         rom = inRom;
-        print("rom data: {any}", .{rom[9206]});
+        // print("rom data: {any}", .{rom[9206]});
 
-        // count = 0;
-        // // Clear down the array
-        // while (count < rom.len) {
-        //     m_rom[count] = 0;
-        //     count += 1;
-        // }
-
-        // var counter: usize = 0;
-        // while (counter < rom.len) {
-        //     print("rom bytes: {any} count: {any}", .{m_rom[counter], counter});
-        //     counter += 1;
-        // }
-
-        io.IO.New();
+        io.New();
         half_instruction_per_frame = @as(u16, instruction_per_frame / 2);
         // print("half_instruction_per_frame: {any}", .{half_instruction_per_frame});
         Reset();
@@ -947,12 +934,12 @@ pub const CPU = struct {
 
     pub fn Instruction_OUTP() void {
         const port = FetchRomByte();
-        io.IO.OutputPort(port, A);
+        io.OutputPort(port, A);
     }
 
     pub fn Instruction_INP() void {
         const port = FetchRomByte();
-        SetA(io.IO.InputPort(port));
+        SetA(io.InputPort(port));
     }
 
     pub fn Instruction_PCHL() void {
