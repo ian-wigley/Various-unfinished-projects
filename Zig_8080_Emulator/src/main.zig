@@ -5,7 +5,7 @@ const cpu = @import("cpu.zig").CPU;
 const print = std.log.info;
 
 
-var content = @embedFile("i.rom");
+var content = @embedFile("assets/i.rom");
 
 pub fn main() anyerror!void {
     // const romData = try loadRom();
