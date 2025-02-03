@@ -51,12 +51,31 @@ pub fn main() !void {
                 },
                 else => {}
             }
+
+
+
+            // for (star_collection) |s| {
+            //     s.update();
+            // }
         }
 
-        _ = c.SDL_SetRenderDrawColor(renderer, 255, 255,255, 0);
-        _ = c.SDL_RenderDrawPoint(renderer, 20, 20);
-        _ = c.SDL_RenderPresent(renderer);
-        c.SDL_Delay(20);
+
+        count = 0;
+        while (count < 10) {
+            var s = star_collection[count];
+            s.update();
+            star_collection[count].x = s.x;
+            star_collection[count].y = s.y;
+            // star_collection[count] = s;
+            _ = c.SDL_SetRenderDrawColor(renderer, 255, 255,255, 0);
+            _ = c.SDL_RenderDrawPoint(renderer, s.x, s.y);
+            _ = c.SDL_RenderPresent(renderer);
+            // c.SDL_Delay(20);
+            count += 1;
+        }
+
+
+
     }
 
     // // // const screenSurface = c.SDL_GetWindowSurface(window);
