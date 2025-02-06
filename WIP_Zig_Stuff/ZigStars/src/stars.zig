@@ -4,8 +4,6 @@ pub const Star = struct {
     y: c_int,
     c: u16,
     // angle: f64,
-    // x: f64,
-    // y: f64,
     // colour: String,
     // width: f64,
     // height: f64,
