@@ -1,40 +1,45 @@
+const std = @import("std");
+
 pub const Star = struct {
-    // speed: f64,
     x: c_int,
     y: c_int,
-    c: u16,
-    // angle: f64,
+    z: u16,
+    angle: f64,
+    speed: f64,
+    width: c_int,
+    height: c_int,
+    random: std.Random,
     // colour: String,
-    // width: f64,
-    // height: f64,
 
-    pub fn new(x: u16, y: u16) Star {
+    pub fn new(x: u16, y: u16, rand: std.Random) Star {
         return Star {
-            // .speed= 0.0,
-            //  .angle = 360.0,
             .x = x,
             .y = y,
-            .c = y,
+            .z = y,
+            .speed= 0.1,
+            .angle = 360,
+            .width = 800,
+            .height = 600,
+            .random = rand,
             //.colour = colour,
-            // .width = x,
-            // .height = y,
         };
     }
 
     pub fn update(self: *Star) void {
 
-        self.x += 10;
-        self.y += 0;
-        // self.speed += 0.1;
-        // self.angle += 0.025;
-        // self.x = f64::cos(self.angle) * self.speed + self.x;
-        // self.y = f64::sin(self.angle) * self.speed + self.y;
-        // if self.x < 0.0 || self.x > self.width || self.y < 0.0 || self.y > self.height {
-        // self.angle = 360.0 * rng.gen::<f64>();
-        // self.speed = 0.01;
-        // self.x = self.width / 2.0;
-        // self.y = self.height / 2.0;
-        // }
-        // }
+        self.x += 1;
+        self.y += 1;
+        self.speed += 0.1;
+        self.angle += 0.025;
+        const temp: f64 = @sin(self.angle) * self.speed;
+        const pain: i32 = @intFromFloat(temp);
+        self.x = pain + self.x;
+        self.y = pain + self.x;
+        if (self.x < 0 or self.x > self.width or self.y < 0 or self.y > self.height) {
+            self.angle = 360; // * rng.gen::<f64>();
+            self.speed = 0.01;
+            self.x = 400;
+            self.y = 300;
+        }
     }
 };
