@@ -8,9 +8,18 @@ const star = @import("stars.zig").Star;
 pub fn main() !void {
     var star_collection: [10]star = undefined;
     var count: usize = 0;
+    var prng = std.rand.DefaultPrng.init(blk: {
+        var seed: u64 = undefined;
+        try std.posix.getrandom(std.mem.asBytes(&seed));
+        break :blk seed;
+    });
+    const rand = prng.random();
 
     while (count < 10) {
-        star_collection[count] = star.new(12, 255);
+        const x = rand.intRangeAtMost(u16, 0, 255);
+        const y = rand.intRangeAtMost(u16, 0, 255);
+        // star_collection[count] = star.new(12, 255);
+        star_collection[count] = star.new(x, y, rand);
         count += 1;
     }
 
@@ -40,7 +49,6 @@ pub fn main() !void {
 
     const renderer = c.SDL_CreateRenderer(window, -1, 0);// orelse {};
 
-
     var running = true;
     while (running) {
         var event: c.SDL_Event = undefined;
@@ -52,13 +60,10 @@ pub fn main() !void {
                 else => {}
             }
 
-
-
             // for (star_collection) |s| {
             //     s.update();
             // }
         }
-
 
         count = 0;
         while (count < 10) {
@@ -67,14 +72,14 @@ pub fn main() !void {
             star_collection[count].x = s.x;
             star_collection[count].y = s.y;
             // star_collection[count] = s;
+
             _ = c.SDL_SetRenderDrawColor(renderer, 255, 255,255, 0);
             _ = c.SDL_RenderDrawPoint(renderer, s.x, s.y);
-            _ = c.SDL_RenderPresent(renderer);
-            // c.SDL_Delay(20);
+
             count += 1;
         }
-
-
+        _ = c.SDL_RenderPresent(renderer);
+        // c.SDL_Delay(20);
 
     }
 
