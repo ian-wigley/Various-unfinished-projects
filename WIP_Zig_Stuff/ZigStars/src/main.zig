@@ -6,7 +6,8 @@ const std = @import("std");
 const star = @import("stars.zig").Star;
 
 pub fn main() !void {
-    var star_collection: [10]star = undefined;
+    const numberOfStars: u16 = 1000;
+    var starCollection: [numberOfStars]star = undefined;
     var count: usize = 0;
     var prng = std.rand.DefaultPrng.init(blk: {
         var seed: u64 = undefined;
@@ -15,19 +16,16 @@ pub fn main() !void {
     });
     const rand = prng.random();
 
-    while (count < 10) {
-        const x = rand.intRangeAtMost(u16, 0, 255);
-        const y = rand.intRangeAtMost(u16, 0, 255);
-        // star_collection[count] = star.new(12, 255);
-        star_collection[count] = star.new(x, y, rand);
+    while (count < numberOfStars) {
+        starCollection[count] = star.new(400, 300, rand);
         count += 1;
     }
 
     count = 0;
-    while (count < 10) {
-        var s = star_collection[count];
+    while (count < numberOfStars) {
+        var s = starCollection[count];
         s.update();
-        star_collection[count] = s;
+        starCollection[count] = s;
         count += 1;
     }
 
@@ -41,7 +39,7 @@ pub fn main() !void {
     }
 
     const window = c.SDL_CreateWindow(
-        "hello_sdl2",
+        "Zig_Stars_with_sdl2",
         c.SDL_WINDOWPOS_UNDEFINED, c.SDL_WINDOWPOS_UNDEFINED,
         800, 600,
         c.SDL_WINDOW_SHOWN
@@ -64,14 +62,17 @@ pub fn main() !void {
             //     s.update();
             // }
         }
+        _ = c.SDL_SetRenderDrawColor(renderer, 0, 0,0, 0);
+        _ = c.SDL_RenderClear(renderer);
 
         count = 0;
-        while (count < 10) {
-            var s = star_collection[count];
+        while (count < numberOfStars) {
+            var s = starCollection[count];
             s.update();
-            star_collection[count].x = s.x;
-            star_collection[count].y = s.y;
-            // star_collection[count] = s;
+            starCollection[count].x = s.x;
+            starCollection[count].y = s.y;
+            starCollection[count].angle = s.angle;
+            starCollection[count].speed = s.speed;
 
             _ = c.SDL_SetRenderDrawColor(renderer, 255, 255,255, 0);
             _ = c.SDL_RenderDrawPoint(renderer, s.x, s.y);
@@ -79,21 +80,16 @@ pub fn main() !void {
             count += 1;
         }
         _ = c.SDL_RenderPresent(renderer);
-        // c.SDL_Delay(20);
+        _ = c.SDL_Delay(10);
 
     }
-
-    // // // const screenSurface = c.SDL_GetWindowSurface(window);
-    // // // _ = c.SDL_FillRect(screenSurface, null, c.SDL_MapRGB(screenSurface.*.format, 0x00, 0xFF, 0xFF));
-    // // // _ = c.SDL_UpdateWindowSurface(window);
-    // // // c.SDL_Delay(2000);
-    // // // c.SDL_DestroyWindow(window);
-    // // // c.SDL_Quit();
+    c.SDL_DestroyWindow(window);
+    c.SDL_Quit();
 }
 
-test "simple test" {
-    var list = std.ArrayList(i32).init(std.testing.allocator);
-    defer list.deinit(); // try commenting this out and see if zig detects the memory leak!
-    try list.append(42);
-    try std.testing.expectEqual(@as(i32, 42), list.pop());
-}
+// test "simple test" {
+//     var list = std.ArrayList(i32).init(std.testing.allocator);
+//     defer list.deinit(); // try commenting this out and see if zig detects the memory leak!
+//     try list.append(42);
+//     try std.testing.expectEqual(@as(i32, 42), list.pop());
+// }
