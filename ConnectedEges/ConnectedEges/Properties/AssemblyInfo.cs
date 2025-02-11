@@ -8,9 +8,9 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyTitle("ConnectedEges")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("Rolls-Royce")]
+[assembly: AssemblyCompany("")]
 [assembly: AssemblyProduct("ConnectedEges")]
-[assembly: AssemblyCopyright("Copyright © Rolls-Royce 2013")]
+[assembly: AssemblyCopyright("")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
