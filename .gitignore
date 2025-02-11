@@ -1,6 +1,7 @@
 *.xnb
 *.lock
 *.pyc
+*/.vs/
 
 JetpacReloaded/.vs/
 JetpacReloaded/JetpacReloaded/bin/
@@ -45,3 +46,7 @@ WIP_Zig_Stuff/ZigStars/zig-out
 WIP_Zig_Stuff/ZigStars/pkg/mod
 WIP_Zig_Stuff/ZigStars/zig-cache
 WIP_Zig_Stuff/ZigStars/main.*
+
+ConnectedEges/Backup/
+ConnectedEges/ConnectedEges/bin/
+ConnectedEges/ConnectedEges/obj/
