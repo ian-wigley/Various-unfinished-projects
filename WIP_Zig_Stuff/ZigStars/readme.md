@@ -1,2 +1,0 @@
-# Zig Stars
-
