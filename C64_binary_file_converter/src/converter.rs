@@ -47,7 +47,7 @@ pub mod con {
             let mut file_position: usize = 0;
             let mut pc: usize = 0;
 
-            while file_position < 0x2000
+            while file_position < 0x500
             // while file_position < self.hex_content.len()
             {
                 let op_code: String = self.hex_content[file_position].clone().to_uppercase();
@@ -159,7 +159,7 @@ pub mod con {
                 let op_code: String = hex::encode(num_usize);
                 opcode_mappings.push((*op_code).parse().unwrap());
             }
-            return opcode_mappings;
+            opcode_mappings
         }
 
         pub(crate) fn add_labels(
@@ -306,7 +306,6 @@ pub mod con {
                 }
                 count += 1;
                 if count >= self.assembly_code.len() {
-                    // if (count >= int.Parse(end, System.Globalization.NumberStyles.HexNumber) || count >= originalFileContent.Count || lineDetails[0].ToLower().Contains(end.ToLower()))
                     first_pass = false;
                 }
             }
