@@ -39,7 +39,7 @@ fn main() {
     let right_display: TextDisplay = TextDisplay::new(415, 35, 400, 550, None);
 
     let (s, r) = app::channel::<Message>();
-    let mut menu: menu::SysMenuBar = menu::SysMenuBar::default().with_size(800, 35);
+    let mut menu: menu::SysMenuBar = menu::SysMenuBar::default().with_size(800, 20);
     menu.set_frame(FrameType::FlatBox);
     menu.add_emit(
         "&File/Open...\t",
