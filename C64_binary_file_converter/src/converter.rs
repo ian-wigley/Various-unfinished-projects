@@ -187,7 +187,7 @@ pub mod con {
             let label: &str = "label";
             pass_three.push(format!("{:<20}*=${}", "", start));
 
-            self.clone().first_pass(
+            self.clone().initial_pass(
                 first_pass,
                 count,
                 &mut jump_label_locations,
@@ -206,7 +206,7 @@ pub mod con {
                 &mut pass_two,
             );
 
-            self.clone().third_pass(
+            self.clone().final_pass(
                 &pass_one,
                 &jump_label_locations,
                 &mut found,
@@ -231,7 +231,7 @@ pub mod con {
             display.set_buffer(buf.clone());
         }
 
-        fn first_pass(
+        fn initial_pass(
             self,
             mut first_pass: bool,
             mut count: usize,
@@ -340,7 +340,7 @@ pub mod con {
             }
         }
 
-        fn third_pass(
+        fn final_pass(
             self,
             pass_one: &Vec<String>,
             jump_label_loc: &HashMap<String, String>,
