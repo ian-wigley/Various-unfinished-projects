@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.33026.149
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConnectedEges", "ConnectedEges\ConnectedEges.csproj", "{F97B6FF4-E3A0-4DCA-B102-1A73FCDC7FEA}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{F97B6FF4-E3A0-4DCA-B102-1A73FCDC7FEA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F97B6FF4-E3A0-4DCA-B102-1A73FCDC7FEA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F97B6FF4-E3A0-4DCA-B102-1A73FCDC7FEA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F97B6FF4-E3A0-4DCA-B102-1A73FCDC7FEA}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {BDFB43B6-E176-45CD-925B-50FF1535E420}
+	EndGlobalSection
+EndGlobal

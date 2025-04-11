@@ -47,7 +47,7 @@ pub mod con {
             let mut file_position: usize = 0;
             let mut pc: usize = 0;
 
-            while file_position < 0x2000
+            while file_position < 0x500
             // while file_position < self.hex_content.len()
             {
                 let op_code: String = self.hex_content[file_position].clone().to_uppercase();
@@ -66,10 +66,10 @@ pub mod con {
                         let mut _u: u8 = self.file_content[pc + 1];
                         let mut _v: i8 = _u as i8;
                         let _w: i32 = (_v + 2) as i32;
-                        let mut _s: i32 = (pc as i32) + _w;
+                        let _s: i32 = (pc as i32) + _w;
 
                         let mut _vv: i8 = ((self.file_content[pc + 1]) as i8) + 2;
-                        let mut _ss: i32 = (pc as i32) + _vv as i32;
+                        let _ss: i32 = (pc as i32) + _vv as i32;
 
                         _two = "".to_owned();
                         _three = format!("{:04X}", _s);
@@ -159,7 +159,7 @@ pub mod con {
                 let op_code: String = hex::encode(num_usize);
                 opcode_mappings.push((*op_code).parse().unwrap());
             }
-            return opcode_mappings;
+            opcode_mappings
         }
 
         pub(crate) fn add_labels(
@@ -187,7 +187,7 @@ pub mod con {
             let label: &str = "label";
             pass_three.push(format!("{:<20}*=${}", "", start));
 
-            self.clone().first_pass(
+            self.clone().initial_pass(
                 first_pass,
                 count,
                 &mut jump_label_locations,
@@ -206,7 +206,7 @@ pub mod con {
                 &mut pass_two,
             );
 
-            self.clone().third_pass(
+            self.clone().final_pass(
                 &pass_one,
                 &jump_label_locations,
                 &mut found,
@@ -231,7 +231,7 @@ pub mod con {
             display.set_buffer(buf.clone());
         }
 
-        fn first_pass(
+        fn initial_pass(
             self,
             mut first_pass: bool,
             mut count: usize,
@@ -245,7 +245,7 @@ pub mod con {
         ) {
             // First pass parses the content looking for branch & jump conditions
             while first_pass {
-                // Split each line into an Vector<&str>
+                // Split each line into a Vector<&str>
                 let line_detail: Vec<&str> = self.assembly_code[count].split_whitespace().collect();
                 if line_detail.len() > 1 {
                     // string[] dataValue;
@@ -306,7 +306,6 @@ pub mod con {
                 }
                 count += 1;
                 if count >= self.assembly_code.len() {
-                    // if (count >= int.Parse(end, System.Globalization.NumberStyles.HexNumber) || count >= originalFileContent.Count || lineDetails[0].ToLower().Contains(end.ToLower()))
                     first_pass = false;
                 }
             }
@@ -324,7 +323,7 @@ pub mod con {
                 let mut assembly: String = pass_one[i].clone();
                 let detail: Vec<&str> = pass_one[i].split_whitespace().collect();
                 if detail.len() > 1 {
-                    let key: String = format!("{}", detail[1].clone().replace("$", ""));
+                    let key: String = format!("{}", detail[1].replace("$", ""));
                     if label_locations.contains_key(&key) && detail[0].contains("JSR")
                         || detail[0].contains("JMP")
                     {
@@ -341,7 +340,7 @@ pub mod con {
             }
         }
 
-        fn third_pass(
+        fn final_pass(
             self,
             pass_one: &Vec<String>,
             jump_label_loc: &HashMap<String, String>,
