@@ -67,13 +67,9 @@ public class Game extends ApplicationAdapter {
 			rock.Draw(batch, rockImage);
 		}
 
-		font.draw(batch, "Test....", 50, 50);
+		font.draw(batch, "Click the left mouse button to drop a rock!", 50, 50);
 		batch.end();
 
-		// We must draw to render targets before we start drawing to the back buffer. You can't draw some
-		// stuff to the backbuffer, switch to a render target, and then switch back to the back buffer. The
-		// backbuffer won't be preserved. (Technically you could use RenderTargetUsage.PreserveContents,
-		// but this is slow on some platforms and has no benefit over our current method.)
 		water.DrawToRenderTargets();
 
 		water.Draw();
@@ -86,7 +82,6 @@ public class Game extends ApplicationAdapter {
 		batch.draw(background, 128+130, 200, background.getWidth(), background.getHeight(), 0, 0,
 				background.getWidth(),	background.getHeight(), false, true);
 		batch.end();
-
 	}
 
 	private void checkKeyboard() {
