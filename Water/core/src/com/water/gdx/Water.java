@@ -42,9 +42,7 @@ public class Water {
     public float Dampening = 0.025f;
     public float Spread = 0.25f;
 
-    //RenderTarget2D metaballTarget, particlesTarget;
     SpriteBatch spriteBatch;
-    //AlphaTestEffect alphaTest;
     Texture particleTexture;
 
     private float getScale() {
@@ -67,7 +65,7 @@ public class Water {
     }
 
     private OrthographicCamera cam;
-    public Water(/*GraphicsDevice device,*/ Texture particleTexture)
+    public Water(Texture particleTexture)
     {
         cam = new OrthographicCamera(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
         cam.setToOrtho(true, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
@@ -75,15 +73,6 @@ public class Water {
         pb = new PrimitiveBatch();
         this.particleTexture = particleTexture;
         spriteBatch = new SpriteBatch();
-//        metaballTarget = new RenderTarget2D(device, device.Viewport.Width, device.Viewport.Height);
-//        particlesTarget = new RenderTarget2D(device, device.Viewport.Width, device.Viewport.Height);
-//        alphaTest = new AlphaTestEffect(device);
-//        alphaTest.ReferenceAlpha = 175;
-//
-//        var view = device.Viewport;
-//        alphaTest.Projection = Matrix.CreateTranslation(-0.5f, -0.5f, 0) *
-//                Matrix.CreateOrthographicOffCenter(0, view.Width, view.Height, 0, 0, 1);
-//
         for (int i = 0; i < columns.length; i++)
         {
             columns[i] = new WaterColumn(240,240,0);
@@ -115,7 +104,6 @@ public class Water {
 
     public void Splash(float xPosition, float speed)
     {
-        // int index = (int)Math.Clamp(xPosition / getScale(), 0, columns.length - 1);
         int index = (int)clamp(xPosition / getScale(), 0, columns.length - 1);
         for (int i = Math.max(0, index - 0); i < Math.min(columns.length - 1, index + 1); i++)
             columns[index].Speed = speed;
@@ -132,8 +120,7 @@ public class Water {
             for (int i = 0; i < speed / 8; i++)
             {
                 Vector2 temp = GetRandomVector2(40);
-                // Vector2 pos = new Vector2(xPosition, y) + GetRandomVector2(40);
-                Vector2 pos = new Vector2(xPosition+temp.x, y+temp.y);// + GetRandomVector2(40);
+                Vector2 pos = new Vector2(xPosition+temp.x, y+temp.y);
                 Vector2 vel = FromPolar((float) Math.toRadians(GetRandomFloat(-150.0f, -30.0f)), GetRandomFloat(0, 0.5f * (float)Math.sqrt(speed)));
                 CreateParticle(pos, vel);
             }
@@ -167,8 +154,7 @@ public class Water {
 
     public void Update()
     {
-        for (int i = 0; i < columns.length; i++)
-            columns[i].Update(Dampening, Tension);
+        for (WaterColumn column : columns) column.Update(Dampening, Tension);
 
         float[] lDeltas = new float[columns.length];
         float[] rDeltas = new float[columns.length];
@@ -199,37 +185,20 @@ public class Water {
             }
         }
 
-        //List<Particle> temp = new ArrayList<>();
         for (Particle particle : particles) {
             UpdateParticle(particle);
-//            if (particle.Position.x >= 0 && particle.Position.x <= 800 && particle.Position.y - 5 <= GetHeight(particle.Position.x)){
-//                temp.add(particle);
-//            }
         }
-        // particles = temp;
-        //particles = particles.Where(x => x.Position.X >= 0 && x.Position.X <= 800 && x.Position.Y - 5 <= GetHeight(x.Position.X)).ToList();
     }
 
     public void DrawToRenderTargets()
     {
-//        GraphicsDevice device = spriteBatch.GraphicsDevice;
-//        device.SetRenderTarget(metaballTarget);
-//        device.Clear(Color.Transparent);
-//
-//        // draw particles to the metaball render target
-
         cam.update();
         spriteBatch.setProjectionMatrix(cam.combined);
-
-
-        spriteBatch.begin();//0, BlendState.Additive);
+        spriteBatch.begin();
         for (Particle particle : particles)
         {
-            Vector2 origin = new Vector2(particleTexture.getWidth()/2f, particleTexture.getHeight()/2f);
-            //spriteBatch.draw(particleTexture, particle.Position.x, particle.Position.y,null, Color.WHITE, particle.Orientation, origin, 2f, 0, 0);
             spriteBatch.draw(particleTexture, particle.Position.x, particle.Position.y, particleTexture.getWidth(), particleTexture.getHeight(), 0, 0,
                     particleTexture.getWidth(),	particleTexture.getHeight(), false, true);
-
         }
         spriteBatch.end();
 
@@ -244,45 +213,24 @@ public class Water {
             Vector2 p2 = new Vector2(i * scale, columns[i].Height);
             Vector2 p3 = new Vector2(p1.x, p1.y - thickness);
             Vector2 p4 = new Vector2(p2.x, p2.y - thickness);
-
             pb.AddVertex(p2, Color.WHITE);
             pb.AddVertex(p1, Color.WHITE);
-            pb.AddVertex(p3, Color.WHITE);//.Transparent);
-
-            pb.AddVertex(p3, Color.WHITE);//Transparent);
-            pb.AddVertex(p4, Color.WHITE);//Transparent);
+            pb.AddVertex(p3, Color.WHITE);
+            pb.AddVertex(p3, Color.WHITE);
+            pb.AddVertex(p4, Color.WHITE);
             pb.AddVertex(p2, Color.WHITE);
         }
-
         pb.End();
-//
-//        // save the results in another render target (in particlesTarget)
-//        device.SetRenderTarget(particlesTarget);
-//        device.Clear(Color.Transparent);
-//        spriteBatch.Begin(0, null, null, null, null, alphaTest);
-//        spriteBatch.Draw(metaballTarget, Vector2.Zero, Color.White);
-//        spriteBatch.End();
-//
-//        // switch back to drawing to the backbuffer.
-//        device.SetRenderTarget(null);
     }
 
     public void Draw()
     {
         Color lightBlue = new Color(0.2f, 0.5f, 1f, 0f);
 
-        // draw the particles 3 times to create a bevelling effect
-        spriteBatch.begin();
-//        spriteBatch.Draw(particlesTarget, -Vector2.One, new Color(0.8f, 0.8f, 1f));
-//        spriteBatch.Draw(particlesTarget, Vector2.One, new Color(0f, 0f, 0.2f));
-//        spriteBatch.Draw(particlesTarget, Vector2.Zero, lightBlue);
-        spriteBatch.end();
-
         // draw the waves
         pb.Begin(ShapeRenderer.ShapeType.Filled);
         Color midnightBlue = new Color(0, 15, 40, 0);// * 0.9f;
-//        lightBlue *= 0.8f;
-//
+
         float bottom = -Gdx.graphics.getHeight();
         float scale = getScale();
         for (int i = 1; i < columns.length; i++)
@@ -303,5 +251,4 @@ public class Water {
 
         pb.End();
     }
-
 }
