@@ -2,6 +2,7 @@
 *.lock
 *.pyc
 */.vs/
+*.lock
 
 JetpacReloaded/.vs/
 JetpacReloaded/JetpacReloaded/bin/
@@ -16,8 +17,6 @@ JetpacReloaded/Typescript version/WebGLCanvas/out/
 
 C64_binary_file_converter/pkg/
 C64_binary_file_converter/.idea/
-C64_binary_file_converter/*.lock
-C64_binary_file_converter/Cargo.lock
 
 TS_JT-Reader/C\#_JT-Reader_Vis-Studio/.vs
 TS_JT-Reader/C\#_JT-Reader_Vis-Studio/Backup
@@ -50,4 +49,3 @@ WIP_Zig_Stuff/ZigStars/main.*
 ConnectedEges/Backup/
 ConnectedEges/ConnectedEges/bin/
 ConnectedEges/ConnectedEges/obj/
-C64_binary_file_converter/Cargo.lock
