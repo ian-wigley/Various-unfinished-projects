@@ -1,7 +1,7 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
-namespace JetpacReloaded
+namespace JetPacReloaded
 {
     public class Particle : BaseObject
     {
@@ -86,7 +86,7 @@ namespace JetpacReloaded
             }
         }
 
-        new public void Draw(SpriteBatch spriteBatch, Camera camera)
+        public new void Draw(SpriteBatch spriteBatch, Camera camera)
         {
             spriteBatch.Begin(SpriteSortMode.Immediate, BlendState.Additive, transformMatrix: camera.Transform);
             Vector2 particleLocation = new Vector2(particleX, particleY);
