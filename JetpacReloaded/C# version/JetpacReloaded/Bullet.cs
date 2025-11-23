@@ -1,12 +1,11 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
-namespace JetpacReloaded
+namespace JetPacReloaded
 {
     public class Bullet : BaseObject
     {
         private bool m_left = false;
-        private bool m_offscreen = false;
 
         public Bullet(int x, int y, Texture2D image, bool left)
         {
@@ -25,20 +24,14 @@ namespace JetpacReloaded
             {
                 m_screenLocation.X -= 6;
             }
-            if (m_screenLocation.X >= 800 || m_screenLocation.X <= -40)
+            if (m_screenLocation.X is >= 800 or <= -40)
             {
-                m_offscreen = true;
+                Offscreen = true;
             }
         }
 
-        public bool Offscreen
-        {
-            get { return m_offscreen; }
-        }
+        public bool Offscreen { get; private set; }
 
-        public Rectangle BulletRect
-        {
-            get { return new Rectangle((int)m_screenLocation.X, (int)m_screenLocation.Y, m_image.Width, m_image.Height); }
-        }
+        public Rectangle BulletRect => new((int)m_screenLocation.X, (int)m_screenLocation.Y, m_image.Width, m_image.Height);
     }
 }
