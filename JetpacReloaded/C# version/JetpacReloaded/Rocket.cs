@@ -1,7 +1,7 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
-namespace JetpacReloaded
+namespace JetPacReloaded
 {
     public class Rocket : BaseObject
     {
@@ -47,7 +47,7 @@ namespace JetpacReloaded
             return m_screenLocation.Y > -200;
         }
 
-        new public void Draw(SpriteBatch spriteBatch)
+        public new void Draw(SpriteBatch spriteBatch)
         {
             spriteBatch.Draw(m_image, m_screenLocation, m_rect, Color.White, 0, Vector2.Zero, 1.0f, 0, 0);
         }
