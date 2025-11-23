@@ -2,7 +2,7 @@
 using Microsoft.Xna.Framework.Graphics;
 using System;
 
-namespace JetpacReloaded
+namespace JetPacReloaded
 {
     public class BaseObject
     {
@@ -17,7 +17,7 @@ namespace JetpacReloaded
         protected Vector2 m_screenLocation;
         protected static Random rand = new Random();
 
-        public BaseObject()
+        protected BaseObject()
         {
             m_width = 0;
             m_height = 0;
