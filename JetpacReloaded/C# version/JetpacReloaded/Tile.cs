@@ -1,7 +1,7 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
-namespace JetpacReloaded
+namespace JetPacReloaded
 {
     /// <summary>
     /// Controls the collision detection and response behavior of a tile.
