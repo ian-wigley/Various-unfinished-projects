@@ -1,7 +1,7 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
-namespace JetpacReloaded
+namespace JetPacReloaded
 {
     public class Enemy : BaseObject
     {
@@ -34,14 +34,11 @@ namespace JetpacReloaded
             m_screenLocation.Y = rand.Next(50, 400);
         }
 
-        new public void Draw(SpriteBatch spriteBatch)
+        public new void Draw(SpriteBatch spriteBatch)
         {
             spriteBatch.Draw(m_image, m_screenLocation, m_rect, Color.White, 0, Vector2.Zero, 1.0f, 0, 0);
         }
 
-        public Rectangle AlienRect
-        {
-            get { return new Rectangle((int)m_screenLocation.X, (int)m_screenLocation.Y, m_width, m_height); }
-        }
+        public Rectangle AlienRect => new((int)m_screenLocation.X, (int)m_screenLocation.Y, m_width, m_height);
     }
 }
