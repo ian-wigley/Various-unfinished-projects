@@ -13,9 +13,9 @@ using Microsoft.Xna.Framework.Input;
 using System;
 using System.Collections.Generic;
 
-namespace JetpacReloaded
+namespace JetPacReloaded
 {
-    enum GameState
+    internal enum GameState
     {
         gameStart,
         gameOn,
@@ -142,7 +142,7 @@ namespace JetpacReloaded
             m_jetManPosition = new Vector2(x, y);
 
             _texture = new Texture2D(GraphicsDevice, 1, 1);
-            _texture.SetData(new Color[] { Color.DarkSlateGray });
+            _texture.SetData([Color.DarkSlateGray]);
 
             base.Initialize();
         }
@@ -172,7 +172,7 @@ namespace JetpacReloaded
 
             jetmanMask = Content.Load<Texture2D>("playermask");
             lightMask = Content.Load<Texture2D>("lightmask");
-            lightingEffect = Content.Load<Effect>("Effect1");
+            // lightingEffect = Content.Load<Effect>("Effect1");
 
             var pp = GraphicsDevice.PresentationParameters;
             lightsTarget = new RenderTarget2D(
@@ -181,9 +181,9 @@ namespace JetpacReloaded
                 GraphicsDevice, pp.BackBufferWidth, pp.BackBufferHeight);
 
 
-            died = Content.Load<SoundEffect>("died");
-            fire = Content.Load<SoundEffect>("fire");
-            hit = Content.Load<SoundEffect>("hit");
+            // died = Content.Load<SoundEffect>("died");
+            // fire = Content.Load<SoundEffect>("fire");
+            // hit = Content.Load<SoundEffect>("hit");
 
             m_jetman = new Jetman(400, 300, m_jetmanTexture, _texture);
 
@@ -380,7 +380,7 @@ namespace JetpacReloaded
                     {
                         m_explosion.Add(new Explosion(alien.AlienRect.X, alien.AlienRect.Y, m_explosionTexture));
                         alien.ResetMeteor();
-                        died.Play();
+                        // died.Play();
                         bulletToRemove = bullet;
                         m_score += 100;
                         break;
@@ -401,7 +401,7 @@ namespace JetpacReloaded
                 {
                     m_explosion.Add(new Explosion(alien.AlienRect.X, alien.AlienRect.Y, m_explosionTexture));
                     alien.ResetMeteor();
-                    died.Play();
+                    // died.Play();
                     m_lives--;
                     break;
                 }
@@ -412,7 +412,7 @@ namespace JetpacReloaded
                     {
                         m_explosion.Add(new Explosion(alien.AlienRect.X, alien.AlienRect.Y, m_explosionTexture));
                         alien.ResetMeteor();
-                        hit.Play();
+                        // hit.Play();
                     }
                 }
             }
@@ -534,7 +534,7 @@ namespace JetpacReloaded
                     float depthX = distanceX > 0 ? minDistanceX - distanceX : -minDistanceX - distanceX;
                     float depthY = distanceY > 0 ? minDistanceY - distanceY : -minDistanceY - distanceY;
 
-                    if (depthX >= -2 && depthX <= 2)
+                    if (depthX is >= -2 and <= 2)
                     {
                         m_wallCollsion = true;
                         x -= (int)Math.Ceiling(depthX) - 6;
@@ -829,7 +829,7 @@ namespace JetpacReloaded
             if (GamePad.GetState(PlayerIndex.One).Buttons.LeftShoulder == ButtonState.Pressed ||
                 Keyboard.GetState().IsKeyDown(Keys.LeftControl))
             {
-                fire.Play();
+                // fire.Play();
                 m_delayCounter += m_elapsedCounter;
                 if (m_delayCounter > 0.4)
                 {
@@ -1075,20 +1075,13 @@ namespace JetpacReloaded
 
                 //https://www.youtube.com/watch?v=ceBCDKU_mNw
                 m_spriteBatch.Begin(transformMatrix: m_camera.Transform);
-
                 m_spriteBatch.Draw(m_rustyTexture, new Vector2(0, 0), Color.White);
-
-
-
-
 
                 m_graphicsManager.TileList.ForEach(i =>
                 {
-                    if (i.Drawable(x, y))
-                    {
-                        m_spriteBatch.Draw(_texture, i.TileRect, i.TileTexture, Color.White);
-                        m_spriteBatch.Draw(undergroundTiles, i.TileRect, i.TileTexture, Color.White);
-                    }
+                    if (!i.Drawable(x, y)) return;
+                    m_spriteBatch.Draw(_texture, i.TileRect, i.TileTexture, Color.White);
+                    m_spriteBatch.Draw(undergroundTiles, i.TileRect, i.TileTexture, Color.White);
                 });
 
                 foreach (Star star in m_stars)
@@ -1151,8 +1144,8 @@ namespace JetpacReloaded
                     GraphicsDevice.SetRenderTarget(null);
                     GraphicsDevice.Clear(Color.CornflowerBlue);
                     m_spriteBatch.Begin(SpriteSortMode.Immediate, BlendState.AlphaBlend);
-                    lightingEffect.Parameters["lightMask"].SetValue(lightsTarget);
-                    lightingEffect.CurrentTechnique.Passes[0].Apply();
+                    // lightingEffect.Parameters["lightMask"].SetValue(lightsTarget);
+                    // lightingEffect.CurrentTechnique.Passes[0].Apply();
                     m_spriteBatch.Draw(mainTarget, Vector2.Zero, Color.White);
                     m_spriteBatch.End();
                 }
