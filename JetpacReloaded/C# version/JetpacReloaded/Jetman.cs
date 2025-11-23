@@ -1,7 +1,7 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
-namespace JetpacReloaded
+namespace JetPacReloaded
 {
     public class Jetman : BaseObject
     {
@@ -35,7 +35,7 @@ namespace JetpacReloaded
             m_flip = flip;
         }
 
-        new public void Draw(SpriteBatch spriteBatch)
+        public new void Draw(SpriteBatch spriteBatch)
         {
             spriteBatch.Draw(m_debugImage, m_screenLocation, JetmanRect, Color.White, 0, Vector2.Zero, 1.0f, m_flip, 0);
             //spriteBatch.Draw(m_image, m_screenLocation, m_rect, Color.White, 0, Vector2.Zero, 1.0f, m_flip, 0);
