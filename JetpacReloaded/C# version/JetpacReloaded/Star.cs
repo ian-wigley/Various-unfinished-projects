@@ -1,7 +1,7 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
-namespace JetpacReloaded
+namespace JetPacReloaded
 {
     public class Star : BaseObject
     {
@@ -37,7 +37,7 @@ namespace JetpacReloaded
             }
         }
 
-        new public void Draw(SpriteBatch spriteBatch)
+        public new void Draw(SpriteBatch spriteBatch)
         {
             Vector2 starLocationLayer1 = new Vector2(starLayer1X, starLayer1Y);
             spriteBatch.Draw(m_image, starLocationLayer1, Color.DarkGray);
