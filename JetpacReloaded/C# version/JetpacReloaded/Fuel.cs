@@ -2,9 +2,9 @@
 using Microsoft.Xna.Framework.Graphics;
 using System.Collections.Generic;
 
-namespace JetpacReloaded
+namespace JetPacReloaded
 {
-    class Fuel : BaseObject
+    internal class Fuel : BaseObject
     {
         private bool landedOnLedge = false;
 
@@ -52,10 +52,7 @@ namespace JetpacReloaded
             return m_screenLocation.Y > 448;
         }
 
-        public Rectangle FuelRect
-        {
-            get { return m_rect; }
-        }
+        public Rectangle FuelRect => m_rect;
     }
 }
 
