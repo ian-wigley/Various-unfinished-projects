@@ -1,6 +1,6 @@
 ﻿using Microsoft.Xna.Framework;
 
-namespace JetpacReloaded
+namespace JetPacReloaded
 {
     public class TileAnimation : Tile
     {
