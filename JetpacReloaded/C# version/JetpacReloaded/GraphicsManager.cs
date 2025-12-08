@@ -19,7 +19,10 @@ namespace JetPacReloaded
             const int unGroTileWidth = 62;
             try
             {
-                StreamReader wordFile = new StreamReader(Directory.GetCurrentDirectory() + "/levels.txt");
+                var levels = string.Join(Path.DirectorySeparatorChar,
+                                 Directory.GetCurrentDirectory().Split(Path.DirectorySeparatorChar).SkipLast(3)) +
+                             "/Levels/levels.txt";
+                StreamReader wordFile = new StreamReader(levels);
                 while ((wordLine = wordFile.ReadLine()) != null)
                 {
                     string[] mFileContents = wordLine.Split(new Char[] { ',' });
