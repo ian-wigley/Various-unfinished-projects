@@ -1,8 +1,6 @@
 ﻿//////////////////////////////////////////////////////////
 //                                                      //
-//         JetPac - Written by Ian Wigley               //
-//           Monogame re-write Nov 2020                 //
-//    Static values removed & general code clean up     //
+//         JetPacReloaded - Written by Ian Wigley       //
 //                                                      //
 //////////////////////////////////////////////////////////
 
