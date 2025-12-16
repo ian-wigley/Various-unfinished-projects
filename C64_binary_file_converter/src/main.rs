@@ -1,17 +1,22 @@
 extern crate hex;
 
 use converter::con::Converter;
-use opcode::oc::Opcode;
+use fltk::frame::Frame;
+use fltk::menu::Choice;
 use fltk::{
     app,
     button::Button,
+    dialog,
     enums::{Font, FrameType, Shortcut},
     menu,
     prelude::*,
     text::TextDisplay,
     window::Window,
 };
+use opcode::oc::Opcode;
+use std::cell::RefCell;
 use std::env;
+use std::rc::Rc;
 
 mod converter;
 mod opcode;
@@ -67,23 +72,24 @@ fn main() {
     wind.end();
     wind.show();
 
-    let mut converter: Converter = Converter::new();
-    converter.init();
-    converter.convert_to_assembly(left_display);
+    let converter = Rc::new(RefCell::new(Converter::new()));
 
-    but.set_callback(move |_| {
-        click(
-            wind.to_owned(),
-            converter.to_owned(),
-            right_display.to_owned(),
-        )
+    but.set_callback({
+        let converter = converter.clone();
+        move |_| {
+            click(
+                wind.to_owned(),
+                converter.to_owned(),
+                right_display.to_owned(),
+            )
+        }
     });
     but.activate();
 
     while app.wait() {
         if let Some(msg) = r.recv() {
             match msg {
-                Message::Open => println!("Open selected"),
+                Message::Open => open(converter.clone(), left_display.clone()),
                 Message::SaveAs => println!("SaveAs  selected"),
                 Message::Quit => app.quit(),
             }
@@ -92,7 +98,70 @@ fn main() {
     app.run().unwrap();
 }
 
-fn click(wind: Window, converter: Converter, right_display: TextDisplay) {
+fn click(wind: Window, converter: Rc<RefCell<Converter>>, right_display: TextDisplay) {
     wind.clone().set_label("TODO Add labels!");
-    converter.add_labels("1000", "2000", true, 1, 2, right_display);
+    converter
+        .borrow_mut()
+        .add_labels("1000", "2000", true, 1, 2, right_display);
+    // println!("Added labels!");
+}
+
+fn open(converter: Rc<RefCell<Converter>>, left_display: TextDisplay) {
+    let mut chooser =
+        dialog::FileChooser::new(".", "*", dialog::FileChooserType::Multi, "Select a file");
+    chooser.show();
+    chooser.window().set_pos(300, 300);
+
+    while chooser.shown() {
+        app::wait();
+    }
+    let file_name = chooser.value(1).unwrap();
+    memory_location_selector();
+    converter.borrow_mut().init(&*file_name);
+    converter.borrow_mut().convert_to_assembly(left_display);
+}
+
+fn memory_location_selector() {
+    let mut dialog_win = Window::new(150, 150, 300, 200, "Memory Location");
+    let mut frame = Frame::new(
+        50,
+        25,
+        200,
+        60,
+        "Please select memory location to load the file into",
+    );
+    frame.set_label_size(10);
+
+    let mut memory_locations = Choice::new(120, 80, 60, 30, "$");
+
+    //     new { Text = "0400", Value = 1024 },
+    //     new { Text = "0800", Value = 2048 },
+    //     new { Text = "1000", Value = 4096 },
+
+    memory_locations.add_choice("0400|0800|1000");
+    memory_locations.set_value(1);
+
+    let mut ok_btn = Button::new(40, 120, 100, 35, "Ok");
+    let mut cancel_btn = Button::new(160, 120, 100, 35, "Cancel");
+    ok_btn.set_label_size(10);
+
+    ok_btn.set_callback({
+        let mut dialog_win = dialog_win.clone();
+        let memory_location = memory_locations.clone();
+        move |_| {
+            if let Some(selected) = memory_location.choice() {
+                println!("Selected: {}", selected);
+                println!("Selected memory location: {}", memory_location.value());
+            }
+            dialog_win.hide()
+        }
+    });
+
+    cancel_btn.set_callback({
+        let mut dialog_win = dialog_win.clone();
+        move |_| dialog_win.hide()
+    });
+
+    dialog_win.end();
+    dialog_win.show();
 }
