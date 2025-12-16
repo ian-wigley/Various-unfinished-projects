@@ -8,4 +8,4 @@ edition = "2021"
 [dependencies]
 hex = "0.4"
 fltk = {version = "^1.5.4", features = ["fltk-bundled"]}
-quick-xml = { version = "0.37.2" }
+quick-xml = { version = "0.38.4" }
