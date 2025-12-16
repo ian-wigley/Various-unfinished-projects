@@ -1,7 +1,7 @@
 pub mod con {
 
     use std::collections::HashMap;
-    use std::env;
+    // use std::env;
     use std::io::Read;
     use std::str::FromStr;
 
@@ -31,12 +31,12 @@ pub mod con {
             }
         }
 
-        pub(crate) fn init(&mut self) {
+        pub(crate) fn init(&mut self, file_name: &str) {
             // Populate the OpCode Map
-            self.opcode.load_xml("Assets/6502-codes.xml");
+            // self.opcode.load_xml("Assets/6502-codes.xml");
             self.opcodes = self.opcode.populate_opcodes();
             // Load the external binary file
-            self.file_content = self.load_bin_file().unwrap().clone();
+            self.file_content = self.load_bin_file(file_name).unwrap().clone();
             self.hex_content = self.parse_content(self.file_content.clone());
         }
 
@@ -55,13 +55,15 @@ pub mod con {
                     .opcode
                     .get_match(self.opcodes.clone(), op_code.as_str());
                 let mnemonic: String = values[0].to_string();
-                let incrementor: i32 = i32::from_str(values[1]).unwrap_or(1);
+                let num_bytes: i32 = i32::from_str(values[1]).unwrap_or(1);
 
                 let mut _two: String = String::new();
                 let mut _three: String = String::new();
                 let mut _padding: String = String::new();
+                // _two = format!("{:<2}", "");
+                // _three = format!("{:<2}", "");
 
-                if incrementor == 2 {
+                if num_bytes == 2 {
                     if self.is_branch(&mnemonic) {
                         let mut _u: u8 = self.file_content[pc + 1];
                         let mut _v: i8 = _u as i8;
@@ -77,7 +79,7 @@ pub mod con {
                         _three = self.hex_content[pc + 1].clone().to_uppercase();
                     }
                 }
-                if incrementor == 3 {
+                if num_bytes == 3 {
                     _two = self.hex_content[pc + 2]
                         .to_uppercase()
                         .as_str()
@@ -92,10 +94,10 @@ pub mod con {
                 }
 
                 // increment the pc
-                pc += incrementor as usize;
+                pc += num_bytes as usize;
 
                 let code: String = format!(
-                    "{:04X} {} {} {:<20} {} {}{}{}{}\n",
+                    "{:04X} {} {:2} {:<20} {} {}{}{}{}\n",
                     file_position,
                     op_code,
                     _three,
@@ -109,7 +111,7 @@ pub mod con {
                 buf.append(&code);
                 self.assembly_code.push(code);
 
-                file_position += incrementor as usize;
+                file_position += num_bytes as usize;
             }
             display_text.set_buffer(buf.clone());
         }
@@ -121,26 +123,24 @@ pub mod con {
             // # Arguments
             // * `mnemonic` string
             //
-            return mnemonic == "BCC"
+            mnemonic == "BCC"
                 || mnemonic == "BCS"
                 || mnemonic == "BEQ"
                 || mnemonic == "BMI"
                 || mnemonic == "BNE"
                 || mnemonic == "BPL"
                 || mnemonic == "BVC"
-                || mnemonic == "BVS";
+                || mnemonic == "BVS"
         }
 
-        fn load_bin_file(&mut self) -> std::io::Result<Vec<u8>> {
+        fn load_bin_file(&mut self, file_name: &str) -> std::io::Result<Vec<u8>> {
             //
             // Method to load the file.
             //
             // # Arguments
             // * none
             //
-            let path: std::path::PathBuf = env::current_dir()?;
-            let bin_path: std::path::PathBuf = path.join("Assets/C64_Binary.bin");
-            let mut file: std::fs::File = std::fs::File::open(bin_path)?;
+            let mut file: std::fs::File = std::fs::File::open(file_name)?;
             let mut v: Vec<u8> = Vec::new();
             let _content: Result<usize, std::io::Error> = file.read_to_end(&mut v);
             Ok(v)
@@ -162,8 +162,10 @@ pub mod con {
             opcode_mappings
         }
 
-        pub(crate) fn add_labels(
-            self,
+        // pub(crate) fn add_labels(
+            //self,
+        pub fn add_labels(
+            &mut self,
             start: &str,
             _end: &str,
             _replace_illegal_opcodes: bool,
@@ -186,6 +188,12 @@ pub mod con {
             let mut found: Vec<String> = Vec::new();
             let label: &str = "label";
             pass_three.push(format!("{:<20}*=${}", "", start));
+
+            if self.assembly_code.is_empty() {
+                println!("assembly_code is empty");
+                return;
+            }
+
 
             self.clone().initial_pass(
                 first_pass,
