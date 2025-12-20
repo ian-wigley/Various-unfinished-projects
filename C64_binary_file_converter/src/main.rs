@@ -17,6 +17,7 @@ use opcode::oc::Opcode;
 use std::cell::RefCell;
 use std::env;
 use std::rc::Rc;
+use fltk::enums::LabelType;
 
 mod converter;
 mod opcode;
@@ -40,6 +41,7 @@ fn main() {
 
     let mut wind: fltk::window::DoubleWindow =
         Window::new(100, 100, 820, 620, "C64 Binary to Assembly Converter");
+
     let left_display: TextDisplay = TextDisplay::new(5, 35, 400, 550, None);
     let right_display: TextDisplay = TextDisplay::new(415, 35, 400, 550, None);
 
@@ -67,6 +69,11 @@ fn main() {
         s,
         Message::Quit,
     );
+
+    let mut frame = Frame::new(360, 10, 140, 20, "");
+    frame.set_label_size(12);
+    frame.set_frame(FrameType::NoBox);
+
     let mut but: Button = Button::new(380, 590, 80, 20, "Add labels");
 
     wind.end();
@@ -89,7 +96,7 @@ fn main() {
     while app.wait() {
         if let Some(msg) = r.recv() {
             match msg {
-                Message::Open => open(converter.clone(), left_display.clone()),
+                Message::Open => open(converter.clone(), left_display.clone(), frame.clone()),
                 Message::SaveAs => println!("SaveAs  selected"),
                 Message::Quit => app.quit(),
             }
@@ -106,16 +113,29 @@ fn click(wind: Window, converter: Rc<RefCell<Converter>>, right_display: TextDis
     // println!("Added labels!");
 }
 
-fn open(converter: Rc<RefCell<Converter>>, left_display: TextDisplay) {
+fn open(converter: Rc<RefCell<Converter>>, left_display: TextDisplay, mut frame: Frame) {
     let mut chooser =
-        dialog::FileChooser::new(".", "*", dialog::FileChooserType::Multi, "Select a file");
+        dialog::FileChooser::new(".", "*", dialog::FileChooserType::Single, "Select a file");
     chooser.show();
     chooser.window().set_pos(300, 300);
 
     while chooser.shown() {
         app::wait();
     }
+    if let Some(file_name) = chooser.value(1) {
+        let pos = file_name.rfind('/');
+        println!("{:?}", pos);
+        let f = file_name.split_at(pos.unwrap()+1).1;
+        println!("Selected file: {}", f);
+        println!("Selected file: {}", file_name);
+        frame.set_label(&f);
+    } else {
+        println!("No file selected");
+    }
+
+
     let file_name = chooser.value(1).unwrap();
+    // frame.set_label(&file_name);
     memory_location_selector();
     converter.borrow_mut().init(&*file_name);
     converter.borrow_mut().convert_to_assembly(left_display);
