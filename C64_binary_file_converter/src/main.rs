@@ -15,9 +15,10 @@ use fltk::{
 };
 use opcode::oc::Opcode;
 use std::cell::RefCell;
+use std::convert::Infallible;
 use std::env;
 use std::rc::Rc;
-use fltk::enums::LabelType;
+// use fltk::enums::LabelType;
 
 mod converter;
 mod opcode;
@@ -27,6 +28,7 @@ pub enum Message {
     Open,
     SaveAs,
     Quit,
+    Convert
 }
 
 // https://github.com/fltk-rs/fltk-rs/blob/master/fltk/examples/editor2.rs
@@ -36,8 +38,11 @@ fn main() {
     env::set_var("RUST_BACKTRACE", "full");
 
     let app: app::App = app::App::default().load_system_fonts();
-    Font::set_font(Font::Courier, "Monospace");
-    app::set_font_size(10);
+    // let fonts = app::fonts();
+    // println!("{:?}", fonts);
+    let font = Font::load_font("Assets/Consolas-Regular.ttf").unwrap();
+    Font::set_font(Font::Helvetica, &font);
+    app::set_font_size(12);
 
     let mut wind: fltk::window::DoubleWindow =
         Window::new(100, 100, 820, 620, "C64 Binary to Assembly Converter");
@@ -99,6 +104,7 @@ fn main() {
                 Message::Open => open(converter.clone(), left_display.clone(), frame.clone()),
                 Message::SaveAs => println!("SaveAs  selected"),
                 Message::Quit => app.quit(),
+                Message::Convert => println!("Convert from file"),
             }
         }
     }
@@ -133,15 +139,15 @@ fn open(converter: Rc<RefCell<Converter>>, left_display: TextDisplay, mut frame:
         println!("No file selected");
     }
 
-
     let file_name = chooser.value(1).unwrap();
     // frame.set_label(&file_name);
-    memory_location_selector();
-    converter.borrow_mut().init(&*file_name);
-    converter.borrow_mut().convert_to_assembly(left_display);
+    let mls = memory_location_selector(converter, &*file_name, left_display);
+    println!("Mls: {:?}", mls);
+    // converter.borrow_mut().init(&*file_name);
+    // converter.borrow_mut().convert_to_assembly(left_display);
 }
 
-fn memory_location_selector() {
+fn memory_location_selector<'a>(converter: Rc<RefCell<Converter>>, file_name: &str, left_display: TextDisplay) {
     let mut dialog_win = Window::new(150, 150, 300, 200, "Memory Location");
     let mut frame = Frame::new(
         50,
@@ -168,13 +174,31 @@ fn memory_location_selector() {
     ok_btn.set_callback({
         let mut dialog_win = dialog_win.clone();
         let memory_location = memory_locations.clone();
+        let ld = left_display.clone();
+        let conv = converter.clone();
         move |_| {
+            dialog_win.hide();
             if let Some(selected) = memory_location.choice() {
+                // return;
                 println!("Selected: {}", selected);
                 println!("Selected memory location: {}", memory_location.value());
+
+
+
+                // TODO
+                // https://www.reddit.com/r/rust/comments/q58q2n/fltkrs_textdisplay_how_to_update/
+                s.send(Message::Convert);
+
+
+
+                //conv.borrow_mut().init(&*file_name);
+                // converter.borrow_mut().convert_to_assembly(ld);
+                //    return selected.as_str();
+                // return Some(selected);
             }
-            dialog_win.hide()
+            // dialog_win.hide()
         }
+
     });
 
     cancel_btn.set_callback({
@@ -182,6 +206,6 @@ fn memory_location_selector() {
         move |_| dialog_win.hide()
     });
 
-    dialog_win.end();
+    // dialog_win.end();
     dialog_win.show();
 }
