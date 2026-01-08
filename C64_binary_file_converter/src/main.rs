@@ -1,6 +1,7 @@
 extern crate hex;
 
 use converter::con::Converter;
+use fltk::app::Sender;
 use fltk::frame::Frame;
 use fltk::menu::Choice;
 use fltk::{
@@ -15,10 +16,8 @@ use fltk::{
 };
 use opcode::oc::Opcode;
 use std::cell::RefCell;
-use std::convert::Infallible;
 use std::env;
 use std::rc::Rc;
-// use fltk::enums::LabelType;
 
 mod converter;
 mod opcode;
@@ -28,7 +27,7 @@ pub enum Message {
     Open,
     SaveAs,
     Quit,
-    Convert
+    Convert,
 }
 
 // https://github.com/fltk-rs/fltk-rs/blob/master/fltk/examples/editor2.rs
@@ -38,12 +37,9 @@ fn main() {
     env::set_var("RUST_BACKTRACE", "full");
 
     let app: app::App = app::App::default().load_system_fonts();
-    // let fonts = app::fonts();
-    // println!("{:?}", fonts);
     let font = Font::load_font("Assets/Consolas-Regular.ttf").unwrap();
     Font::set_font(Font::Helvetica, &font);
     app::set_font_size(12);
-
     let mut wind: fltk::window::DoubleWindow =
         Window::new(100, 100, 820, 620, "C64 Binary to Assembly Converter");
 
@@ -101,7 +97,7 @@ fn main() {
     while app.wait() {
         if let Some(msg) = r.recv() {
             match msg {
-                Message::Open => open(converter.clone(), left_display.clone(), frame.clone()),
+                Message::Open => open(converter.clone(), left_display.clone(), frame.clone(), s),
                 Message::SaveAs => println!("SaveAs  selected"),
                 Message::Quit => app.quit(),
                 Message::Convert => println!("Convert from file"),
@@ -119,7 +115,12 @@ fn click(wind: Window, converter: Rc<RefCell<Converter>>, right_display: TextDis
     // println!("Added labels!");
 }
 
-fn open(converter: Rc<RefCell<Converter>>, left_display: TextDisplay, mut frame: Frame) {
+fn open(
+    converter: Rc<RefCell<Converter>>,
+    left_display: TextDisplay,
+    mut frame: Frame,
+    s: Sender<Message>,
+) {
     let mut chooser =
         dialog::FileChooser::new(".", "*", dialog::FileChooserType::Single, "Select a file");
     chooser.show();
@@ -128,10 +129,11 @@ fn open(converter: Rc<RefCell<Converter>>, left_display: TextDisplay, mut frame:
     while chooser.shown() {
         app::wait();
     }
+
     if let Some(file_name) = chooser.value(1) {
         let pos = file_name.rfind('/');
         println!("{:?}", pos);
-        let f = file_name.split_at(pos.unwrap()+1).1;
+        let f = file_name.split_at(pos.unwrap() + 1).1;
         println!("Selected file: {}", f);
         println!("Selected file: {}", file_name);
         frame.set_label(&f);
@@ -141,13 +143,15 @@ fn open(converter: Rc<RefCell<Converter>>, left_display: TextDisplay, mut frame:
 
     let file_name = chooser.value(1).unwrap();
     // frame.set_label(&file_name);
-    let mls = memory_location_selector(converter, &*file_name, left_display);
-    println!("Mls: {:?}", mls);
-    // converter.borrow_mut().init(&*file_name);
-    // converter.borrow_mut().convert_to_assembly(left_display);
+
+    let start_address = memory_location_selector(s).unwrap();
+    println!("Mls: {:?}", start_address);
+
+    converter.borrow_mut().init(&*file_name);
+    //converter.borrow_mut().convert_to_assembly(left_display);
 }
 
-fn memory_location_selector<'a>(converter: Rc<RefCell<Converter>>, file_name: &str, left_display: TextDisplay) {
+fn memory_location_selector(s: Sender<Message>) -> Option<String> {
     let mut dialog_win = Window::new(150, 150, 300, 200, "Memory Location");
     let mut frame = Frame::new(
         50,
@@ -173,32 +177,16 @@ fn memory_location_selector<'a>(converter: Rc<RefCell<Converter>>, file_name: &s
 
     ok_btn.set_callback({
         let mut dialog_win = dialog_win.clone();
-        let memory_location = memory_locations.clone();
-        let ld = left_display.clone();
-        let conv = converter.clone();
+        // let memory_location = memory_locations.clone();
+        // let mut ok_btns = ok_btn.clone();
         move |_| {
             dialog_win.hide();
-            if let Some(selected) = memory_location.choice() {
-                // return;
-                println!("Selected: {}", selected);
-                println!("Selected memory location: {}", memory_location.value());
-
-
-
-                // TODO
-                // https://www.reddit.com/r/rust/comments/q58q2n/fltkrs_textdisplay_how_to_update/
-                s.send(Message::Convert);
-
-
-
-                //conv.borrow_mut().init(&*file_name);
-                // converter.borrow_mut().convert_to_assembly(ld);
-                //    return selected.as_str();
-                // return Some(selected);
-            }
-            // dialog_win.hide()
+            // if let Some(selected) = memory_location.choice() {
+            //     println!("Selected: {}", selected);
+            //     println!("Selected memory location: {}", memory_location.value());
+            //     ok_btns.emit(s, Message::Convert);
+            // }
         }
-
     });
 
     cancel_btn.set_callback({
@@ -206,6 +194,12 @@ fn memory_location_selector<'a>(converter: Rc<RefCell<Converter>>, file_name: &s
         move |_| dialog_win.hide()
     });
 
-    // dialog_win.end();
+    dialog_win.end();
     dialog_win.show();
+
+    while dialog_win.shown() {
+        app::wait();
+    }
+
+    memory_locations.choice()
 }
