@@ -1,0 +1,47 @@
+Review this link : https://medium.com/@AlexanderObregon/event-loop-behavior-during-heavy-computation-in-javascript-f634291f468f
+
+
+       // let details = "";
+
+        // // divide length into chunks of 500
+        // let slices = [];
+        // let k = 500;
+        // for (let i = k; i < this.code.length; i += k) {
+        //     slices.push(i);
+        // }
+        // slices.push(this.code.length);
+
+        // this.UpdateScreen(details, el, slices);
+
+        // // setTimeout(this.UpdateScreen(details, el, slices), 0);
+        // // let count = 0;
+        // // for (let i = 0; i < this.code.length; i++) {
+        // //     details += this.code[i] + "<br />";
+        // //     if (i == slices[count]) {
+        // //         el.innerHTML += details;
+        // //         details = "";
+        // //         count += 1;
+        // //     }
+        // // }
+        sessionStorage.clear();
+    }
+
+    private UpdateScreen(details: string, el: HTMLElement, slices: any[]): any {
+        let count = 0;
+        let slice = 0;
+        let _this = this;
+        function nextChunk() {
+            let end = slices[slice++];
+            for (; count < end; count++) {
+                details += _this.code[count] + "<br />";
+            }
+            if (count < _this.code.length) {
+                el.innerHTML += details;
+                details = "";
+                setTimeout(nextChunk, 0);
+            } else {
+                console.log('Done processing in steps');
+            }
+        }
+        nextChunk();
+    }
