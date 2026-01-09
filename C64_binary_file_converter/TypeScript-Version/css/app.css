@@ -1,0 +1,124 @@
+﻿
+span {
+    font-style: italic;
+}
+
+
+#content {
+    font-size: small;
+    font-family: monospace;
+}
+
+.scrollWindow
+ {
+    font-size: small;
+    font-family: monospace;
+    width:350px;
+    height:350px;
+    line-height:1em;
+    overflow:auto;
+    padding:1px;
+    background-color: rgb(100, 100, 100);
+}
+
+/* #div1 {
+    width: 350px;
+    height: 70px;
+    padding: 10px;
+    border: 1px solid #aaaaaa;
+} */
+
+#canvas {
+    background-color: rgb(0, 0, 0);
+}
+
+dummydeclaration {
+    padding-left: 4em;
+}
+
+/* Firefox ignores first declaration for some reason */
+tab1 {
+    /* padding-left: 2.35em; */
+    /*4em;*/
+}
+
+tab2 {
+    /* padding-left: 4.25em; */
+    /*8em;*/
+}
+
+
+* {
+    box-sizing: border-box
+}
+
+.tablink:hover {
+    background-color: #777;
+}
+
+.box {
+    position: relative;
+    margin-left: 20px;
+}
+
+.box:before {
+    position: absolute;
+    left: -20px;
+    content: "";
+    height: 20px;
+    width: 20px;
+    margin-bottom: 15px;
+    border: 1px solid black;
+}
+
+.box.red:before {
+    /* background-color: red; */
+}
+
+.box.green:before {
+    /* background-color: green; */
+}
+
+.box.blue:before {
+    /* background-color: #555; */
+    /* background-color:blue; */
+}
+
+
+*,
+*:before,
+*:after {
+    box-sizing: inherit;
+}
+
+.clear {
+    clear: both;
+}
+
+.hidden {
+    display: none;
+}
+
+#container {
+    width: 800px;
+    margin: auto;
+}
+
+textarea {
+    font-family: "Courier New", monospace;
+    font-size: 13px;
+}
+
+#dropzone {
+    border: 1px dashed #427fb7;
+    margin: 10px 0;
+    padding: 10px;
+}
+
+#dropzone.over {
+    border: 1px dashed #fb9b00;
+}
+
+#dropzone .selector {
+    float: right;
+}
