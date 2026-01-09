@@ -1,0 +1,9 @@
+https://github.com/cliffordcarnmo/c64-devkit
+https://github.com/gonzoMD/Hunt4GemsDX/tree/master/src
+https://www.html.am/html-codes/scrollboxes/html-scrollbox.cfm
+https://stackoverflow.com/questions/57803/how-to-convert-decimal-to-hex-in-javascript
+https://www.w3schools.com/howto/howto_js_copy_clipboard.asp
+https://stackoverflow.com/questions/10261989/html5-javascript-drag-and-drop-file-from-external-window-windows-explorer
+https://stackoverflow.com/questions/25546282/javascript-convert-hexadecimal-value-into-signed-8-bit-integer
+
+https://web.dev/learn/html/dialog
