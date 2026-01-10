@@ -1,0 +1,51 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+        x:Class="C64BinaryToAssemblyConverter.MainWindow"
+        Title="C64BinaryToAssemblyConverter">
+   
+    <StackPanel Margin="20" >
+        <Menu DockPanel.Dock="Top">
+            <MenuItem Header="_File">
+                <MenuItem Header="_Open" Name="MenuOpen" Click="OpenMenuItem" />
+                <MenuItem Header="_Save As">
+                    <MenuItem Header="_Left Window" Name="LeftWindowMenuItem" Click="SaveLeftWindowContent" />
+                    <MenuItem Header="_Right Window" Name="RightWindowMenuItem" Click="SaveRightWindowContent" />
+                </MenuItem>
+                <MenuItem Header="_Export Bytes">
+                    <MenuItem Header="_As Binary" Name="ExportBytesAsBinary" Click="ExportBytesAsBinaryMenuItemClicked" />
+                    <MenuItem Header="_As Text" Name="ExportBytesAsText" Click="ExportBytesAsTextMenuItemClicked" />
+                </MenuItem>
+                <!-- <Separator /> -->
+                <MenuItem Header="_Exit" Name="MenuExit" Click="ExitMenuItem" />
+            </MenuItem>
+            <!-- <MenuItem Header="_Edit"> -->
+                <!-- <MenuItem Header="Copy" /> -->
+                <!-- <MenuItem Header="Paste" /> -->
+            <!-- </MenuItem> -->
+        </Menu>
+       
+        <Grid ColumnDefinitions="*,*"
+              ColumnSpacing="8">
+            <TextBox Height="400" Grid.Column="0" Name="LeftTextBox"/>
+            <TextBox Height="400" Grid.Column="1" Name="RightTextBox"/>
+
+        </Grid>
+        <Button DockPanel.Dock="Bottom" Click="GenerateLabelsClickEvent" IsEnabled="False" HorizontalAlignment="Center" Name="GenerateLabels">Generate Labels</Button>
+
+    </StackPanel>
+</Window>
+
+
+<!-- <TextBlock Margin="0 5" >Name:</TextBlock> -->
+<!-- <TextBox  Watermark="Enter your name"/> -->
+<!-- <TextBlock Margin="0 5" >Password:</TextBlock> -->
+<!-- <TextBox PasswordChar="*" Watermark="Enter your password"/> -->
+<!-- <TextBlock Margin="0 15 0 5">Notes:</TextBlock> -->
+       
+<!-- <StackPanel Orientation="Horizontal" Spacing="8"> -->
+<!--     <TextBox Height="100" Width="300" AcceptsReturn="True" TextWrapping="Wrap"/> -->
+<!--     <TextBox Height="100" Width="300" AcceptsReturn="True" TextWrapping="Wrap"/> -->
+<!-- </StackPanel> -->
