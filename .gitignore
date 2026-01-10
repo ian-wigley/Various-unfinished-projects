@@ -66,3 +66,6 @@ JetpacReloaded/C\# version/.vs/JetpacReloaded/v16/.suo
 /C64_binary_file_converter/TypeScript-Version/.idea
 /C64_binary_file_converter/Rust-Version/.idea
 /C64_binary_file_converter/TypeScript-Version/out
+/C64_binary_file_converter/CSharpDotNetCore-Version/.idea/.idea.C64BinaryToAssemblyConverter/.idea
+/C64_binary_file_converter/CSharpDotNetCore-Version/C64BinaryToAssemblyConverter/bin
+/C64_binary_file_converter/CSharpDotNetCore-Version/C64BinaryToAssemblyConverter/obj
