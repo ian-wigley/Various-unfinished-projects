@@ -285,11 +285,13 @@ class OpCode {
 
     public GetCode(line: string, filePosition: number, bytes: Uint8Array, lineNumber: number, pc: number, dataStatements: any, illegalOpCodes: any) {
         let temp = [];
+        // const padded = line.padEnd(16);
         if (this.m_numberOfBytes == 1) {
             // if (this.m_illegal) { //Add the programme counter location to the list of illegal opcodes found //illegalOpCodes.Add(pc.ToString("X4")); }
             temp.push("!byte $" + this.m_code);
             dataStatements.push(pc.toString(), temp);
-            line += "<tab2>" + this.m_name + "</tab2>";
+            const padded = line.padEnd(16);
+            line = padded + this.m_name;
             filePosition += 1;
         }
         if (this.m_numberOfBytes == 2) {
@@ -297,6 +299,7 @@ class OpCode {
             temp.push("!byte $" + this.m_code, "!byte $" + bytes[filePosition + 1].toString(16));
             dataStatements.push(pc.toString(), temp);
             line += " " + Convert.X2(bytes[filePosition + 1]);
+            const padded = line.padEnd(16);
 
             if (this.m_name == "BCC" || this.m_name == "BCS" ||
                 this.m_name == "BEQ" || this.m_name == "BMI" ||
@@ -305,10 +308,10 @@ class OpCode {
                 let s = bytes[filePosition + 1];
                 if (s > 127) { s = s - 256; }
                 s += 2;
-                line += "<tab1>" + this.m_name + "</tab1>" + " " + this.m_prefix + Convert.X4(pc + s);
+                line = padded + this.m_name + " " + this.m_prefix + Convert.X4(pc + s);
             }
             else {
-                line += "<tab1>" + this.m_name + "</tab1>" + " " + this.m_prefix + Convert.X2(bytes[filePosition + 1]) + this.m_suffix;
+                line = padded + this.m_name + " " + this.m_prefix + Convert.X2(bytes[filePosition + 1]) + this.m_suffix;
             }
             filePosition += 2;
         }
@@ -320,7 +323,8 @@ class OpCode {
                 "!byte $" + bytes[filePosition + 2].toString(16));
             dataStatements.push(pc, temp);
             line += " " + Convert.X2(bytes[filePosition + 1]) + " " + Convert.X2(bytes[filePosition + 2]);
-            line += "    " + this.m_name + " " + this.m_prefix + Convert.X2(bytes[filePosition + 2]) + Convert.X2(bytes[filePosition + 1]) + this.m_suffix;
+            const padded = line.padEnd(16);
+            line = padded + this.m_name + " " + this.m_prefix + Convert.X2(bytes[filePosition + 2]) + Convert.X2(bytes[filePosition + 1]) + this.m_suffix;
             filePosition += 3;
         }
 
