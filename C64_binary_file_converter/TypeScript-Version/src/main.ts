@@ -3,7 +3,6 @@ import { Convert } from "./convert.js";
 
 export class C64BinaryToAssemblyConverter {
 
-    startAddress: number = 0;
     populateOpCodeList: PopulateOpCodeList;
     fileContent: ArrayBuffer;
     code: any[];
@@ -26,35 +25,33 @@ export class C64BinaryToAssemblyConverter {
 
     public Run(): void {
         let val = sessionStorage.getItem("key");
-        if (val != null) {
+        let parseBegin = sessionStorage.getItem("parseBegin");
+        if (val != null && parseBegin === "true") {
             const uint8Array = new Uint8Array([...val].map((c) => c.codePointAt(0)));
             console.log("Data Loaded!");
             this.ParseFile(uint8Array);
+            sessionStorage.setItem("parseBegin", "false");
         }
         requestAnimationFrame(this.Run.bind(this));
     }
 
     public DropFileHandler(event): void {
-        console.log("Dropped!");
         event.preventDefault();
+        const closeButton = document.querySelector("dialog button");
+        const dialog = document.querySelector("dialog");
 
-        const dialog = <HTMLDialogElement>document.getElementById('dialog');
-        const text = document.getElementById('text');
+        // "Close" button closes the dialog
+        closeButton.addEventListener("click", () => {
+            sessionStorage.setItem("parseBegin", "true");
+            dialog.close();
+        });
 
         let btn = document.createElement('button');
         document.body.appendChild(btn);
         btn.hidden = true;
 
-        btn.addEventListener('click', (event) => {
+        btn.addEventListener('click', () => {
             dialog.showModal();
-        });
-
-        dialog.addEventListener('cancel', (event) => {
-            text.innerHTML += 'cancel event happened<br/>';
-        });
-
-        dialog.addEventListener('close', (event) => {
-            text.innerHTML += 'close event happened<br/>';
         });
 
         btn.click();
@@ -88,16 +85,17 @@ export class C64BinaryToAssemblyConverter {
         this.illegalOpcodes = [];
 
         let m_OpCodes = this.populateOpCodeList.GetOpCodes();
+        const startAddress = this.GetStartAddress();
 
         while (filePosition < fileContent.length) {
             // Extract each 8 bit number from the array & convert to Hex
             let opCode = Convert.X2(fileContent[filePosition]);
-            lineNumber = this.startAddress + filePosition;
+            lineNumber = startAddress + filePosition;
             this.lineNumbers.push(lineNumber);
-            let line: string = Convert.X4(this.startAddress + filePosition);
+            let line: string = Convert.X4(startAddress + filePosition);
 
-            line += "  " + opCode.toString();
-            pc = this.startAddress + filePosition;
+            line += " " + opCode.toString();
+            pc = startAddress + filePosition;
 
             let detail: any;
             for (let j = 0; j < m_OpCodes.length; j++) {
@@ -116,5 +114,12 @@ export class C64BinaryToAssemblyConverter {
         el.innerHTML = this.code.join("<br />");
 
         sessionStorage.clear();
+    }
+
+    private GetStartAddress() {
+        const startLocation = document.getElementById('startLocation') as HTMLInputElement;
+        let startAddr = Number.parseInt(startLocation.value, 16);
+        if (Number.isNaN(startAddr)) { startAddr = 4096; }
+        return startAddr;
     }
 }
