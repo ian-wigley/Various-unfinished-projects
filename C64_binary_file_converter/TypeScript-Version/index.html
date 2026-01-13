@@ -23,20 +23,16 @@
                     <ul class="navbar-nav me-auto mb-2 mb-lg-0">
 
                         <li class="nav-item active">
-                            <a class="nav-link" href="#">Home<span
-                                    class="sr-only"></span></a>
+                            <a class="nav-link" href="#">Home<span class="sr-only"></span></a>
                         </li>
                         <li class="nav-item active">
-                            <a class="nav-link" href="#">Applications<span
-                                    class="sr-only"></span></a>
+                            <a class="nav-link" href="#">Applications<span class="sr-only"></span></a>
                         </li>
                         <li class="nav-item active">
-                            <a class="nav-link" href="#">Games<span
-                                    class="sr-only"></span></a>
+                            <a class="nav-link" href="#">Games<span class="sr-only"></span></a>
                         </li>
                         <li class="nav-item active">
-                            <a class="nav-link" href="#">WebGL Experiments<span
-                                    class="sr-only"></span></a>
+                            <a class="nav-link" href="#">WebGL Experiments<span class="sr-only"></span></a>
                         </li>
                         <li class="nav-item dropdown">
                             <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button"
@@ -63,8 +59,7 @@
                             </ul>
                         </li>
                         <li class="nav-item active">
-                            <a class="nav-link" href="#">Web Assembly<span
-                                    class="sr-only"></span></a>
+                            <a class="nav-link" href="#">Web Assembly<span class="sr-only"></span></a>
                         </li>
                     </ul>
                 </div>
@@ -77,30 +72,22 @@
         <div id="container">
             <br>
             <div id="content"></div>
-            <div id="parseOutput" class="scrollWindow"></div>
 
-            <dialog id="dialog">
-                <form>
-                    <button type="submit" aria-label="close" formmethod="dialog" formnovalidate>X</button>
-                    <h2 id="dialogid">Select Location</h2>
-                    <p>Please select memory location to load file into</p>
-                    <p>
-                        <label>Hex $
-                            <input type="text" name="name" required />
-                        </label>
-                    </p>
-                    <p>
-                        <!-- <button type="submit" formmethod="post">Submit</button> -->
-                        <button type="">Submit</button>
-                    </p>
-                    <hr />
-                </form>
+            <pre id="parseOutput" class="scrollWindow"></pre>
+
+            <dialog>
+                <h2 id="dialogid">Select Location</h2>
+                <p>Please select memory location to load file into</p>
+                <p>
+                    <label>Hex $
+                        <input id="startLocation" type="text" name="name" required />
+                    </label>
+                </p>
+                <button autofocus>Start</button>
             </dialog>
 
             <br>
             <br>
-            <!-- https://web.dev/learn/html/dialog -->
-            <!-- <button id="modal">Open Modal dialog</button> -->
             <button id="convert">Convert to Editable</button>
             <p id="text"></p>
         </div>
@@ -110,24 +97,6 @@
         import { C64BinaryToAssemblyConverter } from "./out/main.js";
         let el = document.getElementById('content');
         let c64 = new C64BinaryToAssemblyConverter(el);
-
-        // const dialog = document.getElementById('dialog');
-        // const text = document.getElementById('text');
-        // const modal = document.getElementById('modal');
-
-        // modal.addEventListener('click', (event) => {
-        //     dialog.showModal();
-        //     text.textContent = '';
-        // });
-
-        // dialog.addEventListener('cancel', (event) => {
-        //     text.innerHTML += 'cancel event happened<br/>';
-        // });
-
-        // dialog.addEventListener('close', (event) => {
-        //     text.innerHTML += 'close event happened<br/>';
-        // });
-
         c64.Init();
         c64.Run();
     </script>
