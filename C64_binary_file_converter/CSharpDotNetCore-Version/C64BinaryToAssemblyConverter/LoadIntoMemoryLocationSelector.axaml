@@ -1,0 +1,22 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="C64BinaryToAssemblyConverter.LoadIntoMemoryLocationSelector"
+        Width="400"
+        Height="200"
+        WindowStartupLocation="CenterOwner"
+        Title="Select Location"
+        CanResize="False">
+
+    <StackPanel Margin="20" Spacing="10">
+        <TextBlock Text="Please select memory location to load the file into"/>
+        
+        <TextBox x:Name="StartAddressSelector"/>
+
+        <StackPanel Orientation="Horizontal" 
+                    HorizontalAlignment="Right" 
+                    Spacing="10">
+            <Button Content="OK" Click="OnOkClick"/>
+            <Button Content="Cancel" Click="OnCancelClick"/>
+        </StackPanel>
+    </StackPanel>
+</Window>
