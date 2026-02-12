@@ -1,4 +1,6 @@
+using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Threading.Tasks;
 using Avalonia.Controls;
@@ -18,6 +20,7 @@ public partial class MainWindow : Window
     private List<string> _lineNumbers = [];
     private List<string> _illegalOpcodes = [];
     private Dictionary<string, string[]> _dataStatements = new Dictionary<string, string[]>();
+    private int _userDefinedStartAddress;
 
     public MainWindow()
     {
@@ -59,29 +62,20 @@ public partial class MainWindow : Window
 
     private async void OpenMenuItem(object sender, RoutedEventArgs e)
     {
-        var topLevel = GetTopLevel(this);
-
-        // Start async operation to open the dialog.
-        var files = await topLevel.StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
-        {
-            Title = "Open Text File",
-            AllowMultiple = false,
-            SuggestedFileType = new FilePickerFileType("txt")
-        });
-
+        var files = await OpenFileDialog();
         if (files.Count == 0) return;
         ClearCollections();
-        LeftTextBox.Clear();
 
-        // var ml = new LoadIntoMemoryLocationSelector();
-        // if (ml.ShowDialog() != DialogResult.OK) return;
+        var ml = new LoadIntoMemoryLocationSelector();
+        var startLocation = await ml.ShowDialog<string?>(this);
+        if (startLocation == null) { return; }
         
         // Use a monospaced font
         LeftTextBox.FontFamily = new FontFamily("Consolas");
-        
-        // _ = int.TryParse(ml.GetMemStartLocation, out var startAddress);
-        var startAddress = 0x0800;
+        if (!int.TryParse(startLocation, NumberStyles.HexNumber, null, out var startAddress)) { return; }
+        _userDefinedStartAddress = startAddress;
         _data = _parser.LoadBinaryData(files[0].Path.AbsolutePath);
+
         var lines  = _parser.ParseFileContent(_data, LeftTextBox, startAddress, ref _lineNumbers);
         foreach (var line in lines)
         {
@@ -99,6 +93,18 @@ public partial class MainWindow : Window
         // FileLoaded.Left = 340;
 
         InvalidateVisual();
+    }
+
+    private async Task<IReadOnlyList<IStorageFile>> OpenFileDialog()
+    {
+        var topLevel = GetTopLevel(this);
+        var files = await topLevel.StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
+        {
+            Title = "Open Text File",
+            AllowMultiple = false,
+            SuggestedFileType = new FilePickerFileType("txt")
+        });
+        return files;
     }
 
     /// <summary>
@@ -222,6 +228,7 @@ public partial class MainWindow : Window
     /// </summary>
     private void ClearLeftWindow()
     {
+        LeftTextBox.Clear();
         _parser.Code.Clear();
         _parser.DataStatements.Clear();
     }
@@ -279,37 +286,31 @@ public partial class MainWindow : Window
     }
     
     /// <summary>
-    ///
+    /// Export Bytes As Binary Menu Item Clicked
     /// </summary>
-    private void ExportBytesAsBinaryMenuItemClicked(object sender, RoutedEventArgs e)
+    private async void ExportBytesAsBinaryMenuItemClicked(object sender, RoutedEventArgs e)
     {
         var start = 0;
         var end = 1984;
-        var fileName = "TestByes.bin";
         
         // var ms = new MemoryLocationsToConvertSelector(_startAddress, _endAddress);
         // if (ms.ShowDialog() != DialogResult.OK) return;
+        
         // var start = int.Parse(ms.GetSelectedMemStartLocation, System.Globalization.NumberStyles.HexNumber) - _userDefinedStartAddress;
         // var end = int.Parse(ms.GetSelectedMemEndLocation, System.Globalization.NumberStyles.HexNumber) - _userDefinedStartAddress;
-        // var saveFileDialog = SaveFileDialogue("Binary files (*.bin)|*.bin");
-        // if (saveFileDialog.ShowDialog() != DialogResult.OK) return;
         
-        
-        if (_data.Length > 0 && end <= _data.Length)
+        var saveFileDialog = await SaveFileDialogue("All files (*.*)|*.*|Binary files (*.bin)|*.bin");
+        if (saveFileDialog == null) { return; }
+        if (_data.Length <= 0 || end > _data.Length) { return; }
+        await using var fileStream = new FileStream(saveFileDialog.Path.AbsolutePath, FileMode.Create);
+        for (var i = start; i <= end; i++)
         {
-            using (var fileStream = new FileStream(fileName/*saveFileDialog.FileName*/, FileMode.Create))
-            {
-                for (var i = start; i <= end; i++)
-                {
-                    fileStream.WriteByte(_data[i]);
-                }
-            }
+            fileStream.WriteByte(_data[i]);
         }
-        
     }
    
     /// <summary>
-    ///
+    /// Export Bytes As Text Menu Item Clicked
     /// </summary>
     private void ExportBytesAsTextMenuItemClicked(object sender, RoutedEventArgs e)
     {
@@ -328,7 +329,7 @@ public partial class MainWindow : Window
 
         if (_data.Length > 0 && end <= _data.Length)
         {
-            for (int i = start; i <= end; i++)
+            for (var i = start; i <= end; i++)
             {
                 if (byteCounter != 8)
                 {
@@ -337,7 +338,7 @@ public partial class MainWindow : Window
                 }
                 else
                 {
-                    eightBytes = eightBytes.Remove(eightBytes.LastIndexOf(","), 2);
+                    eightBytes = eightBytes.Remove(eightBytes.LastIndexOf(','), 2);
                     dataStatements.Add(eightBytes);
                     eightBytes = "!byte $";
                     byteCounter = 0;
