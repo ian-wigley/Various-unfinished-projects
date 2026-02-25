@@ -16,7 +16,7 @@ public partial class LoadIntoMemoryLocationSelector : Window
     
     private void OnOkClick(object? sender, RoutedEventArgs e)
     {
-        Result = this.FindControl<TextBox>("StartAddressSelector")?.Text;
+        Result = this.FindControl<ComboBox>("StartAddressSelector")?.Text;
         Close(Result);
     }
 
