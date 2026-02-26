@@ -1,8 +1,8 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         x:Class="C64BinaryToAssemblyConverter.LoadIntoMemoryLocationSelector"
-        Width="400"
-        Height="200"
+        Width="380"
+        Height="140"
         WindowStartupLocation="CenterOwner"
         Title="Select Location"
         CanResize="False">
@@ -10,8 +10,20 @@
     <StackPanel Margin="20" Spacing="10">
         <TextBlock Text="Please select memory location to load the file into"/>
         
-        <TextBox x:Name="StartAddressSelector"/>
-
+        <!-- https://docs.avaloniaui.net/docs/reference/controls/combobox -->
+        <!-- https://github.com/AvaloniaUI/Avalonia/discussions/13301 -->
+        <ComboBox x:Name="StartAddressSelector" SelectedIndex="0" MaxDropDownHeight="100" SelectedValue="0800">
+            <ComboBoxItem>0800</ComboBoxItem>
+            <ComboBoxItem>1000</ComboBoxItem>
+            <ComboBoxItem>2000</ComboBoxItem>
+            <ComboBoxItem>3000</ComboBoxItem>
+            <ComboBoxItem>4000</ComboBoxItem>
+            <ComboBoxItem>5000</ComboBoxItem>
+            <ComboBoxItem>6000</ComboBoxItem>
+            <ComboBoxItem>7000</ComboBoxItem>
+            <ComboBoxItem>8000</ComboBoxItem>
+        </ComboBox>
+        
         <StackPanel Orientation="Horizontal" 
                     HorizontalAlignment="Right" 
                     Spacing="10">
