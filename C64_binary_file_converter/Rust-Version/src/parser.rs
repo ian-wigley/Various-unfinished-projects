@@ -46,8 +46,8 @@ pub mod parse {
             let mut pc: usize = 0;
             let starting_address = self.clone().convert_hex_string_to_int(&*start_address.clone()).unwrap();
 
-            while file_position < 0x500
-            // while file_position < self.hex_content.len()
+            //while file_position < 0x2f40
+            while file_position < self.hex_content.len()
             {
                 let line_number = starting_address as usize + file_position;
                 let op_code: String = self.hex_content[file_position].clone().to_uppercase();
@@ -59,24 +59,27 @@ pub mod parse {
 
                 let mut _two: String = String::new();
                 let mut _three: String = String::new();
+                let mut _four: String = String::new();
                 let mut _padding: String = String::new();
                 // _two = format!("{:<2}", "");
                 // _three = format!("{:<2}", "");
 
                 if num_bytes == 2 {
                     if self.is_branch(&mnemonic) {
+                        if &mnemonic == "BNE" {
+                            let _a = 0;
+                        }
                         let mut _u: u8 = self.file_content[pc + 1];
                         let mut _v: i8 = _u as i8;
-                        let _w: i32 = (_v + 2) as i32;
-                        let _s: i32 = (pc as i32) + _w;
-
-                        let mut _vv: i8 = ((self.file_content[pc + 1]) as i8) + 2;
-                        let _ss: i32 = (pc as i32) + _vv as i32;
+                        let _w: i32 = (_v as i32) + 2;
+                        let _s: i32 = (line_number as i32) + _w;
 
                         _two = "".to_owned();
-                        _three = format!("{:04X}", _s);
+                        _three = format!("{:02X}", _v);
+                        _four = format!("{:04X}", _s);
                     } else {
-                        _three = self.hex_content[pc + 1].clone().to_uppercase();
+                        // _three = self.hex_content[pc + 1].clone().to_uppercase();
+                        _four = self.hex_content[pc + 1].clone().to_uppercase();
                     }
                 }
                 if num_bytes == 3 {
@@ -106,7 +109,8 @@ pub mod parse {
                     mnemonic,
                     values[2],
                     _padding,
-                    _three,
+                    //_three,
+                    _four,
                     values[3]
                 );
                 buf.append(&code);
@@ -194,7 +198,6 @@ pub mod parse {
                 println!("assembly_code is empty");
                 return;
             }
-
 
             self.clone().initial_pass(
                 first_pass,
