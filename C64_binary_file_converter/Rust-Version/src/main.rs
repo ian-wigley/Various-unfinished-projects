@@ -1,6 +1,5 @@
 extern crate hex;
 
-use parser::parse::Parser;
 use fltk::frame::Frame;
 use fltk::menu::Choice;
 use fltk::{
@@ -14,6 +13,7 @@ use fltk::{
     window::Window,
 };
 use opcode::oc::Opcode;
+use parser::parse::Parser;
 use std::cell::RefCell;
 use std::env;
 use std::rc::Rc;
