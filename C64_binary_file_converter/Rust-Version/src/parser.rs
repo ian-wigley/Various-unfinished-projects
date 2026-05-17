@@ -61,14 +61,10 @@ pub mod parse {
                 let mut _three: String = String::new();
                 let mut _four: String = String::new();
                 let mut _padding: String = String::new();
-                // _two = format!("{:<2}", "");
-                // _three = format!("{:<2}", "");
 
                 if num_bytes == 2 {
                     if self.is_branch(&mnemonic) {
-                        if &mnemonic == "BNE" {
-                            let _a = 0;
-                        }
+
                         let mut _u: u8 = self.file_content[pc + 1];
                         let mut _v: i8 = _u as i8;
                         let _w: i32 = (_v as i32) + 2;
