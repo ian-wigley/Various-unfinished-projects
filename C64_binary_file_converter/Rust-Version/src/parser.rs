@@ -78,7 +78,7 @@ pub mod parse {
                         _three = format!("{:02X}", _v);
                         _four = format!("{:04X}", _s);
                     } else {
-                        // _three = self.hex_content[pc + 1].clone().to_uppercase();
+                        _three = self.hex_content[pc + 1].clone().to_uppercase();
                         _four = self.hex_content[pc + 1].clone().to_uppercase();
                     }
                 }
@@ -90,6 +90,11 @@ pub mod parse {
                         .unwrap();
                     _padding = _two.clone();
                     _three = self.hex_content[pc + 1]
+                        .to_uppercase()
+                        .as_str()
+                        .parse()
+                        .unwrap();
+                    _four = self.hex_content[pc + 1]
                         .to_uppercase()
                         .as_str()
                         .parse()
@@ -174,7 +179,6 @@ pub mod parse {
             start: &str,
             _end: &str,
             _replace_illegal_opcodes: bool,
-            /*Dictionary<string, string[]> bucket,*/
             _first_occurrence: i32,
             _last_occurrence: i32,
             right_display: TextDisplay,
@@ -336,6 +340,11 @@ pub mod parse {
                 let detail: Vec<&str> = pass_one[i].split_whitespace().collect();
                 if detail.len() > 1 {
                     let key: String = format!("{}", detail[1].replace("$", ""));
+
+                    println!("{}",i);
+                    if i == 11633{
+                        let _stop = true;
+                    }
                     if label_locations.contains_key(&key) && detail[0].contains("JSR")
                         || detail[0].contains("JMP")
                     {
