@@ -15,16 +15,18 @@ use fltk::{
 use opcode::oc::Opcode;
 use parser::parse::Parser;
 use std::cell::RefCell;
-use std::env;
 use std::rc::Rc;
+use std::{env, fs};
 
-mod parser;
+mod assembly_creator;
 mod opcode;
+mod parser;
 
 #[derive(Copy, Clone)]
 pub enum Message {
     Open,
-    SaveAs,
+    SaveLeftWindow,
+    SaveRightWindow,
     Quit,
 }
 
@@ -54,13 +56,23 @@ fn main() {
         s,
         Message::Open,
     );
+
     menu.add_emit(
-        "&File/Save as...\t",
+        "&File/Save.../Left Window\t",
         Shortcut::Ctrl | 'w',
         menu::MenuFlag::Normal,
         s,
-        Message::SaveAs,
+        Message::SaveLeftWindow,
     );
+
+    menu.add_emit(
+        "&File/Save.../Right Window\t",
+        Shortcut::Ctrl | 'w',
+        menu::MenuFlag::Normal,
+        s,
+        Message::SaveRightWindow,
+    );
+
     menu.add_emit(
         "&File/Quit\t",
         Shortcut::Ctrl | 'q',
@@ -73,15 +85,15 @@ fn main() {
     frame.set_label_size(12);
     frame.set_frame(FrameType::NoBox);
 
-    let mut but: Button = Button::new(380, 590, 80, 20, "Add labels");
+    let mut but: Button = Button::new(370, 590, 80, 20, "Add labels");
 
     wind.end();
     wind.show();
 
-    let converter = Rc::new(RefCell::new(Parser::new()));
+    let parser = Rc::new(RefCell::new(Parser::new()));
 
     but.set_callback({
-        let converter = converter.clone();
+        let converter = parser.clone();
         move |_| {
             click(
                 wind.to_owned(),
@@ -95,8 +107,9 @@ fn main() {
     while app.wait() {
         if let Some(msg) = r.recv() {
             match msg {
-                Message::Open => open(converter.clone(), left_display.clone(), frame.clone()),
-                Message::SaveAs => println!("SaveAs  selected"),
+                Message::Open => open(parser.clone(), left_display.clone(), frame.clone()),
+                Message::SaveLeftWindow => save_as(parser.clone()).expect("OK"),
+                Message::SaveRightWindow => println!("SaveRightWindow"),
                 Message::Quit => app.quit(),
             }
         }
@@ -104,19 +117,15 @@ fn main() {
     app.run().unwrap();
 }
 
-fn click(wind: Window, converter: Rc<RefCell<Parser>>, right_display: TextDisplay) {
-    wind.clone().set_label("TODO Add labels!");
-    converter
+fn click(_wind: Window, parser: Rc<RefCell<Parser>>, right_display: TextDisplay) {
+    // wind.clone().set_label("TODO Add labels!");
+    parser
         .borrow_mut()
+        .assembly_creator
         .add_labels("1000", "2000", true, 1, 2, right_display);
-    // println!("Added labels!");
 }
 
-fn open(
-    converter: Rc<RefCell<Parser>>,
-    left_display: TextDisplay,
-    mut frame: Frame,
-) {
+fn open(converter: Rc<RefCell<Parser>>, left_display: TextDisplay, mut frame: Frame) {
     let mut chooser =
         dialog::FileChooser::new(".", "*", dialog::FileChooserType::Single, "Select a file");
     chooser.show();
@@ -126,33 +135,48 @@ fn open(
         app::wait();
     }
 
-    if let Some(file_name) = chooser.value(1) {
-        let pos = file_name.rfind('/');
-        // println!("{:?}", pos);
-        let f = file_name.split_at(pos.unwrap() + 1).1;
-        // println!("Selected file: {}", f);
-        // println!("Selected file: {}", file_name);
-        frame.set_label(&f);
-    } else {
-        println!("No file selected");
+    match chooser.value(1) {
+        Some(file_name) => {
+            let pos = file_name.rfind('/');
+            let f = file_name.split_at(pos.unwrap() + 1).1;
+            frame.set_label(&f);
+            match memory_location_selector() {
+                Some(memory_location) => {
+                    converter.borrow_mut().init(&*file_name);
+                    let _data = converter
+                        .borrow_mut()
+                        .parse_file_content(left_display, memory_location);
+                    converter
+                        .borrow_mut()
+                        .assembly_creator
+                        .update_assembly_code(_data);
+                }
+                None => println!("Cancelled"),
+            }
+        }
+        None => println!("No file selected"),
     }
+}
 
-    let file_name = chooser.value(1).unwrap();
-    // frame.set_label(&file_name);
-    let start_address = memory_location_selector().unwrap();
-    // println!("Mls: {:?}", start_address);
-    converter.borrow_mut().init(&*file_name);
-    converter.borrow_mut().parse_file_content(left_display, start_address);
+fn save_as(parser: Rc<RefCell<Parser>>) -> std::io::Result<()> {
+    let _data = parser.borrow_mut().assembly_code.clone();
+    if _data.len() > 0 {
+        let contents = _data.join("");
+        fs::write("output.txt", contents)?;
+        println!("File written!");
+    }
+    Ok(())
 }
 
 fn memory_location_selector() -> Option<String> {
+    //Rc<RefCell<Option<String>>> {
     let mut dialog_win = Window::new(150, 150, 300, 200, "Memory Location");
     let mut frame = Frame::new(
         50,
         25,
         200,
         60,
-        "Please select memory location to load the file into",
+        "Please select memory location \n to load the file into",
     );
     frame.set_label_size(10);
 
@@ -160,21 +184,38 @@ fn memory_location_selector() -> Option<String> {
     memory_locations.add_choice("0400|0800|1000");
     memory_locations.set_value(1);
 
-    let mut ok_btn = Button::new(40, 120, 100, 35, "Ok");
-    let mut cancel_btn = Button::new(160, 120, 100, 35, "Cancel");
+    let mut ok_btn = Button::new(80, 120, 50, 25, "OK");
+    let mut cancel_btn = Button::new(160, 120, 50, 25, "Cancel");
     ok_btn.set_label_size(10);
 
-    ok_btn.set_callback({
-        let mut dialog_win = dialog_win.clone();
-        move |_| {
-            dialog_win.hide();
-        }
-    });
+    let result: Rc<RefCell<Option<String>>> = Rc::new(RefCell::new(None));
+    {
+        let result = result.clone();
+        let mut win = dialog_win.clone();
+        let choice = memory_locations.choice().clone();
 
-    cancel_btn.set_callback({
-        let mut dialog_win = dialog_win.clone();
-        move |_| dialog_win.hide()
-    });
+        ok_btn.set_callback(move |_| {
+            *result.borrow_mut() = Some(choice.clone().unwrap());
+            win.hide();
+        });
+    }
+
+    {
+        let result = result.clone();
+        let mut win = dialog_win.clone();
+
+        cancel_btn.set_callback(move |_| {
+            *result.borrow_mut() = None;
+            win.hide();
+        });
+    }
+
+    // cancel_btn.set_callback({
+    //     let mut dialog_win = dialog_win.clone();
+    //     move |_| {
+    //         dialog_win.hide()
+    //     }
+    // });
 
     dialog_win.end();
     dialog_win.show();
@@ -183,5 +224,9 @@ fn memory_location_selector() -> Option<String> {
         app::wait();
     }
 
-    memory_locations.choice()
+    let value = result.borrow().clone();
+    value
+
+    //result
+    //result.borrow().clone()
 }
