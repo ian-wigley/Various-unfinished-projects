@@ -169,7 +169,6 @@ fn save_as(parser: Rc<RefCell<Parser>>) -> std::io::Result<()> {
 }
 
 fn memory_location_selector() -> Option<String> {
-    //Rc<RefCell<Option<String>>> {
     let mut dialog_win = Window::new(150, 150, 300, 200, "Memory Location");
     let mut frame = Frame::new(
         50,
@@ -199,7 +198,6 @@ fn memory_location_selector() -> Option<String> {
             win.hide();
         });
     }
-
     {
         let result = result.clone();
         let mut win = dialog_win.clone();
@@ -210,13 +208,6 @@ fn memory_location_selector() -> Option<String> {
         });
     }
 
-    // cancel_btn.set_callback({
-    //     let mut dialog_win = dialog_win.clone();
-    //     move |_| {
-    //         dialog_win.hide()
-    //     }
-    // });
-
     dialog_win.end();
     dialog_win.show();
 
@@ -226,7 +217,4 @@ fn memory_location_selector() -> Option<String> {
 
     let value = result.borrow().clone();
     value
-
-    //result
-    //result.borrow().clone()
 }
