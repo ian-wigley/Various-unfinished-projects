@@ -19,6 +19,7 @@ pub mod parse {
         hex_content: Vec<String>,
         file_content: Vec<u8>,
         pub(crate) assembly_code: Vec<String>,
+        pub(crate) line_numbers: Vec<String>,
     }
 
     impl Parser {
@@ -30,6 +31,7 @@ pub mod parse {
                 hex_content: Vec::new(),
                 file_content: Vec::new(),
                 assembly_code: Vec::new(),
+                line_numbers: Vec::new(),
             }
         }
 
@@ -41,10 +43,12 @@ pub mod parse {
             self.hex_content = self.parse_content(self.file_content.clone());
         }
 
-        pub(crate) fn parse_file_content(&mut self, display: TextDisplay, start_address: String) -> Vec<String> {
+        pub(crate) fn parse_file_content(
+            &mut self, display: TextDisplay,
+            start_address: String
+        ) -> Vec<String> {
             let mut display_text: TextDisplay = display;
             let mut buf: TextBuffer = TextBuffer::default();
-
             let mut file_position: usize = 0;
             let mut pc: usize = 0;
             let starting_address = self.clone().convert_hex_string_to_int(&*start_address.clone()).unwrap();
@@ -52,6 +56,7 @@ pub mod parse {
             while file_position < self.hex_content.len()
             {
                 let line_number = starting_address as usize + file_position;
+                self.line_numbers.push(format!("{:04X}", line_number));
                 let op_code: String = self.hex_content[file_position].clone().to_uppercase();
                 let values: [&str; 5] = self
                     .opcode
@@ -64,7 +69,7 @@ pub mod parse {
                 let mut _four: String = String::new();
                 let mut _padding: String = String::new();
 
-                if num_bytes == 2 {
+                if num_bytes == 2 && pc + 1 <= self.file_content.len() {
                     if self.isa_branch(&mnemonic) {
                         let mut _u: u8 = self.file_content[pc + 1];
                         let mut _v: i8 = _u as i8;
@@ -79,7 +84,7 @@ pub mod parse {
                         _four = self.hex_content[pc + 1].clone().to_uppercase();
                     }
                 }
-                if num_bytes == 3 {
+                if num_bytes == 3 && pc + 2 <= self.file_content.len() {
                     _two = self.hex_content[pc + 2]
                         .to_uppercase()
                         .as_str()
