@@ -6,12 +6,18 @@ pub mod ac {
     #[derive(Clone)]
     pub(crate) struct AssemblyCreator {
         assembly_code: Vec<String>,
+        pub(crate) pass_three: Vec<String>,
+        branch: String,
+        label: String,
     }
 
     impl AssemblyCreator {
         pub fn new() -> AssemblyCreator {
             AssemblyCreator {
                 assembly_code: Vec::new(),
+                pass_three: Vec::new(),
+                branch: String::from("branch"),
+                label: String::from("label"),
             }
         }
         pub(crate) fn update_assembly_code(&mut self, assembly_code: Vec<String>) {
@@ -20,27 +26,24 @@ pub mod ac {
 
         pub(crate) fn add_labels(
             &mut self,
-            start: &str,
-            _end: &str,
+            start: i32,
+            end: i32,
+            start_memory_location: &str,
             _replace_illegal_opcodes: bool,
             _first_occurrence: i32,
             _last_occurrence: i32,
             right_display: TextDisplay,
         ) {
-            let branch: &str = "branch";
             let label_count: i32 = 0;
             let branch_count: i32 = 0;
             let mut jump_label_locations: HashMap<String, String> = HashMap::new();
             let mut branch_label_locations: HashMap<String, String> = HashMap::new();
             let mut buf: TextBuffer = TextBuffer::default();
             let first_pass: bool = true;
-            let count: usize = 0;
+            let count: usize = start as usize;
             let mut pass_one: Vec<String> = Vec::new();
             let mut pass_two: Vec<String> = Vec::new();
-            let mut pass_three: Vec<String> = Vec::new();
             let mut found: Vec<String> = Vec::new();
-            let label: &str = "label";
-            pass_three.push(format!("{:<20}*=${}", "", start));
 
             if self.assembly_code.is_empty() {
                 println!("assembly_code is empty");
@@ -50,12 +53,11 @@ pub mod ac {
             self.clone().initial_pass(
                 first_pass,
                 count,
+                end as usize,
                 &mut jump_label_locations,
-                label,
                 label_count,
                 &mut pass_one,
                 &mut branch_label_locations,
-                branch,
                 branch_count,
             );
 
@@ -66,25 +68,26 @@ pub mod ac {
                 &mut pass_two,
             );
 
-            self.clone().final_pass(
+            self.pass_three = self.clone().final_pass(
                 &pass_one,
                 &jump_label_locations,
                 &mut found,
                 branch_label_locations,
-                &mut pass_three,
-                pass_two,
+                &pass_two,
+                start_memory_location,
             );
 
             // Finally iterate through the found list & add references to the address not found
             for mem_location in jump_label_locations.clone() {
                 if !found.contains(&mem_location.0) {
-                    pass_three.push(format!("{} = ${}", mem_location.1, mem_location.0));
+                    self.pass_three
+                        .push(format!("{} = ${}", mem_location.1, mem_location.0));
                 }
             }
 
             // TO-DO
-            for i in 0..pass_three.len() {
-                let code = format!("{}\n", &pass_three[i]);
+            for i in 0..self.pass_three.len() {
+                let code = format!("{}\n", &self.pass_three[i]);
                 buf.append(&code);
             }
             let mut display = right_display.clone();
@@ -95,12 +98,11 @@ pub mod ac {
             self,
             mut first_pass: bool,
             mut count: usize,
+            end: usize,
             label_loc: &mut HashMap<String, String>,
-            label: &str,
             mut label_count: i32,
             pass_one: &mut Vec<String>,
             branch_loc: &mut HashMap<String, String>,
-            branch: &str,
             mut branch_count: i32,
         ) {
             // First pass parses the content looking for branch & jump conditions
@@ -128,7 +130,7 @@ pub mod ac {
                                     // let address = line_detail[5].replace("$", "");
                                     label_loc.insert(
                                         format!("{}", line_detail[5].replace("$", "")),
-                                        format!("{}{}", label, label_count),
+                                        format!("{}{}", self.label, label_count),
                                     );
                                     label_count += 1;
                                 }
@@ -145,7 +147,7 @@ pub mod ac {
                                 {
                                     branch_loc.insert(
                                         format!("{}", line_detail[4].replace("$", "")),
-                                        format!("{}{}", branch, branch_count),
+                                        format!("{}{}", self.branch, branch_count),
                                     );
                                     branch_count += 1;
                                 }
@@ -165,7 +167,7 @@ pub mod ac {
                     }
                 }
                 count += 1;
-                if count >= self.assembly_code.len() {
+                if count > end || count >= self.assembly_code.len() {
                     first_pass = false;
                 }
             }
@@ -208,26 +210,29 @@ pub mod ac {
                 }
                 pass_two.push(assembly);
                 index += 1;
-                if index >= pass_two.len() {
+                if index >= pass_one.len() {
                     second_pass = false;
                 }
             }
         }
 
         fn final_pass(
-            self,
+            &mut self,
             pass_one: &Vec<String>,
             jump_label_loc: &HashMap<String, String>,
             found: &mut Vec<String>,
             branch_label_loc: HashMap<String, String>,
-            pass_three: &mut Vec<String>,
-            pass_two: Vec<String>,
-        ) {
+            pass_two: &Vec<String>,
+            start_memory_location: &str,
+        ) -> Vec<String> {
             // Third pass adds the branch labels to the front of the code
-            let mut counter: usize = 0;
-            for i in 0..pass_one.len() - 1 {
-                let copy: String = self.assembly_code[counter].clone();
-                counter += 1;
+            let mut pass_three: Vec<String> = Vec::new();
+            pass_three.push(format!("{:<20}*=${:04}", "", start_memory_location));
+            let mut third_pass: bool = true;
+            let mut index: usize = 0;
+            while third_pass {
+                let copy: String = self.assembly_code[index].clone();
+                index += 1;
                 let detail: Vec<String> = copy.split_whitespace().map(str::to_string).collect();
                 let mut label: String = String::from("");
                 if detail.len() > 1 {
@@ -245,11 +250,18 @@ pub mod ac {
                 let offset: usize = if label.len() == 0 {
                     20
                 } else {
-                    20 - (label.len() - 2)
+                    20 // - 2 //(label.len() - 2)
                 };
-                // println!("{}", index);
-                pass_three.push(format!("{:offset$}{}", label, pass_two[i].clone()));
+
+                //println!("Offset: {}", offset);
+
+                if index >= pass_one.len() {
+                    third_pass = false;
+                } else {
+                    pass_three.push(format!("{:offset$}{}", label, pass_two[index].clone()));
+                }
             }
+            pass_three
         }
     }
 }
