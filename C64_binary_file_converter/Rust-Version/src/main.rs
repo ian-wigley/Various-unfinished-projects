@@ -17,6 +17,8 @@ use parser::parse::Parser;
 use std::cell::RefCell;
 use std::rc::Rc;
 use std::{env, fs};
+use fltk::app::Receiver;
+use fltk::dialog::{FileDialog, FileDialogType, NativeFileChooser};
 
 mod assembly_creator;
 mod opcode;
@@ -27,6 +29,8 @@ pub enum Message {
     Open,
     SaveLeftWindow,
     SaveRightWindow,
+    ExportBinary,
+    ExportText,
     Quit,
 }
 
@@ -46,6 +50,47 @@ fn main() {
     let left_display: TextDisplay = TextDisplay::new(5, 35, 400, 550, None);
     let right_display: TextDisplay = TextDisplay::new(415, 35, 400, 550, None);
 
+    let r = configure_menu_bar();
+
+    let mut frame = Frame::new(360, 10, 140, 20, "");
+    frame.set_label_size(12);
+    frame.set_frame(FrameType::NoBox);
+
+    let mut but: Button = Button::new(350, 590, 120, 20, "Generate labels");
+
+    wind.end();
+    wind.show();
+
+    let parser = Rc::new(RefCell::new(Parser::new()));
+
+    but.set_callback({
+        let converter = parser.clone();
+        move |_| {
+            click(
+                wind.to_owned(),
+                converter.to_owned(),
+                right_display.to_owned(),
+            )
+        }
+    });
+    but.activate();
+
+    while app.wait() {
+        if let Some(msg) = r.recv() {
+            match msg {
+                Message::Open => open(parser.clone(), left_display.clone(), frame.clone()),
+                Message::SaveLeftWindow => save_left_window(parser.clone()).expect("OK"),
+                Message::SaveRightWindow => save_right_window(parser.clone()).expect("OK"),
+                Message::ExportBinary => println!("ExportBinary"),
+                Message::ExportText => println!("ExportText"),
+                Message::Quit => app.quit(),
+            }
+        }
+    }
+    app.run().unwrap();
+}
+
+fn configure_menu_bar() -> Receiver<Message> {
     let (s, r) = app::channel::<Message>();
     let mut menu: menu::SysMenuBar = menu::SysMenuBar::default().with_size(800, 20);
     menu.set_frame(FrameType::FlatBox);
@@ -74,55 +119,55 @@ fn main() {
     );
 
     menu.add_emit(
+        "&File/Export Bytes/As Binary\t",
+        Shortcut::Ctrl | 'w',
+        menu::MenuFlag::Normal,
+        s,
+        Message::ExportBinary,
+    );
+
+    menu.add_emit(
+        "&File/Export Bytes/As Text\t",
+        Shortcut::Ctrl | 'w',
+        menu::MenuFlag::Normal,
+        s,
+        Message::ExportText,
+    );
+
+    menu.add_emit(
         "&File/Quit\t",
         Shortcut::Ctrl | 'q',
         menu::MenuFlag::Normal,
         s,
         Message::Quit,
     );
-
-    let mut frame = Frame::new(360, 10, 140, 20, "");
-    frame.set_label_size(12);
-    frame.set_frame(FrameType::NoBox);
-
-    let mut but: Button = Button::new(370, 590, 80, 20, "Add labels");
-
-    wind.end();
-    wind.show();
-
-    let parser = Rc::new(RefCell::new(Parser::new()));
-
-    but.set_callback({
-        let converter = parser.clone();
-        move |_| {
-            click(
-                wind.to_owned(),
-                converter.to_owned(),
-                right_display.to_owned(),
-            )
-        }
-    });
-    but.activate();
-
-    while app.wait() {
-        if let Some(msg) = r.recv() {
-            match msg {
-                Message::Open => open(parser.clone(), left_display.clone(), frame.clone()),
-                Message::SaveLeftWindow => save_as(parser.clone()).expect("OK"),
-                Message::SaveRightWindow => println!("SaveRightWindow"),
-                Message::Quit => app.quit(),
-            }
-        }
-    }
-    app.run().unwrap();
+    r
 }
 
 fn click(_wind: Window, parser: Rc<RefCell<Parser>>, right_display: TextDisplay) {
-    // wind.clone().set_label("TODO Add labels!");
+
+    // TODO use a custom chooser to allow the user selection for start/end addresses
+    let start_memory_location = "0800";
+    let start = get_index(start_memory_location, &parser);
+    let end = get_index("1000", &parser);
+
     parser
         .borrow_mut()
         .assembly_creator
-        .add_labels("1000", "2000", true, 1, 2, right_display);
+        .add_labels(start, end, start_memory_location,
+                    true,1,2, right_display);
+}
+
+fn get_index(start_text: &str, parser: &Rc<RefCell<Parser>>) -> i32
+{
+    let line_numbers = parser.borrow().line_numbers.clone();
+    let index = line_numbers.iter().position(|x| x.contains(start_text));
+    index.unwrap() as i32
+
+    // match index {
+    //     Some(i) => return index.unwrap() as i32,
+    //     None => println!("Not found"),
+    // }
 }
 
 fn open(converter: Rc<RefCell<Parser>>, left_display: TextDisplay, mut frame: Frame) {
@@ -158,14 +203,44 @@ fn open(converter: Rc<RefCell<Parser>>, left_display: TextDisplay, mut frame: Fr
     }
 }
 
-fn save_as(parser: Rc<RefCell<Parser>>) -> std::io::Result<()> {
-    let _data = parser.borrow_mut().assembly_code.clone();
-    if _data.len() > 0 {
-        let contents = _data.join("");
-        fs::write("output.txt", contents)?;
-        println!("File written!");
+fn save_left_window(parser: Rc<RefCell<Parser>>) -> std::io::Result<()> {
+
+    let title ="Save left window content";
+    let chooser = display_save_dialogue(title);
+
+    let filename = chooser.filename();
+    if !filename.to_string_lossy().is_empty() {
+        let _data = parser.borrow_mut().assembly_code.clone();
+        if _data.len() > 0 {
+            let contents = _data.join("");
+            fs::write(filename, contents)?;
+        }
     }
     Ok(())
+}
+
+fn save_right_window(parser: Rc<RefCell<Parser>>) -> std::io::Result<()> {
+    let title ="Save right window content";
+    let chooser = display_save_dialogue(title);
+
+    let filename = chooser.filename();
+    if !filename.to_string_lossy().is_empty() {
+        let _data = parser.borrow_mut().assembly_creator.pass_three.clone();
+        if _data.len() > 0 {
+            let contents = _data.join("\n");
+            fs::write(filename, contents)?;
+        }
+    }
+    Ok(())
+}
+
+fn display_save_dialogue(title: &str) -> FileDialog {
+    let mut chooser = NativeFileChooser::new(FileDialogType::BrowseSaveFile);
+    chooser.set_title(title);
+    chooser.set_filter("Text Files\t*.txt");
+    chooser.set_preset_file("output.txt");
+    chooser.show();
+    chooser
 }
 
 fn memory_location_selector() -> Option<String> {
@@ -180,7 +255,7 @@ fn memory_location_selector() -> Option<String> {
     frame.set_label_size(10);
 
     let mut memory_locations = Choice::new(120, 80, 60, 30, "$");
-    memory_locations.add_choice("0400|0800|1000");
+    memory_locations.add_choice("0400|0800|1000|3000|4000");
     memory_locations.set_value(1);
 
     let mut ok_btn = Button::new(80, 120, 50, 25, "OK");
@@ -191,10 +266,9 @@ fn memory_location_selector() -> Option<String> {
     {
         let result = result.clone();
         let mut win = dialog_win.clone();
-        let choice = memory_locations.choice().clone();
-
         ok_btn.set_callback(move |_| {
-            *result.borrow_mut() = Some(choice.clone().unwrap());
+            let choice = memory_locations.choice().clone();
+            *result.borrow_mut() = Some(choice.unwrap());
             win.hide();
         });
     }
