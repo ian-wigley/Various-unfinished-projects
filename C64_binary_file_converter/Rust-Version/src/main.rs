@@ -81,8 +81,8 @@ fn main() {
                 Message::Open => open(parser.clone(), left_display.clone(), frame.clone()),
                 Message::SaveLeftWindow => save_left_window(parser.clone()).expect("OK"),
                 Message::SaveRightWindow => save_right_window(parser.clone()).expect("OK"),
-                Message::ExportBinary => println!("ExportBinary"),
-                Message::ExportText => println!("ExportText"),
+                Message::ExportBinary => save_binary(parser.clone()).expect("OK"),
+                Message::ExportText => save_text(parser.clone()).expect("OK"),
                 Message::Quit => app.quit(),
             }
         }
@@ -91,14 +91,14 @@ fn main() {
 }
 
 fn configure_menu_bar() -> Receiver<Message> {
-    let (s, r) = app::channel::<Message>();
+    let (sender, receiver) = app::channel::<Message>();
     let mut menu: menu::SysMenuBar = menu::SysMenuBar::default().with_size(800, 20);
     menu.set_frame(FrameType::FlatBox);
     menu.add_emit(
         "&File/Open...\t",
         Shortcut::Ctrl | 'o',
         menu::MenuFlag::Normal,
-        s,
+        sender,
         Message::Open,
     );
 
@@ -106,7 +106,7 @@ fn configure_menu_bar() -> Receiver<Message> {
         "&File/Save.../Left Window\t",
         Shortcut::Ctrl | 'w',
         menu::MenuFlag::Normal,
-        s,
+        sender,
         Message::SaveLeftWindow,
     );
 
@@ -114,7 +114,7 @@ fn configure_menu_bar() -> Receiver<Message> {
         "&File/Save.../Right Window\t",
         Shortcut::Ctrl | 'w',
         menu::MenuFlag::Normal,
-        s,
+        sender,
         Message::SaveRightWindow,
     );
 
@@ -122,7 +122,7 @@ fn configure_menu_bar() -> Receiver<Message> {
         "&File/Export Bytes/As Binary\t",
         Shortcut::Ctrl | 'w',
         menu::MenuFlag::Normal,
-        s,
+        sender,
         Message::ExportBinary,
     );
 
@@ -130,7 +130,7 @@ fn configure_menu_bar() -> Receiver<Message> {
         "&File/Export Bytes/As Text\t",
         Shortcut::Ctrl | 'w',
         menu::MenuFlag::Normal,
-        s,
+        sender,
         Message::ExportText,
     );
 
@@ -138,10 +138,10 @@ fn configure_menu_bar() -> Receiver<Message> {
         "&File/Quit\t",
         Shortcut::Ctrl | 'q',
         menu::MenuFlag::Normal,
-        s,
+        sender,
         Message::Quit,
     );
-    r
+    receiver
 }
 
 fn click(_wind: Window, parser: Rc<RefCell<Parser>>, right_display: TextDisplay) {
@@ -242,6 +242,10 @@ fn display_save_dialogue(title: &str) -> FileDialog {
     chooser.show();
     chooser
 }
+
+fn save_binary(parser: Rc<RefCell<Parser>>) -> std::io::Result<()> { Ok (()) }
+
+fn save_text(parser: Rc<RefCell<Parser>>) -> std::io::Result<()> { Ok (()) }
 
 fn memory_location_selector() -> Option<String> {
     let mut dialog_win = Window::new(150, 150, 300, 200, "Memory Location");
