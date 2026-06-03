@@ -1,5 +1,7 @@
 extern crate hex;
 
+use fltk::app::Receiver;
+use fltk::dialog::{FileDialog, FileDialogType, NativeFileChooser};
 use fltk::frame::Frame;
 use fltk::menu::Choice;
 use fltk::{
@@ -17,8 +19,6 @@ use parser::parse::Parser;
 use std::cell::RefCell;
 use std::rc::Rc;
 use std::{env, fs};
-use fltk::app::Receiver;
-use fltk::dialog::{FileDialog, FileDialogType, NativeFileChooser};
 
 mod assembly_creator;
 mod opcode;
@@ -145,21 +145,23 @@ fn configure_menu_bar() -> Receiver<Message> {
 }
 
 fn click(_wind: Window, parser: Rc<RefCell<Parser>>, right_display: TextDisplay) {
-
     // TODO use a custom chooser to allow the user selection for start/end addresses
     let start_memory_location = "0800";
     let start = get_index(start_memory_location, &parser);
     let end = get_index("1000", &parser);
 
-    parser
-        .borrow_mut()
-        .assembly_creator
-        .add_labels(start, end, start_memory_location,
-                    true,1,2, right_display);
+    parser.borrow_mut().assembly_creator.add_labels(
+        start,
+        end,
+        start_memory_location,
+        true,
+        1,
+        2,
+        right_display,
+    );
 }
 
-fn get_index(start_text: &str, parser: &Rc<RefCell<Parser>>) -> i32
-{
+fn get_index(start_text: &str, parser: &Rc<RefCell<Parser>>) -> i32 {
     let line_numbers = parser.borrow().line_numbers.clone();
     let index = line_numbers.iter().position(|x| x.contains(start_text));
     index.unwrap() as i32
@@ -204,9 +206,8 @@ fn open(converter: Rc<RefCell<Parser>>, left_display: TextDisplay, mut frame: Fr
 }
 
 fn save_left_window(parser: Rc<RefCell<Parser>>) -> std::io::Result<()> {
-
-    let title ="Save left window content";
-    let chooser = display_save_dialogue(title);
+    let title = "Save left window content";
+    let chooser = display_save_dialogue(title, "ASM Files\t*.asm", "output.asm");
 
     let filename = chooser.filename();
     if !filename.to_string_lossy().is_empty() {
@@ -220,8 +221,8 @@ fn save_left_window(parser: Rc<RefCell<Parser>>) -> std::io::Result<()> {
 }
 
 fn save_right_window(parser: Rc<RefCell<Parser>>) -> std::io::Result<()> {
-    let title ="Save right window content";
-    let chooser = display_save_dialogue(title);
+    let title = "Save right window content";
+    let chooser = display_save_dialogue(title, "ASM Files\t*.asm", "output.asm");
 
     let filename = chooser.filename();
     if !filename.to_string_lossy().is_empty() {
@@ -234,18 +235,26 @@ fn save_right_window(parser: Rc<RefCell<Parser>>) -> std::io::Result<()> {
     Ok(())
 }
 
-fn display_save_dialogue(title: &str) -> FileDialog {
+fn save_binary(parser: Rc<RefCell<Parser>>) -> std::io::Result<()> {
+    let title = "Save selected memory as Binary";
+    let _chooser = display_save_dialogue(title, "Binary Files\t*.bin", "output.bin");
+    Ok(())
+}
+
+fn save_text(parser: Rc<RefCell<Parser>>) -> std::io::Result<()> {
+    let title = "Save selected memory as Text";
+    let _chooser = display_save_dialogue(title, "Text Files\t*.txt", "output.txt");
+    Ok(())
+}
+
+fn display_save_dialogue(title: &str, filter: &str, preset: &str) -> FileDialog {
     let mut chooser = NativeFileChooser::new(FileDialogType::BrowseSaveFile);
     chooser.set_title(title);
-    chooser.set_filter("Text Files\t*.txt");
-    chooser.set_preset_file("output.txt");
+    chooser.set_filter(filter);
+    chooser.set_preset_file(preset);
     chooser.show();
     chooser
 }
-
-fn save_binary(parser: Rc<RefCell<Parser>>) -> std::io::Result<()> { Ok (()) }
-
-fn save_text(parser: Rc<RefCell<Parser>>) -> std::io::Result<()> { Ok (()) }
 
 fn memory_location_selector() -> Option<String> {
     let mut dialog_win = Window::new(150, 150, 300, 200, "Memory Location");
