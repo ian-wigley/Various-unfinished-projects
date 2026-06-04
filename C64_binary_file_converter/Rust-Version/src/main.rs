@@ -3,11 +3,11 @@ extern crate hex;
 use fltk::app::Receiver;
 use fltk::dialog::{FileDialog, FileDialogType, NativeFileChooser};
 use fltk::frame::Frame;
-use fltk::menu::Choice;
+use fltk::menu::{Choice, SysMenuBar};
 use fltk::{
     app,
-    button::Button,
-    dialog,
+    button::Button
+    ,
     enums::{Font, FrameType, Shortcut},
     menu,
     prelude::*,
@@ -50,7 +50,7 @@ fn main() {
     let left_display: TextDisplay = TextDisplay::new(5, 35, 400, 550, None);
     let right_display: TextDisplay = TextDisplay::new(415, 35, 400, 550, None);
 
-    let r = configure_menu_bar();
+    let (menu, receiver) = configure_menu_bar();
 
     let mut frame = Frame::new(360, 10, 140, 20, "");
     frame.set_label_size(12);
@@ -73,12 +73,21 @@ fn main() {
             )
         }
     });
-    but.activate();
+    but.deactivate();
 
     while app.wait() {
-        if let Some(msg) = r.recv() {
+        if let Some(msg) = receiver.recv() {
             match msg {
-                Message::Open => open(parser.clone(), left_display.clone(), frame.clone()),
+                Message::Open => {
+                    open(parser.clone(), left_display.clone(), frame.clone());
+                    but.clone().activate();
+                    if let Some(mut item) = menu.find_item("&File/Save...") {
+                        item.activate();
+                    }
+                    if let Some(mut item) = menu.find_item("&File/Export Bytes") {
+                        item.activate();
+                    }
+                },
                 Message::SaveLeftWindow => save_left_window(parser.clone()).expect("OK"),
                 Message::SaveRightWindow => save_right_window(parser.clone()).expect("OK"),
                 Message::ExportBinary => save_binary(parser.clone()).expect("OK"),
@@ -90,7 +99,7 @@ fn main() {
     app.run().unwrap();
 }
 
-fn configure_menu_bar() -> Receiver<Message> {
+fn configure_menu_bar() -> (SysMenuBar, Receiver<Message>) {
     let (sender, receiver) = app::channel::<Message>();
     let mut menu: menu::SysMenuBar = menu::SysMenuBar::default().with_size(800, 20);
     menu.set_frame(FrameType::FlatBox);
@@ -141,7 +150,14 @@ fn configure_menu_bar() -> Receiver<Message> {
         sender,
         Message::Quit,
     );
-    receiver
+
+    if let Some(mut item) = menu.find_item("&File/Save...") {
+        item.deactivate();
+    }
+    if let Some(mut item) = menu.find_item("&File/Export Bytes") {
+        item.deactivate();
+    }
+    (menu, receiver)
 }
 
 fn click(_wind: Window, parser: Rc<RefCell<Parser>>, right_display: TextDisplay) {
@@ -173,35 +189,32 @@ fn get_index(start_text: &str, parser: &Rc<RefCell<Parser>>) -> i32 {
 }
 
 fn open(converter: Rc<RefCell<Parser>>, left_display: TextDisplay, mut frame: Frame) {
-    let mut chooser =
-        dialog::FileChooser::new(".", "*", dialog::FileChooserType::Single, "Select a file");
+    let mut chooser = NativeFileChooser::new(FileDialogType::BrowseFile);
+    chooser.set_title("Select a file");
+    chooser.set_filter("Binary Files\t*.bin");
+    chooser.set_preset_file("*.bin");
     chooser.show();
-    chooser.window().set_pos(300, 300);
 
-    while chooser.shown() {
-        app::wait();
-    }
+    let file_path = chooser.filename();
+    let full_path = file_path.to_string_lossy().to_string();
+    let filename  = file_path.file_name()
+        .and_then(|f| f.to_str())
+        .unwrap_or("unknown");
 
-    match chooser.value(1) {
-        Some(file_name) => {
-            let pos = file_name.rfind('/');
-            let f = file_name.split_at(pos.unwrap() + 1).1;
-            frame.set_label(&f);
-            match memory_location_selector() {
-                Some(memory_location) => {
-                    converter.borrow_mut().init(&*file_name);
-                    let _data = converter
-                        .borrow_mut()
-                        .parse_file_content(left_display, memory_location);
-                    converter
-                        .borrow_mut()
-                        .assembly_creator
-                        .update_assembly_code(_data);
-                }
-                None => println!("Cancelled"),
-            }
+    frame.set_label(&filename);
+
+    match memory_location_selector() {
+        Some(memory_location) => {
+            converter.borrow_mut().init(&*full_path.clone());
+            let _data = converter
+                .borrow_mut()
+                .parse_file_content(left_display, memory_location);
+            converter
+                .borrow_mut()
+                .assembly_creator
+                .update_assembly_code(_data);
         }
-        None => println!("No file selected"),
+        None => println!("Cancelled"),
     }
 }
 
