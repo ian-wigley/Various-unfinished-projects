@@ -3,13 +3,13 @@ extern crate hex;
 use fltk::app::Receiver;
 use fltk::dialog::{FileDialog, FileDialogType, NativeFileChooser};
 use fltk::frame::Frame;
+use fltk::group::{Flex, Group, Tabs};
 use fltk::menu::{Choice, SysMenuBar};
 use fltk::{
     app,
-    button::Button
-    ,
+    button::Button,
     enums::{Font, FrameType, Shortcut},
-    menu,
+    group, menu,
     prelude::*,
     text::TextDisplay,
     window::Window,
@@ -45,7 +45,7 @@ fn main() {
     Font::set_font(Font::Helvetica, &font);
     app::set_font_size(12);
     let mut wind: fltk::window::DoubleWindow =
-        Window::new(100, 100, 820, 620, "C64 Binary to Assembly Converter");
+        Window::new(100, 100, 820, 820, "C64 Binary to Assembly Converter");
 
     let left_display: TextDisplay = TextDisplay::new(5, 35, 400, 550, None);
     let right_display: TextDisplay = TextDisplay::new(415, 35, 400, 550, None);
@@ -57,6 +57,14 @@ fn main() {
     frame.set_frame(FrameType::NoBox);
 
     let mut but: Button = Button::new(350, 590, 120, 20, "Generate labels");
+
+    // https://www.youtube.com/watch?v=X4CD-pDdOrk &https://www.seriss.com/people/erco/fltk/#TabsExample
+    let tabs: Tabs = Tabs::new(20, 620, 800 - 20, 200 - 45, "");
+    let tab1 = Group::new(10, 640, 800 - 20, 200 - 45, "Assembly Viewer\n");
+    tab1.end();
+    let tab2 = Group::new(0, 640, 800 - 10, 200 - 35, "Bitmap Viewer\n");
+    tab2.end();
+    tabs.end();
 
     wind.end();
     wind.show();
@@ -87,7 +95,7 @@ fn main() {
                     if let Some(mut item) = menu.find_item("&File/Export Bytes") {
                         item.activate();
                     }
-                },
+                }
                 Message::SaveLeftWindow => save_left_window(parser.clone()).expect("OK"),
                 Message::SaveRightWindow => save_right_window(parser.clone()).expect("OK"),
                 Message::ExportBinary => save_binary(parser.clone()).expect("OK"),
@@ -197,7 +205,8 @@ fn open(converter: Rc<RefCell<Parser>>, left_display: TextDisplay, mut frame: Fr
 
     let file_path = chooser.filename();
     let full_path = file_path.to_string_lossy().to_string();
-    let filename  = file_path.file_name()
+    let filename = file_path
+        .file_name()
         .and_then(|f| f.to_str())
         .unwrap_or("unknown");
 
