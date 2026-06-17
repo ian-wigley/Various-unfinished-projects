@@ -63,6 +63,8 @@ fn main() {
     let tab1 = Group::new(10, 640, 800 - 20, 200 - 45, "Assembly Viewer\n");
     tab1.end();
     let tab2 = Group::new(0, 640, 800 - 10, 200 - 35, "Bitmap Viewer\n");
+    let mut frame = Frame::default().with_size(300, 200).center_of(&tab2);
+    frame.set_frame(FrameType::EngravedBox);
     tab2.end();
     tabs.end();
 
