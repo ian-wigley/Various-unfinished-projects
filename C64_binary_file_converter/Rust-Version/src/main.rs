@@ -1,15 +1,16 @@
 extern crate hex;
 
+use bitmap_viewer::bitmap_viewer::C64Bitmap;
 use fltk::app::Receiver;
 use fltk::dialog::{FileDialog, FileDialogType, NativeFileChooser};
 use fltk::frame::Frame;
-use fltk::group::{Flex, Group, Tabs};
+use fltk::group::{Group, Tabs};
 use fltk::menu::{Choice, SysMenuBar};
 use fltk::{
     app,
     button::Button,
     enums::{Font, FrameType, Shortcut},
-    group, menu,
+    menu,
     prelude::*,
     text::TextDisplay,
     window::Window,
@@ -21,6 +22,7 @@ use std::rc::Rc;
 use std::{env, fs};
 
 mod assembly_creator;
+mod bitmap_viewer;
 mod opcode;
 mod parser;
 
@@ -45,7 +47,7 @@ fn main() {
     Font::set_font(Font::Helvetica, &font);
     app::set_font_size(12);
     let mut wind: fltk::window::DoubleWindow =
-        Window::new(100, 100, 820, 820, "C64 Binary to Assembly Converter");
+        Window::new(100, 100, 860, 860, "C64 Binary to Assembly Converter");
 
     let left_display: TextDisplay = TextDisplay::new(5, 35, 400, 550, None);
     let right_display: TextDisplay = TextDisplay::new(415, 35, 400, 550, None);
@@ -58,15 +60,7 @@ fn main() {
 
     let mut but: Button = Button::new(350, 590, 120, 20, "Generate labels");
 
-    // https://www.youtube.com/watch?v=X4CD-pDdOrk &https://www.seriss.com/people/erco/fltk/#TabsExample
-    let tabs: Tabs = Tabs::new(20, 620, 800 - 20, 200 - 45, "");
-    let tab1 = Group::new(10, 640, 800 - 20, 200 - 45, "Assembly Viewer\n");
-    tab1.end();
-    let tab2 = Group::new(0, 640, 800 - 10, 200 - 35, "Bitmap Viewer\n");
-    let mut frame = Frame::default().with_size(300, 200).center_of(&tab2);
-    frame.set_frame(FrameType::EngravedBox);
-    tab2.end();
-    tabs.end();
+    configure_tabs();
 
     wind.end();
     wind.show();
@@ -109,9 +103,34 @@ fn main() {
     app.run().unwrap();
 }
 
+fn configure_tabs() {
+    // TODO let the user select the memory locations for each of these
+    let bitmap = fs::read("Assets/bitmap.bin").unwrap();
+    let screen = fs::read("Assets/screen.bin").unwrap();
+    let color = fs::read("Assets/color.bin").unwrap();
+    let bitmap_viewer = C64Bitmap::convert_multicolor_to_image(&bitmap, &screen, &color, 9);
+
+    // https://www.youtube.com/watch?v=X4CD-pDdOrk &https://www.seriss.com/people/erco/fltk/#TabsExample
+    let tabs: Tabs = Tabs::new(20, 620, 780, 230, "");
+    {
+        let tab1: Group = Group::new(10, 640, 780, 210, "Assembly Viewer\n");
+        tab1.end();
+    }
+    {
+        let tab2: Group = Group::new(0, 640, 790, 210, "Bitmap Viewer\n");
+        let mut tab_frame = Frame::default().with_size(300, 210).center_of(&tab2);
+        tab_frame.set_image(Some(bitmap_viewer.clone()));
+        let _bitmap_location: TextDisplay = TextDisplay::new(80, 680, 100, 20, "Bitmap location");
+        let _screen_location: TextDisplay = TextDisplay::new(80, 720, 100, 20, "Screen location");
+        let _screen_location: TextDisplay = TextDisplay::new(80, 760, 100, 20, "Colour location");
+        tab2.end();
+    }
+    tabs.end();
+}
+
 fn configure_menu_bar() -> (SysMenuBar, Receiver<Message>) {
     let (sender, receiver) = app::channel::<Message>();
-    let mut menu: menu::SysMenuBar = menu::SysMenuBar::default().with_size(800, 20);
+    let mut menu: SysMenuBar = SysMenuBar::default().with_size(800, 20);
     menu.set_frame(FrameType::FlatBox);
     menu.add_emit(
         "&File/Open...\t",
@@ -173,8 +192,8 @@ fn configure_menu_bar() -> (SysMenuBar, Receiver<Message>) {
 fn click(_wind: Window, parser: Rc<RefCell<Parser>>, right_display: TextDisplay) {
     // TODO use a custom chooser to allow the user selection for start/end addresses
     let start_memory_location = "0800";
-    let start = get_index(start_memory_location, &parser);
-    let end = get_index("1000", &parser);
+    let start: i32 = get_index(start_memory_location, &parser);
+    let end: i32 = get_index("1000", &parser);
 
     parser.borrow_mut().assembly_creator.add_labels(
         start,
@@ -230,7 +249,7 @@ fn open(converter: Rc<RefCell<Parser>>, left_display: TextDisplay, mut frame: Fr
 }
 
 fn save_left_window(parser: Rc<RefCell<Parser>>) -> std::io::Result<()> {
-    let title = "Save left window content";
+    let title: &str = "Save left window content";
     let chooser = display_save_dialogue(title, "ASM Files\t*.asm", "output.asm");
 
     let filename = chooser.filename();
@@ -259,13 +278,13 @@ fn save_right_window(parser: Rc<RefCell<Parser>>) -> std::io::Result<()> {
     Ok(())
 }
 
-fn save_binary(parser: Rc<RefCell<Parser>>) -> std::io::Result<()> {
+fn save_binary(_parser: Rc<RefCell<Parser>>) -> std::io::Result<()> {
     let title = "Save selected memory as Binary";
     let _chooser = display_save_dialogue(title, "Binary Files\t*.bin", "output.bin");
     Ok(())
 }
 
-fn save_text(parser: Rc<RefCell<Parser>>) -> std::io::Result<()> {
+fn save_text(_parser: Rc<RefCell<Parser>>) -> std::io::Result<()> {
     let title = "Save selected memory as Text";
     let _chooser = display_save_dialogue(title, "Text Files\t*.txt", "output.txt");
     Ok(())
