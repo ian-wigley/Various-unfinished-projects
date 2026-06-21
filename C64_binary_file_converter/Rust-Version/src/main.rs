@@ -123,6 +123,19 @@ fn configure_tabs() {
         let _bitmap_location: TextDisplay = TextDisplay::new(80, 680, 100, 20, "Bitmap location");
         let _screen_location: TextDisplay = TextDisplay::new(80, 720, 100, 20, "Screen location");
         let _screen_location: TextDisplay = TextDisplay::new(80, 760, 100, 20, "Colour location");
+        let mut display_btn = Button::new(85, 790, 85, 25, "Show Bitmap");
+
+//         display_btn.set_callback(move |_| {
+//             // TODO let the user select the memory locations for each of these
+//             let bitmap = fs::read("Assets/bitmap.bin").unwrap();
+//             let screen = fs::read("Assets/screen.bin").unwrap();
+//             let color = fs::read("Assets/color.bin").unwrap();
+//             let bitmap_viewer = C64Bitmap::convert_multicolor_to_image(&bitmap, &screen, &color, 9);
+// //            let mut tab_frame = Frame::default().with_size(300, 210).center_of(&tab_copy);
+//             tab_frame.set_image(Some(bitmap_viewer.clone()));
+//         });
+
+        display_btn.set_label_size(12);
         tab2.end();
     }
     tabs.end();
