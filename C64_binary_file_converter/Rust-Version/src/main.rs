@@ -20,6 +20,7 @@ use parser::parse::Parser;
 use std::cell::RefCell;
 use std::rc::Rc;
 use std::{env, fs};
+use fltk::input::IntInput;
 
 mod assembly_creator;
 mod bitmap_viewer;
@@ -104,11 +105,6 @@ fn main() {
 }
 
 fn configure_tabs() {
-    // TODO let the user select the memory locations for each of these
-    let bitmap = fs::read("Assets/bitmap.bin").unwrap();
-    let screen = fs::read("Assets/screen.bin").unwrap();
-    let color = fs::read("Assets/color.bin").unwrap();
-    let bitmap_viewer = C64Bitmap::convert_multicolor_to_image(&bitmap, &screen, &color, 9);
 
     // https://www.youtube.com/watch?v=X4CD-pDdOrk &https://www.seriss.com/people/erco/fltk/#TabsExample
     let tabs: Tabs = Tabs::new(20, 620, 780, 230, "");
@@ -118,27 +114,31 @@ fn configure_tabs() {
     }
     {
         let tab2: Group = Group::new(0, 640, 790, 210, "Bitmap Viewer\n");
-        let mut tab_frame = Frame::default().with_size(300, 210).center_of(&tab2);
-        tab_frame.set_image(Some(bitmap_viewer.clone()));
-        let _bitmap_location: TextDisplay = TextDisplay::new(80, 680, 100, 20, "Bitmap location");
-        let _screen_location: TextDisplay = TextDisplay::new(80, 720, 100, 20, "Screen location");
-        let _screen_location: TextDisplay = TextDisplay::new(80, 760, 100, 20, "Colour location");
+        let mut tab_frame = Frame::default().with_size(320, 210).center_of(&tab2);
+        let bitmap_location: IntInput = IntInput::new(80, 680, 100, 20, "Bitmap"); //location");
+        let screen_location: IntInput = IntInput::new(80, 720, 100, 20, "Screen");
+        let colour_location: IntInput = IntInput::new(80, 760, 100, 20, "Colour");
         let mut display_btn = Button::new(85, 790, 85, 25, "Show Bitmap");
 
-//         display_btn.set_callback(move |_| {
-//             // TODO let the user select the memory locations for each of these
-//             let bitmap = fs::read("Assets/bitmap.bin").unwrap();
-//             let screen = fs::read("Assets/screen.bin").unwrap();
-//             let color = fs::read("Assets/color.bin").unwrap();
-//             let bitmap_viewer = C64Bitmap::convert_multicolor_to_image(&bitmap, &screen, &color, 9);
-// //            let mut tab_frame = Frame::default().with_size(300, 210).center_of(&tab_copy);
-//             tab_frame.set_image(Some(bitmap_viewer.clone()));
-//         });
+        display_btn.set_callback(move |_| {
+            let (bitmap, screen, color) = get_bitmap_data(bitmap_location.value(), screen_location.value(), colour_location.value());
+            let bitmap_viewer = C64Bitmap::convert_multicolor_to_image(&bitmap, &screen, &color, 9);
+            tab_frame.set_image(Some(bitmap_viewer.clone()));
+            tab_frame.redraw();
+        });
 
         display_btn.set_label_size(12);
         tab2.end();
     }
     tabs.end();
+}
+
+fn get_bitmap_data(value_one: String, value_two: String, value_three: String) -> (Vec<u8>, Vec<u8>, Vec<u8>) {
+    // TODO let the user select the memory locations for each of these
+    let bitmap = fs::read("Assets/bitmap.bin").unwrap();
+    let screen = fs::read("Assets/screen.bin").unwrap();
+    let color = fs::read("Assets/color.bin").unwrap();
+    (bitmap, screen, color)
 }
 
 fn configure_menu_bar() -> (SysMenuBar, Receiver<Message>) {
@@ -361,3 +361,7 @@ fn memory_location_selector() -> Option<String> {
     let value = result.borrow().clone();
     value
 }
+
+
+
+
