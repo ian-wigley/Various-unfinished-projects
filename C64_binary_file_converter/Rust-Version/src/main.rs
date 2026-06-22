@@ -5,6 +5,7 @@ use fltk::app::Receiver;
 use fltk::dialog::{FileDialog, FileDialogType, NativeFileChooser};
 use fltk::frame::Frame;
 use fltk::group::{Group, Tabs};
+use fltk::input::IntInput;
 use fltk::menu::{Choice, SysMenuBar};
 use fltk::{
     app,
@@ -20,7 +21,6 @@ use parser::parse::Parser;
 use std::cell::RefCell;
 use std::rc::Rc;
 use std::{env, fs};
-use fltk::input::IntInput;
 
 mod assembly_creator;
 mod bitmap_viewer;
@@ -105,7 +105,6 @@ fn main() {
 }
 
 fn configure_tabs() {
-
     // https://www.youtube.com/watch?v=X4CD-pDdOrk &https://www.seriss.com/people/erco/fltk/#TabsExample
     let tabs: Tabs = Tabs::new(20, 620, 780, 230, "");
     {
@@ -115,13 +114,23 @@ fn configure_tabs() {
     {
         let tab2: Group = Group::new(0, 640, 790, 210, "Bitmap Viewer\n");
         let mut tab_frame = Frame::default().with_size(320, 210).center_of(&tab2);
-        let bitmap_location: IntInput = IntInput::new(80, 680, 100, 20, "Bitmap"); //location");
-        let screen_location: IntInput = IntInput::new(80, 720, 100, 20, "Screen");
-        let colour_location: IntInput = IntInput::new(80, 760, 100, 20, "Colour");
-        let mut display_btn = Button::new(85, 790, 85, 25, "Show Bitmap");
+        let mut bitmap_location: IntInput = IntInput::new(80, 680, 60, 20, "Bitmap");
+        bitmap_location.set_maximum_size(6);
+        bitmap_location.set_value("0x2000");
+        let mut colour_location: IntInput = IntInput::new(80, 760, 60, 20, "Colour");
+        colour_location.set_maximum_size(6);
+        colour_location.set_value("0x4328");
+        let mut screen_location: IntInput = IntInput::new(80, 720, 60, 20, "Screen");
+        screen_location.set_maximum_size(6);
+        screen_location.set_value("0x3F40");
+        let mut display_btn = Button::new(45, 790, 85, 25, "Show Bitmap");
 
         display_btn.set_callback(move |_| {
-            let (bitmap, screen, color) = get_bitmap_data(bitmap_location.value(), screen_location.value(), colour_location.value());
+            let (bitmap, screen, color) = get_bitmap_data(
+                bitmap_location.value(),
+                screen_location.value(),
+                colour_location.value(),
+            );
             let bitmap_viewer = C64Bitmap::convert_multicolor_to_image(&bitmap, &screen, &color, 9);
             tab_frame.set_image(Some(bitmap_viewer.clone()));
             tab_frame.redraw();
@@ -133,11 +142,21 @@ fn configure_tabs() {
     tabs.end();
 }
 
-fn get_bitmap_data(value_one: String, value_two: String, value_three: String) -> (Vec<u8>, Vec<u8>, Vec<u8>) {
+fn get_bitmap_data(
+    value_one: String,
+    value_two: String,
+    value_three: String,
+) -> (Vec<u8>, Vec<u8>, Vec<u8>) {
     // TODO let the user select the memory locations for each of these
     let bitmap = fs::read("Assets/bitmap.bin").unwrap();
+    // 8192 u8's
+    println!("{} {}", "bitmap length ", bitmap.len().to_string());
     let screen = fs::read("Assets/screen.bin").unwrap();
+    // 1024 u8's
+    println!("{} {}", "screen length ", screen.len().to_string());
     let color = fs::read("Assets/color.bin").unwrap();
+    // 1024 u8's
+    println!("{} {}", "color length ", color.len().to_string());
     (bitmap, screen, color)
 }
 
@@ -361,7 +380,3 @@ fn memory_location_selector() -> Option<String> {
     let value = result.borrow().clone();
     value
 }
-
-
-
-
