@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
@@ -14,18 +13,26 @@ namespace C64BinaryToAssemblyConverter;
 
 public partial class MainWindow : Window
 {
-    private byte[] _data;
     private readonly AssemblyCreator _assemblyCreator;
     private readonly Parser _parser = new();
+    private byte[] _data;
+    private readonly Dictionary<string, string[]> _dataStatements = new();
+    private readonly List<string> _illegalOpcodes = [];
     private List<string> _lineNumbers = [];
-    private List<string> _illegalOpcodes = [];
-    private Dictionary<string, string[]> _dataStatements = new Dictionary<string, string[]>();
     private int _userDefinedStartAddress;
+    private BytesView _byteviewer;
 
     public MainWindow()
     {
         InitializeComponent();
-        //byteviewer.SetDisplayMode(DisplayMode.Hexdump);
+        // _byteviewer = new BytesView
+        // {
+        //     Width = 650,
+        //     Height = 200
+        // };
+        // MemoryView.Children.Add(_byteviewer);
+
+        
         //MaximizeBox = false;
         //MinimizeBox = false;
         GenerateLabels.IsEnabled = false;
@@ -36,7 +43,7 @@ public partial class MainWindow : Window
     }
 
     /// <summary>
-    /// Add Labels
+    ///     Add Labels
     /// </summary>
     private void AddLabels(
         int delta,
@@ -52,10 +59,7 @@ public partial class MainWindow : Window
         _assemblyCreator.SecondPass(_parser.Code);
         // RightTextBox.Lines = _assemblyCreator.FinalPass(_parser.Code, start).ToArray();
         var lines = _assemblyCreator.FinalPass(_parser.Code, start).ToArray();
-        foreach (var line in lines)
-        {
-            RightTextBox.Text += line + "\n";            
-        }
+        foreach (var line in lines) RightTextBox.Text += line + "\n";
         // RightWindowMenuItem.Enabled = true;
     }
 
@@ -68,27 +72,27 @@ public partial class MainWindow : Window
 
         var ml = new LoadIntoMemoryLocationSelector();
         var startLocation = await ml.ShowDialog<string?>(this);
-        if (startLocation == null) { return; }
-        
+        if (startLocation == null) return;
+
         // Use a monospaced font
         LeftTextBox.FontFamily = new FontFamily("Consolas");
-        if (!int.TryParse(startLocation, NumberStyles.HexNumber, null, out var startAddress)) { return; }
+        if (!int.TryParse(startLocation, NumberStyles.HexNumber, null, out var startAddress)) return;
         _userDefinedStartAddress = startAddress;
         _data = _parser.LoadBinaryData(files[0].Path.AbsolutePath);
 
-        var lines  = _parser.ParseFileContent(_data, LeftTextBox, startAddress, ref _lineNumbers);
-        foreach (var line in lines)
-        {
-            LeftTextBox.Text += line + "\n";            
-        }
-
+        var lines = _parser.ParseFileContent(_data, LeftTextBox, startAddress, ref _lineNumbers);
+        foreach (var line in lines) LeftTextBox.Text += line + "\n";
+       
+        
+        var bytesViewer = this.FindControl<BytesView>("BytesView");
+        bytesViewer?.SetBytes(_data, 0x0801);
+        
+        
         // _dataStatements = _parser.DataStatements;
         // _illegalOpcodes = _parser.IllegalOpCodes;
-
         GenerateLabels.IsEnabled = true;
         // LeftWindowMenuItem.Enabled = true;
-        // //byteviewer.SetFile(openFileDialog.FileName, startAddress);
-        // byteviewer.SetFile(openFileDialog.FileName);
+
         // FileLoaded.Text = openFileDialog.SafeFileName;
         // FileLoaded.Left = 340;
 
@@ -108,7 +112,6 @@ public partial class MainWindow : Window
     }
 
     /// <summary>
-    ///
     /// </summary>
     private void ExitMenuItem(object sender, RoutedEventArgs e)
     {
@@ -116,45 +119,38 @@ public partial class MainWindow : Window
     }
 
     /// <summary>
-    /// Generate Labels
+    ///     Generate Labels
     /// </summary>
     private void GenerateLabelsClickEvent(object sender, RoutedEventArgs e)
     {
-        char[] startAddress = new char[_lineNumbers[0].Length];
-        char[] endAddress = new char[_lineNumbers[_lineNumbers.Count - 1].Length];
-        int firstOccurence = 0;
-        int lastOccurrence = 0;
+        var startAddress = new char[_lineNumbers[0].Length];
+        var endAddress = new char[_lineNumbers[_lineNumbers.Count - 1].Length];
+        var firstOccurence = 0;
+        var lastOccurrence = 0;
 
-        int count = 0;
-        foreach (char chr in _lineNumbers[0])
-        {
-            startAddress[count++] = chr;
-        }
+        var count = 0;
+        foreach (var chr in _lineNumbers[0]) startAddress[count++] = chr;
 
         count = 0;
-        foreach (char chr in _lineNumbers[_lineNumbers.Count - 1])
-        {
-            endAddress[count++] = chr;
-        }
+        foreach (var chr in _lineNumbers[_lineNumbers.Count - 1]) endAddress[count++] = chr;
 
         // var ms = new MemoryLocationsToConvertSelector(startAddress, endAddress);
         // if (ms.ShowDialog() != DialogResult.OK) return;
-        
+
         // var start = int.Parse(ms.GetSelectedMemStartLocation, System.Globalization.NumberStyles.HexNumber);
         var start = 2048;
         // var end = int.Parse(ms.GetSelectedMemEndLocation, System.Globalization.NumberStyles.HexNumber);
         var end = 4096;
         // //var dataStatmentsRequired = ms.GetConvertIllegalOpCodes;
-        
+
         var delta = end - start;
         var firstIllegalOpcodeFound = false;
         var replacedWithDataStatements = new Dictionary<string, string[]>();
-        
+
         if (start <= end)
         {
             //Check to see if illegal opcodes exist within the code selection
             for (var i = start; i < end; i++)
-            {
                 if (_illegalOpcodes.Contains(i.ToString("X4")))
                 {
                     if (i > firstOccurence && !firstIllegalOpcodeFound)
@@ -162,43 +158,33 @@ public partial class MainWindow : Window
                         firstOccurence = i;
                         firstIllegalOpcodeFound = true;
                     }
-        
-                    if (i > lastOccurrence)
-                    {
-                        lastOccurrence = i;
-                    }
+
+                    if (i > lastOccurrence) lastOccurrence = i;
                 }
-            }
-        
+
             var temp = lastOccurrence.ToString("X4");
-            int index = 0;
-            foreach (string str in _parser.Code)
+            var index = 0;
+            foreach (var str in _parser.Code)
             {
                 if (str.Contains(temp))
-                {
                     // nudge the last Occurrence along to the next valid opCode
-                    lastOccurrence = int.Parse(_lineNumbers[++index], System.Globalization.NumberStyles.HexNumber);
-                }
-        
+                    lastOccurrence = int.Parse(_lineNumbers[++index], NumberStyles.HexNumber);
+
                 index++;
             }
-        
-            for (int i = firstOccurence; i < lastOccurrence; i++)
-            {
+
+            for (var i = firstOccurence; i < lastOccurrence; i++)
                 // Replace the Illegal Opcodes with data statement
-                if (_dataStatements.TryGetValue(i.ToString("X4"), out string[] dataValue))
-                {
+                if (_dataStatements.TryGetValue(i.ToString("X4"), out var dataValue))
                     replacedWithDataStatements.Add(i.ToString("X4"), dataValue);
-                }
-            }
-        
+
             // var result = DialogResult.No;
             // if (firstIllegalOpcodeFound)
             // {
             //     result = MessageBox.Show(@"Illegal Opcodes found within the selection from : " + firstOccurence.ToString("X4") + @" to " + lastOccurrence.ToString("X4") + "\n"
             //                              + @"Replace Illegal Opcodes with data statements ?", @" ", MessageBoxButtons.YesNo);
             // }
-        
+
             var convertToBytes = false;
             // if (result == DialogResult.Yes)
             // {
@@ -208,14 +194,11 @@ public partial class MainWindow : Window
             //     replacedWithDataStatements);
             AddLabels(delta, start.ToString(), end.ToString(), convertToBytes, replacedWithDataStatements);
         }
-        else
-        {
-            //MessageBox.Show(@"The selected end address exceeds the length of the bytes $" + _lineNumbers[_lineNumbers.Count - 1]);
-        }
+        //MessageBox.Show(@"The selected end address exceeds the length of the bytes $" + _lineNumbers[_lineNumbers.Count - 1]);
     }
 
     /// <summary>
-    /// Clear Collections
+    ///     Clear Collections
     /// </summary>
     private void ClearCollections()
     {
@@ -224,7 +207,7 @@ public partial class MainWindow : Window
     }
 
     /// <summary>
-    /// Clear Left Window
+    ///     Clear Left Window
     /// </summary>
     private void ClearLeftWindow()
     {
@@ -234,7 +217,7 @@ public partial class MainWindow : Window
     }
 
     /// <summary>
-    /// Clear Right Window
+    ///     Clear Right Window
     /// </summary>
     private void ClearRightWindow()
     {
@@ -247,7 +230,6 @@ public partial class MainWindow : Window
     }
 
     /// <summary>
-    ///
     /// </summary>
     private void SaveLeftWindowContent(object sender, RoutedEventArgs e)
     {
@@ -255,7 +237,6 @@ public partial class MainWindow : Window
     }
 
     /// <summary>
-    ///
     /// </summary>
     private void SaveRightWindowContent(object sender, RoutedEventArgs e)
     {
@@ -263,7 +244,6 @@ public partial class MainWindow : Window
     }
 
     /// <summary>
-    ///
     /// </summary>
     private async void Save(List<string> collection, string filter)
     {
@@ -272,7 +252,6 @@ public partial class MainWindow : Window
     }
 
     /// <summary>
-    ///
     /// </summary>
     private async Task<IStorageFile?> SaveFileDialogue(string filter)
     {
@@ -284,33 +263,30 @@ public partial class MainWindow : Window
         });
         return saveFileDialog;
     }
-    
+
     /// <summary>
-    /// Export Bytes As Binary Menu Item Clicked
+    ///     Export Bytes As Binary Menu Item Clicked
     /// </summary>
     private async void ExportBytesAsBinaryMenuItemClicked(object sender, RoutedEventArgs e)
     {
         var start = 0;
         var end = 1984;
-        
+
         // var ms = new MemoryLocationsToConvertSelector(_startAddress, _endAddress);
         // if (ms.ShowDialog() != DialogResult.OK) return;
-        
+
         // var start = int.Parse(ms.GetSelectedMemStartLocation, System.Globalization.NumberStyles.HexNumber) - _userDefinedStartAddress;
         // var end = int.Parse(ms.GetSelectedMemEndLocation, System.Globalization.NumberStyles.HexNumber) - _userDefinedStartAddress;
-        
+
         var saveFileDialog = await SaveFileDialogue("All files (*.*)|*.*|Binary files (*.bin)|*.bin");
-        if (saveFileDialog == null) { return; }
-        if (_data.Length <= 0 || end > _data.Length) { return; }
+        if (saveFileDialog == null) return;
+        if (_data.Length <= 0 || end > _data.Length) return;
         await using var fileStream = new FileStream(saveFileDialog.Path.AbsolutePath, FileMode.Create);
-        for (var i = start; i <= end; i++)
-        {
-            fileStream.WriteByte(_data[i]);
-        }
+        for (var i = start; i <= end; i++) fileStream.WriteByte(_data[i]);
     }
-   
+
     /// <summary>
-    /// Export Bytes As Text Menu Item Clicked
+    ///     Export Bytes As Text Menu Item Clicked
     /// </summary>
     private void ExportBytesAsTextMenuItemClicked(object sender, RoutedEventArgs e)
     {
@@ -318,7 +294,7 @@ public partial class MainWindow : Window
         var end = 1984;
         var fileStart = start;
         var fileEnd = end;
-        
+
         var dataStatements = new List<string>
         {
             "*=$" + fileStart.ToString("x4"),
@@ -330,7 +306,6 @@ public partial class MainWindow : Window
         if (_data.Length > 0 && end <= _data.Length)
         {
             for (var i = start; i <= end; i++)
-            {
                 if (byteCounter != 8)
                 {
                     eightBytes += _data[i].ToString("X2") + ",$";
@@ -343,7 +318,7 @@ public partial class MainWindow : Window
                     eightBytes = "!byte $";
                     byteCounter = 0;
                 }
-            }
+
             Save(dataStatements, "Text files (*.txt)|*.txt");
         }
     }
