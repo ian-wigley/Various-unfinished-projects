@@ -8,8 +8,8 @@
         CanResize="False">
 
     <StackPanel Margin="20" Spacing="10">
-        <TextBlock Text="Please select memory location to load the file into"/>
-        
+        <TextBlock Text="Please select memory location to load the file into" />
+
         <!-- https://docs.avaloniaui.net/docs/reference/controls/combobox -->
         <!-- https://github.com/AvaloniaUI/Avalonia/discussions/13301 -->
         <ComboBox x:Name="StartAddressSelector" SelectedIndex="0" MaxDropDownHeight="100" SelectedValue="0800">
@@ -23,12 +23,12 @@
             <ComboBoxItem>7000</ComboBoxItem>
             <ComboBoxItem>8000</ComboBoxItem>
         </ComboBox>
-        
-        <StackPanel Orientation="Horizontal" 
-                    HorizontalAlignment="Right" 
+
+        <StackPanel Orientation="Horizontal"
+                    HorizontalAlignment="Right"
                     Spacing="10">
-            <Button Content="OK" Click="OnOkClick"/>
-            <Button Content="Cancel" Click="OnCancelClick"/>
+            <Button Content="OK" Click="OnOkClick" />
+            <Button Content="Cancel" Click="OnCancelClick" />
         </StackPanel>
     </StackPanel>
 </Window>
