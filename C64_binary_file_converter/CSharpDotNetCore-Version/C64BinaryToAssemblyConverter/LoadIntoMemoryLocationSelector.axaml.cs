@@ -1,19 +1,17 @@
-using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
-using Avalonia.Markup.Xaml;
 
 namespace C64BinaryToAssemblyConverter;
 
 public partial class LoadIntoMemoryLocationSelector : Window
 {
-    public string? Result { get; private set; }
-    
     public LoadIntoMemoryLocationSelector()
     {
         InitializeComponent();
     }
-    
+
+    public string? Result { get; private set; }
+
     private void OnOkClick(object? sender, RoutedEventArgs e)
     {
         Result = this.FindControl<ComboBox>("StartAddressSelector")?.Text;
