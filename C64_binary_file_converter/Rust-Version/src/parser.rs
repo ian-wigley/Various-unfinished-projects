@@ -1,5 +1,4 @@
 pub mod parse {
-
     use std::collections::HashMap;
     use std::io::Read;
     use std::str::FromStr;
@@ -8,8 +7,8 @@ pub mod parse {
     use fltk::text::TextBuffer;
     use fltk::text::TextDisplay;
 
-    use crate::Opcode;
     use crate::assembly_creator::ac::AssemblyCreator;
+    use crate::Opcode;
 
     #[derive(Clone)]
     pub(crate) struct Parser {
@@ -17,9 +16,10 @@ pub mod parse {
         pub(crate) assembly_creator: AssemblyCreator,
         opcodes: HashMap<&'static str, [&'static str; 5]>,
         hex_content: Vec<String>,
-        file_content: Vec<u8>,
+        pub(crate) file_content: Vec<u8>,
         pub(crate) assembly_code: Vec<String>,
         pub(crate) line_numbers: Vec<String>,
+        pub(crate) start_address: String,
     }
 
     impl Parser {
@@ -32,6 +32,7 @@ pub mod parse {
                 file_content: Vec::new(),
                 assembly_code: Vec::new(),
                 line_numbers: Vec::new(),
+                start_address: "".to_string(),
             }
         }
 
@@ -47,6 +48,7 @@ pub mod parse {
             &mut self, display: TextDisplay,
             start_address: String
         ) -> Vec<String> {
+            self.start_address = start_address.clone();
             let mut display_text: TextDisplay = display;
             let mut buf: TextBuffer = TextBuffer::default();
             let mut file_position: usize = 0;
