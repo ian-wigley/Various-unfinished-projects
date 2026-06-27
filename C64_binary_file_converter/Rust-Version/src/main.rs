@@ -1,6 +1,8 @@
 extern crate hex;
 
 use bitmap_viewer::bitmap_viewer::C64Bitmap;
+use byte_viewer::BytesView;
+
 use fltk::app::Receiver;
 use fltk::dialog::{FileDialog, FileDialogType, NativeFileChooser};
 use fltk::frame::Frame;
@@ -18,12 +20,15 @@ use fltk::{
 };
 use opcode::oc::Opcode;
 use parser::parse::Parser;
+
 use std::cell::RefCell;
 use std::rc::Rc;
 use std::{env, fs};
+use fltk::valuator::Scrollbar;
 
 mod assembly_creator;
 mod bitmap_viewer;
+mod byte_viewer;
 mod opcode;
 mod parser;
 
@@ -37,12 +42,28 @@ pub enum Message {
     Quit,
 }
 
+#[derive(Clone)]
+struct State {
+    pub(crate) bytes_view: BytesView,
+    pub(crate) scroll: Scrollbar,
+}
+
+impl State {
+    pub fn new() -> State {
+        State {
+            bytes_view: BytesView::new(100, 650, 620, 190),
+            scroll: Scrollbar::new(750, 650, 15, 180, ""),
+        }
+    }
+}
+
 // https://github.com/fltk-rs/fltk-rs/blob/master/fltk/examples/editor2.rs
 // https://fltk-rs.github.io/fltk-book/Menus.html
 
 fn main() {
     env::set_var("RUST_BACKTRACE", "full");
 
+    let parser = Rc::new(RefCell::new(Parser::new()));
     let app: app::App = app::App::default().load_system_fonts();
     let font = Font::load_font("Assets/Consolas-Regular.ttf").unwrap();
     Font::set_font(Font::Helvetica, &font);
@@ -61,12 +82,12 @@ fn main() {
 
     let mut but: Button = Button::new(350, 590, 120, 20, "Generate labels");
 
-    configure_tabs();
+    let state = configure_tabs(parser.clone());
 
     wind.end();
     wind.show();
 
-    let parser = Rc::new(RefCell::new(Parser::new()));
+    // let parser = Rc::new(RefCell::new(Parser::new()));
 
     but.set_callback({
         let converter = parser.clone();
@@ -84,7 +105,7 @@ fn main() {
         if let Some(msg) = receiver.recv() {
             match msg {
                 Message::Open => {
-                    open(parser.clone(), left_display.clone(), frame.clone());
+                    open(parser.clone(), left_display.clone(), frame.clone(), state.clone());
                     but.clone().activate();
                     if let Some(mut item) = menu.find_item("&File/Save...") {
                         item.activate();
@@ -104,11 +125,27 @@ fn main() {
     app.run().unwrap();
 }
 
-fn configure_tabs() {
+fn configure_tabs(parser: Rc<RefCell<Parser>>) -> State {
+    let state;
     // https://www.youtube.com/watch?v=X4CD-pDdOrk &https://www.seriss.com/people/erco/fltk/#TabsExample
     let tabs: Tabs = Tabs::new(20, 620, 780, 230, "");
     {
         let tab1: Group = Group::new(10, 640, 780, 210, "Assembly Viewer\n");
+
+        // let mut scroll = Scrollbar::new(760, 650, 10, 180, "Scroll Bar");
+        // scroll.set_step(1.0, 1);
+
+        state = State::new();
+        let view = state.bytes_view.clone();
+        let mut scroll = state.scroll.clone();
+        scroll.set_step(1.0, 1);
+
+        scroll.set_callback({
+            let mut view = view.clone();
+            move |s| {
+                view.scroll_to(s.value() as usize);
+            }
+        });
         tab1.end();
     }
     {
@@ -117,46 +154,69 @@ fn configure_tabs() {
         let mut bitmap_location: IntInput = IntInput::new(80, 680, 60, 20, "Bitmap");
         bitmap_location.set_maximum_size(6);
         bitmap_location.set_value("0x2000");
-        let mut colour_location: IntInput = IntInput::new(80, 760, 60, 20, "Colour");
-        colour_location.set_maximum_size(6);
-        colour_location.set_value("0x4328");
         let mut screen_location: IntInput = IntInput::new(80, 720, 60, 20, "Screen");
         screen_location.set_maximum_size(6);
         screen_location.set_value("0x3F40");
+        let mut colour_location: IntInput = IntInput::new(80, 760, 60, 20, "Colour");
+        colour_location.set_maximum_size(6);
+        colour_location.set_value("0x4328");
         let mut display_btn = Button::new(45, 790, 85, 25, "Show Bitmap");
 
         display_btn.set_callback(move |_| {
-            let (bitmap, screen, color) = get_bitmap_data(
-                bitmap_location.value(),
-                screen_location.value(),
-                colour_location.value(),
-            );
-            let bitmap_viewer = C64Bitmap::convert_multicolor_to_image(&bitmap, &screen, &color, 9);
-            tab_frame.set_image(Some(bitmap_viewer.clone()));
-            tab_frame.redraw();
+            if !parser.borrow().line_numbers.is_empty() {
+                let start_address: usize =
+                    usize::from_str_radix(&parser.borrow().start_address.clone(), 16).unwrap();
+                let bitmap_start_address: usize =
+                    usize::from_str_radix(&*bitmap_location.value().replace("0x", ""),
+                                          16).unwrap() - start_address;
+                let screen_start_address: usize =
+                    usize::from_str_radix(&*screen_location.value().replace("0x", ""),
+                                          16).unwrap() - start_address;
+                let colour_start_address: usize =
+                    usize::from_str_radix(&*colour_location.value().replace("0x", ""),
+                                          16).unwrap() - start_address;
+
+                let (bitmap, screen, color) = get_bitmap_data(
+                    bitmap_start_address,
+                    screen_start_address,
+                    colour_start_address,
+                    parser.clone(),
+                );
+                let bitmap_viewer =
+                    C64Bitmap::convert_multicolor_to_image(&bitmap, &screen, &color, 9);
+                tab_frame.set_image(Some(bitmap_viewer.clone()));
+                tab_frame.redraw();
+            }
         });
 
         display_btn.set_label_size(12);
         tab2.end();
     }
     tabs.end();
+    state
 }
 
 fn get_bitmap_data(
-    value_one: String,
-    value_two: String,
-    value_three: String,
+    bitmap_start_address: usize,
+    screen_start_address: usize,
+    colour_start_address: usize,
+    parser: Rc<RefCell<Parser>>,
 ) -> (Vec<u8>, Vec<u8>, Vec<u8>) {
-    // TODO let the user select the memory locations for each of these
-    let bitmap = fs::read("Assets/bitmap.bin").unwrap();
     // 8192 u8's
-    println!("{} {}", "bitmap length ", bitmap.len().to_string());
-    let screen = fs::read("Assets/screen.bin").unwrap();
+    let bitmap: Vec<u8> =
+        parser.borrow().file_content[bitmap_start_address..bitmap_start_address + 8192].to_vec();
+    // println!("{} {}", "bitmap length ", bitmap.len().to_string());
+
     // 1024 u8's
-    println!("{} {}", "screen length ", screen.len().to_string());
-    let color = fs::read("Assets/color.bin").unwrap();
+    let screen: Vec<u8> =
+        parser.borrow().file_content[screen_start_address..screen_start_address + 4096].to_vec();
+    // println!("{} {}", "screen length ", screen.len().to_string());
+
     // 1024 u8's
-    println!("{} {}", "color length ", color.len().to_string());
+    let color: Vec<u8> =
+        parser.borrow().file_content[colour_start_address..colour_start_address + 4096].to_vec();
+    // println!("{} {}", "color length ", color.len().to_string());
+
     (bitmap, screen, color)
 }
 
@@ -249,7 +309,7 @@ fn get_index(start_text: &str, parser: &Rc<RefCell<Parser>>) -> i32 {
     // }
 }
 
-fn open(converter: Rc<RefCell<Parser>>, left_display: TextDisplay, mut frame: Frame) {
+fn open(converter: Rc<RefCell<Parser>>, left_display: TextDisplay, mut frame: Frame, mut state: State) {
     let mut chooser = NativeFileChooser::new(FileDialogType::BrowseFile);
     chooser.set_title("Select a file");
     chooser.set_filter("Binary Files\t*.bin");
@@ -270,11 +330,15 @@ fn open(converter: Rc<RefCell<Parser>>, left_display: TextDisplay, mut frame: Fr
             converter.borrow_mut().init(&*full_path.clone());
             let _data = converter
                 .borrow_mut()
-                .parse_file_content(left_display, memory_location);
+                .parse_file_content(left_display, memory_location.clone());
             converter
                 .borrow_mut()
                 .assembly_creator
-                .update_assembly_code(_data);
+                .update_assembly_code(_data.clone());
+            let start_address = usize::from_str_radix(memory_location.clone().as_str(), 16).unwrap();
+            state.bytes_view.set_bytes(converter.borrow_mut().file_content.clone(), start_address);
+            state.scroll.set_bounds(
+                0.0, ((converter.borrow_mut().file_content.clone().len() / 8) - 8) as f64);
         }
         None => println!("Cancelled"),
     }
