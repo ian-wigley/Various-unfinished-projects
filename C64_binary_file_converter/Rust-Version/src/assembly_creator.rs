@@ -2,6 +2,7 @@ pub mod ac {
     use fltk::prelude::DisplayExt;
     use fltk::text::{TextBuffer, TextDisplay};
     use std::collections::HashMap;
+    use indexmap::{IndexMap, IndexSet};
 
     #[derive(Clone)]
     pub(crate) struct AssemblyCreator {
@@ -36,8 +37,8 @@ pub mod ac {
         ) {
             let label_count: i32 = 0;
             let branch_count: i32 = 0;
-            let mut jump_label_locations: HashMap<String, String> = HashMap::new();
-            let mut branch_label_locations: HashMap<String, String> = HashMap::new();
+            let mut jump_label_locations: IndexMap<String, String> = IndexMap::new();
+            let mut branch_label_locations: IndexMap<String, String> = IndexMap::new();
             let mut buf: TextBuffer = TextBuffer::default();
             let first_pass: bool = true;
             let count: usize = start as usize;
@@ -99,10 +100,10 @@ pub mod ac {
             mut first_pass: bool,
             mut count: usize,
             end: usize,
-            label_loc: &mut HashMap<String, String>,
+            label_loc: &mut IndexMap<String, String>,
             mut label_count: i32,
             pass_one: &mut Vec<String>,
-            branch_loc: &mut HashMap<String, String>,
+            branch_loc: &mut IndexMap<String, String>,
             mut branch_count: i32,
         ) {
             // First pass parses the content looking for branch & jump conditions
@@ -176,8 +177,8 @@ pub mod ac {
         fn second_pass(
             self,
             pass_one: &Vec<String>,
-            label_locations: &HashMap<String, String>,
-            branch_locations: &HashMap<String, String>,
+            label_locations: &IndexMap<String, String>,
+            branch_locations: &IndexMap<String, String>,
             pass_two: &mut Vec<String>,
         ) {
             // Second pass iterates through first pass collection adding labels and branches
@@ -219,9 +220,9 @@ pub mod ac {
         fn final_pass(
             &mut self,
             pass_one: &Vec<String>,
-            jump_label_loc: &HashMap<String, String>,
+            jump_label_loc: &IndexMap<String, String>,
             found: &mut Vec<String>,
-            branch_label_loc: HashMap<String, String>,
+            branch_label_loc: IndexMap<String, String>,
             pass_two: &Vec<String>,
             start_memory_location: &str,
         ) -> Vec<String> {
