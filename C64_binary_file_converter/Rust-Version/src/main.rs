@@ -69,14 +69,14 @@ fn main() {
     Font::set_font(Font::Helvetica, &font);
     app::set_font_size(12);
     let mut wind: fltk::window::DoubleWindow =
-        Window::new(100, 100, 860, 860, "C64 Binary to Assembly Converter");
+        Window::new(100, 100, 820, 860, "C64 Binary to Assembly Converter");
 
     let left_display: TextDisplay = TextDisplay::new(5, 35, 400, 550, None);
     let right_display: TextDisplay = TextDisplay::new(415, 35, 400, 550, None);
 
     let (menu, receiver) = configure_menu_bar();
 
-    let mut frame = Frame::new(360, 10, 140, 20, "");
+    let mut frame = Frame::new(340, 10, 180, 20, "");
     frame.set_label_size(12);
     frame.set_frame(FrameType::NoBox);
 
@@ -86,8 +86,6 @@ fn main() {
 
     wind.end();
     wind.show();
-
-    // let parser = Rc::new(RefCell::new(Parser::new()));
 
     but.set_callback({
         let converter = parser.clone();
@@ -127,13 +125,10 @@ fn main() {
 
 fn configure_tabs(parser: Rc<RefCell<Parser>>) -> State {
     let state;
-    // https://www.youtube.com/watch?v=X4CD-pDdOrk &https://www.seriss.com/people/erco/fltk/#TabsExample
+    // https://www.youtube.com/watch?v=X4CD-pDdOrk & https://www.seriss.com/people/erco/fltk/#TabsExample
     let tabs: Tabs = Tabs::new(20, 620, 780, 230, "");
     {
         let tab1: Group = Group::new(10, 640, 780, 210, "Assembly Viewer\n");
-
-        // let mut scroll = Scrollbar::new(760, 650, 10, 180, "Scroll Bar");
-        // scroll.set_step(1.0, 1);
 
         state = State::new();
         let view = state.bytes_view.clone();
@@ -285,7 +280,7 @@ fn click(_wind: Window, parser: Rc<RefCell<Parser>>, right_display: TextDisplay)
     // TODO use a custom chooser to allow the user selection for start/end addresses
     let start_memory_location = "0800";
     let start: i32 = get_index(start_memory_location, &parser);
-    let end: i32 = get_index("1000", &parser);
+    let end: i32 = get_index("6000", &parser);
 
     parser.borrow_mut().assembly_creator.add_labels(
         start,
