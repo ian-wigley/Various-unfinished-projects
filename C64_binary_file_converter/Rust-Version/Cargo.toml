@@ -8,3 +8,4 @@ edition = "2021"
 [dependencies]
 hex = "0.4.3"
 fltk = {version = "^1.5.22", features = ["fltk-bundled"]}
+indexmap = "2.14.0"
