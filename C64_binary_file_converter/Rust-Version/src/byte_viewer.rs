@@ -23,7 +23,6 @@ struct State {
 impl BytesView {
     pub fn new(x: i32, y: i32, w: i32, h: i32) -> Self {
         let mut inner = Widget::new(x, y, w, h, None);
-
         let state = Rc::new(RefCell::new(State {
             data: Vec::new(),
             start_address: 0,
@@ -43,7 +42,6 @@ impl BytesView {
 
             for line in 0..st.row_count {
                 let y = w.y() + 7 + (line as i32 * 21);
-
                 let offset = (st.start_line + line) * st.column_count;
 
                 if offset >= st.data.len() {
@@ -61,7 +59,6 @@ impl BytesView {
 
                 // Hex column
                 let mut hex = String::new();
-
                 for (i, b) in slice.iter().enumerate() {
                     hex.push_str(&format!("{:02X} ", b));
 
@@ -103,7 +100,6 @@ impl BytesView {
         let mut st = self.state.borrow_mut();
         st.data = data;
         st.start_address = start_address;
-
         self.inner.redraw();
     }
 
@@ -119,7 +115,6 @@ fn draw_char_bitmap(x: i32, y: i32, data: &[u8]) {
     }
 
     const SCALE: i32 = 2;
-
     draw::set_draw_color(Color::Black);
 
     for (row, byte) in data.iter().enumerate() {
