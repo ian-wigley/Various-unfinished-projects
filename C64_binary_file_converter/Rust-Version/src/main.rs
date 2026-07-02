@@ -24,6 +24,8 @@ use parser::parse::Parser;
 use std::cell::RefCell;
 use std::rc::Rc;
 use std::{env, fs};
+use fltk::misc::InputChoice;
+use image::{ImageBuffer, Rgb};
 use fltk::valuator::Scrollbar;
 
 mod assembly_creator;
@@ -31,6 +33,7 @@ mod bitmap_viewer;
 mod byte_viewer;
 mod opcode;
 mod parser;
+mod load_into_memory_location_selector;
 
 #[derive(Copy, Clone)]
 pub enum Message {
@@ -125,6 +128,7 @@ fn main() {
 
 fn configure_tabs(parser: Rc<RefCell<Parser>>) -> State {
     let state;
+    let data = Rc::new(RefCell::new(Vec::<u8>::new()));
     // https://www.youtube.com/watch?v=X4CD-pDdOrk & https://www.seriss.com/people/erco/fltk/#TabsExample
     let tabs: Tabs = Tabs::new(20, 620, 780, 230, "");
     {
@@ -146,17 +150,18 @@ fn configure_tabs(parser: Rc<RefCell<Parser>>) -> State {
     {
         let tab2: Group = Group::new(0, 640, 790, 210, "Bitmap Viewer\n");
         let mut tab_frame = Frame::default().with_size(320, 210).center_of(&tab2);
-        let mut bitmap_location: IntInput = IntInput::new(80, 680, 60, 20, "Bitmap");
+        let mut bitmap_location: IntInput = IntInput::new(80, 660, 60, 20, "Bitmap");
         bitmap_location.set_maximum_size(6);
         bitmap_location.set_value("0x2000");
-        let mut screen_location: IntInput = IntInput::new(80, 720, 60, 20, "Screen");
+        let mut screen_location: IntInput = IntInput::new(80, 690, 60, 20, "Screen");
         screen_location.set_maximum_size(6);
         screen_location.set_value("0x3F40");
-        let mut colour_location: IntInput = IntInput::new(80, 760, 60, 20, "Colour");
+        let mut colour_location: IntInput = IntInput::new(80, 720, 60, 20, "Colour");
         colour_location.set_maximum_size(6);
         colour_location.set_value("0x4328");
-        let mut display_btn = Button::new(45, 790, 85, 25, "Show Bitmap");
 
+        let data_display = Rc::clone(&data);
+        let mut display_btn = Button::new(45, 750, 85, 25, "Show Bitmap");
         display_btn.set_callback(move |_| {
             if !parser.borrow().line_numbers.is_empty() {
                 let start_address: usize =
@@ -177,18 +182,39 @@ fn configure_tabs(parser: Rc<RefCell<Parser>>) -> State {
                     colour_start_address,
                     parser.clone(),
                 );
-                let bitmap_viewer =
+                let bitmap_image =
                     C64Bitmap::convert_multicolor_to_image(&bitmap, &screen, &color, 9);
-                tab_frame.set_image(Some(bitmap_viewer.clone()));
+                tab_frame.set_image(Some(bitmap_image.clone()));
                 tab_frame.redraw();
+                *data_display.borrow_mut() = bitmap_image.to_rgb_data();
             }
         });
-
         display_btn.set_label_size(12);
+
+        let data_save = Rc::clone(&data);
+        let mut save_bitmap_btn = Button::new(45, 780, 85, 25, "Save Bitmap");
+        save_bitmap_btn.set_callback(move |_| {
+            save_bitmap_image(data_save.borrow().clone()).expect("OK");
+        });
+        save_bitmap_btn.set_label_size(12);
+
         tab2.end();
     }
     tabs.end();
     state
+}
+
+fn save_bitmap_image(data: Vec<u8>) -> Result<(), Box<dyn std::error::Error>> {
+    let title: &str = "Save Bitmap";
+    let chooser = display_save_dialogue(title, "Image Files\t*.png", "output.png");
+    let filename = chooser.filename();
+    if !filename.to_string_lossy().is_empty() {
+        let buffer: ImageBuffer<Rgb<u8>, Vec<u8>> =
+            ImageBuffer::from_raw(320, 200, data)
+                .ok_or("Failed to create image buffer")?;
+        buffer.save(filename)?;
+    }
+    Ok(())
 }
 
 fn get_bitmap_data(
@@ -281,27 +307,26 @@ fn click(_wind: Window, parser: Rc<RefCell<Parser>>, right_display: TextDisplay)
     let start_memory_location = "0800";
     let start: i32 = get_index(start_memory_location, &parser);
     let end: i32 = get_index("6000", &parser);
-
-    parser.borrow_mut().assembly_creator.add_labels(
-        start,
-        end,
-        start_memory_location,
-        true,
-        1,
-        2,
-        right_display,
-    );
+    if start != -1 && end != -1 {
+        parser.borrow_mut().assembly_creator.add_labels(
+            start,
+            end,
+            start_memory_location,
+            true,
+            1,
+            2,
+            right_display,
+        );
+    }
 }
 
 fn get_index(start_text: &str, parser: &Rc<RefCell<Parser>>) -> i32 {
     let line_numbers = parser.borrow().line_numbers.clone();
     let index = line_numbers.iter().position(|x| x.contains(start_text));
-    index.unwrap() as i32
-
-    // match index {
-    //     Some(i) => return index.unwrap() as i32,
-    //     None => println!("Not found"),
-    // }
+    match index {
+        Some(_i) => index.unwrap() as i32,
+        None => { println!("Line number not found"); -1 },
+    }
 }
 
 fn open(converter: Rc<RefCell<Parser>>, left_display: TextDisplay, mut frame: Frame, mut state: State) {
@@ -401,9 +426,38 @@ fn memory_location_selector() -> Option<String> {
     );
     frame.set_label_size(10);
 
-    let mut memory_locations = Choice::new(120, 80, 60, 30, "$");
-    memory_locations.add_choice("0400|0800|1000|3000|4000");
-    memory_locations.set_value(1);
+
+    let addresses = [
+        ("0400", 1024),
+        ("0800", 2048),
+        ("0900", 2304),
+        ("0A00", 2560),
+        ("0C00", 3072),
+        ("0D00", 3328),
+        ("0E00", 3584),
+        ("0F00", 3840),
+        ("1000", 4096),
+        ("2000", 8192),
+        ("3000", 12288),
+        ("4000", 16384),
+        ("5000", 20480),
+        ("6000", 24576),
+        ("7000", 28672),
+        ("8000", 32768),
+        ("9000", 36864),
+        ("A000", 40960),
+        ("B000", 45056),
+        ("C000", 49152),
+        ("D000", 53248),
+        ("E000", 57344),
+        ("F000", 61440),
+    ];
+
+    let mut memory_locations = InputChoice::new(120, 80, 60, 30, "$");
+    for (text, _) in addresses {
+        memory_locations.add(text);
+    }
+    memory_locations.set_value("0800");
 
     let mut ok_btn = Button::new(80, 120, 50, 25, "OK");
     let mut cancel_btn = Button::new(160, 120, 50, 25, "Cancel");
@@ -414,7 +468,7 @@ fn memory_location_selector() -> Option<String> {
         let result = result.clone();
         let mut win = dialog_win.clone();
         ok_btn.set_callback(move |_| {
-            let choice = memory_locations.choice().clone();
+            let choice = memory_locations.value().clone();
             *result.borrow_mut() = Some(choice.unwrap());
             win.hide();
         });
