@@ -9,3 +9,5 @@ edition = "2021"
 hex = "0.4.3"
 fltk = {version = "^1.5.22", features = ["fltk-bundled"]}
 indexmap = "2.14.0"
+image = "0.25.10"
+regex = "1.12.4"
