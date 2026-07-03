@@ -182,5 +182,11 @@ pub mod parse {
                 Err(_) => None,
             }
         }
+
+        pub(crate) fn collect_start_and_end_addresses(self) -> (Vec<char>, Vec<char>) {
+            let start_address = self.line_numbers[0].clone();
+            let end_address =  self.line_numbers[self.line_numbers.len()-1].clone();
+            (start_address.chars().collect(), end_address.chars().collect())
+        }
     }
 }
