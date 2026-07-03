@@ -18,10 +18,11 @@ use fltk::{
     text::TextDisplay,
     window::Window,
 };
+use load_into_memory_location_selector::LoadIntoMemoryLocationSelector;
 use opcode::oc::Opcode;
 use parser::parse::Parser;
-use load_into_memory_location_selector::LoadIntoMemoryLocationSelector;
 
+use crate::memory_locations_to_convert_selector::MemoryLocationsToConvertSelector;
 use fltk::valuator::Scrollbar;
 use image::{ImageBuffer, Rgb};
 use std::cell::RefCell;
@@ -31,9 +32,10 @@ use std::{env, fs};
 mod assembly_creator;
 mod bitmap_viewer;
 mod byte_viewer;
+mod load_into_memory_location_selector;
+mod memory_locations_to_convert_selector;
 mod opcode;
 mod parser;
-mod load_into_memory_location_selector;
 
 #[derive(Copy, Clone)]
 pub enum Message {
@@ -49,6 +51,7 @@ pub enum Message {
 struct State {
     pub(crate) bytes_view: BytesView,
     pub(crate) scroll: Scrollbar,
+    pub(crate) start_address: String,
 }
 
 impl State {
@@ -56,6 +59,7 @@ impl State {
         State {
             bytes_view: BytesView::new(100, 650, 620, 190),
             scroll: Scrollbar::new(750, 650, 15, 180, ""),
+            start_address: String::new(),
         }
     }
 }
@@ -84,7 +88,6 @@ fn main() {
     frame.set_frame(FrameType::NoBox);
 
     let mut but: Button = Button::new(350, 590, 120, 20, "Generate labels");
-
     let state = configure_tabs(parser.clone());
 
     wind.end();
@@ -93,10 +96,19 @@ fn main() {
     but.set_callback({
         let converter = parser.clone();
         move |_| {
+            let (start, end) = converter.borrow().clone().collect_start_and_end_addresses();
+            let m = MemoryLocationsToConvertSelector::new(start.clone(), end.clone());
+            let mut n = m.borrow().window.clone();
+            n.show();
+            while n.shown() {
+                app::wait();
+            }
             click(
                 wind.to_owned(),
                 converter.to_owned(),
                 right_display.to_owned(),
+                start.clone(),
+                end.clone(),
             )
         }
     });
@@ -106,7 +118,12 @@ fn main() {
         if let Some(msg) = receiver.recv() {
             match msg {
                 Message::Open => {
-                    open(parser.clone(), left_display.clone(), frame.clone(), state.clone());
+                    open(
+                        parser.clone(),
+                        left_display.clone(),
+                        frame.clone(),
+                        state.clone(),
+                    );
                     but.clone().activate();
                     if let Some(mut item) = menu.find_item("&File/Save...") {
                         item.activate();
@@ -167,14 +184,14 @@ fn configure_tabs(parser: Rc<RefCell<Parser>>) -> State {
                 let start_address: usize =
                     usize::from_str_radix(&parser.borrow().start_address.clone(), 16).unwrap();
                 let bitmap_start_address: usize =
-                    usize::from_str_radix(&*bitmap_location.value().replace("0x", ""),
-                                          16).unwrap() - start_address;
+                    usize::from_str_radix(&*bitmap_location.value().replace("0x", ""), 16).unwrap()
+                        - start_address;
                 let screen_start_address: usize =
-                    usize::from_str_radix(&*screen_location.value().replace("0x", ""),
-                                          16).unwrap() - start_address;
+                    usize::from_str_radix(&*screen_location.value().replace("0x", ""), 16).unwrap()
+                        - start_address;
                 let colour_start_address: usize =
-                    usize::from_str_radix(&*colour_location.value().replace("0x", ""),
-                                          16).unwrap() - start_address;
+                    usize::from_str_radix(&*colour_location.value().replace("0x", ""), 16).unwrap()
+                        - start_address;
 
                 let (bitmap, screen, color) = get_bitmap_data(
                     bitmap_start_address,
@@ -210,8 +227,7 @@ fn save_bitmap_image(data: Vec<u8>) -> Result<(), Box<dyn std::error::Error>> {
     let filename = chooser.filename();
     if !filename.to_string_lossy().is_empty() {
         let buffer: ImageBuffer<Rgb<u8>, Vec<u8>> =
-            ImageBuffer::from_raw(320, 200, data)
-                .ok_or("Failed to create image buffer")?;
+            ImageBuffer::from_raw(320, 200, data).ok_or("Failed to create image buffer")?;
         buffer.save(filename)?;
     }
     Ok(())
@@ -302,11 +318,19 @@ fn configure_menu_bar() -> (SysMenuBar, Receiver<Message>) {
     (menu, receiver)
 }
 
-fn click(_wind: Window, parser: Rc<RefCell<Parser>>, right_display: TextDisplay) {
-    // TODO use a custom chooser to allow the user selection for start/end addresses
-    let start_memory_location = "0800";
+fn click(
+    _wind: Window,
+    parser: Rc<RefCell<Parser>>,
+    right_display: TextDisplay,
+    start: Vec<char>,
+    end: Vec<char>,
+) {
+    let local_start: String = start.into_iter().collect();
+    let start_memory_location: &str = local_start.as_str();
+    let local_end: String = end.into_iter().collect();
+    let end_memory_location: &str = local_end.as_str();
     let start: i32 = get_index(start_memory_location, &parser);
-    let end: i32 = get_index("6000", &parser);
+    let end: i32 = get_index(end_memory_location, &parser);
     if start != -1 && end != -1 {
         parser.borrow_mut().assembly_creator.add_labels(
             start,
@@ -325,11 +349,19 @@ fn get_index(start_text: &str, parser: &Rc<RefCell<Parser>>) -> i32 {
     let index = line_numbers.iter().position(|x| x.contains(start_text));
     match index {
         Some(_i) => index.unwrap() as i32,
-        None => { println!("Line number not found"); -1 },
+        None => {
+            println!("Line number not found");
+            -1
+        }
     }
 }
 
-fn open(converter: Rc<RefCell<Parser>>, left_display: TextDisplay, mut frame: Frame, mut state: State) {
+fn open(
+    converter: Rc<RefCell<Parser>>,
+    left_display: TextDisplay,
+    mut frame: Frame,
+    mut state: State,
+) {
     let mut chooser = NativeFileChooser::new(FileDialogType::BrowseFile);
     chooser.set_title("Select a file");
     chooser.set_filter("Binary Files\t*.bin");
@@ -355,10 +387,21 @@ fn open(converter: Rc<RefCell<Parser>>, left_display: TextDisplay, mut frame: Fr
                 .borrow_mut()
                 .assembly_creator
                 .update_assembly_code(_data.clone());
-            let start_address = usize::from_str_radix(memory_location.clone().as_str(), 16).unwrap();
-            state.bytes_view.set_bytes(converter.borrow_mut().file_content.clone(), start_address);
-            state.scroll.set_bounds(
-                0.0, ((converter.borrow_mut().file_content.clone().len() / 8) - 8) as f64);
+            let start_address =
+                usize::from_str_radix(memory_location.clone().as_str(), 16).unwrap();
+            state
+                .bytes_view
+                .set_bytes(converter.borrow_mut().file_content.clone(), start_address);
+            state.start_address = memory_location.clone();
+            println!("State start address {}", state.start_address);
+
+            if converter.borrow_mut().line_numbers.clone().len() / 8 > 1 {
+                state.scroll.set_bounds(
+                    0.0,
+                    ((converter.borrow_mut().line_numbers.clone().len() / 8) - 8) as f64,
+                );
+                //0.0, ((converter.borrow_mut().file_content.clone().len() / 8) - 8) as f64);
+            }
         }
         None => println!("Cancelled"),
     }
