@@ -2,6 +2,10 @@ extern crate hex;
 
 use bitmap_viewer::bitmap_viewer::C64Bitmap;
 use byte_viewer::BytesView;
+use load_into_memory_location_selector::LoadIntoMemoryLocationSelector;
+use memory_locations_to_convert_selector::MemoryLocationsToConvertSelector;
+use opcode::oc::Opcode;
+use parser::parse::Parser;
 
 use fltk::app::Receiver;
 use fltk::dialog::{FileDialog, FileDialogType, NativeFileChooser};
@@ -9,6 +13,7 @@ use fltk::frame::Frame;
 use fltk::group::{Group, Tabs};
 use fltk::input::IntInput;
 use fltk::menu::SysMenuBar;
+use fltk::valuator::Scrollbar;
 use fltk::{
     app,
     button::Button,
@@ -18,12 +23,6 @@ use fltk::{
     text::TextDisplay,
     window::Window,
 };
-use load_into_memory_location_selector::LoadIntoMemoryLocationSelector;
-use opcode::oc::Opcode;
-use parser::parse::Parser;
-
-use crate::memory_locations_to_convert_selector::MemoryLocationsToConvertSelector;
-use fltk::valuator::Scrollbar;
 use image::{ImageBuffer, Rgb};
 use std::cell::RefCell;
 use std::rc::Rc;
@@ -68,7 +67,7 @@ impl State {
 // https://fltk-rs.github.io/fltk-book/Menus.html
 
 fn main() {
-    env::set_var("RUST_BACKTRACE", "full");
+    unsafe { env::set_var("RUST_BACKTRACE", "full"); }
 
     let parser = Rc::new(RefCell::new(Parser::new()));
     let app: app::App = app::App::default().load_system_fonts();
