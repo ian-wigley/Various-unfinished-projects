@@ -1,8 +1,7 @@
 pub mod ac {
     use fltk::prelude::DisplayExt;
     use fltk::text::{TextBuffer, TextDisplay};
-    use std::collections::HashMap;
-    use indexmap::{IndexMap, IndexSet};
+    use indexmap::IndexMap;
 
     #[derive(Clone)]
     pub(crate) struct AssemblyCreator {
