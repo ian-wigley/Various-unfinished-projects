@@ -38,7 +38,7 @@ pub mod parse {
 
         pub(crate) fn init(&mut self, file_name: &str) {
             // Populate the OpCode Map
-            self.opcodes = self.opcode.populate_opcodes();
+            self.opcodes = self.opcode.clone().populate_opcodes();
             // Load the external binary file
             self.file_content = self.load_bin_file(file_name).unwrap().clone();
             self.hex_content = self.parse_content(self.file_content.clone());
@@ -61,7 +61,7 @@ pub mod parse {
                 self.line_numbers.push(format!("{:04X}", line_number));
                 let op_code: String = self.hex_content[file_position].clone().to_uppercase();
                 let values: [&str; 5] = self
-                    .opcode
+                    .opcode.clone()
                     .get_match(self.opcodes.clone(), op_code.as_str());
                 let mnemonic: String = values[0].to_string();
                 let num_bytes: i32 = i32::from_str(values[1]).unwrap_or(1);
