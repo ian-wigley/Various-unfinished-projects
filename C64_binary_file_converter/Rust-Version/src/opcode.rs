@@ -1,12 +1,26 @@
 pub mod oc {
     use std::collections::HashMap;
 
-    #[derive(Copy, Clone)]
-    pub(crate) struct Opcode {}
+    #[derive(Clone)]
+    pub(crate) struct Opcode {
+        code: String,
+        name: String,
+        number_of_bytes: i32,
+        prefix: String,
+        suffix: String,
+        illegal: bool,
+    }
 
     impl Opcode {
         pub fn new() -> Opcode {
-            Opcode {}
+            Opcode {
+                code: "".parse().unwrap(),
+                name: "".parse().unwrap(),
+                number_of_bytes: 0,
+                prefix: "".parse().unwrap(),
+                suffix: "".parse().unwrap(),
+                illegal: false,
+            }
         }
 
         pub(crate) fn populate_opcodes(self) -> HashMap<&'static str, [&'static str; 5]> {
@@ -282,6 +296,13 @@ pub mod oc {
                 Some(&row) => opcode_value = row,
                 _ => {}
             };
+            let mut new_code = Opcode::new();
+            new_code.name = opcode_value[0].parse().unwrap();
+            new_code.number_of_bytes = opcode_value[1].parse().unwrap();
+            new_code.prefix = opcode_value[2].parse().unwrap();
+            new_code.suffix = opcode_value[3].parse().unwrap();
+            // TODO finish & return this 
+
             opcode_value
         }
     }
