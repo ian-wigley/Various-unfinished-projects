@@ -11,6 +11,8 @@ pub mod ac {
         label: String,
     }
 
+    const OFFSET: usize = 20;
+
     impl AssemblyCreator {
         pub fn new() -> AssemblyCreator {
             AssemblyCreator {
@@ -153,7 +155,7 @@ pub mod ac {
                                 }
                                 pass_one.push(format!("{} {}", line_detail[3], line_detail[4]));
                             }
-
+                            "6C" => {}
                             _ => {
                                 if line_detail.len() == 3 {
                                     pass_one.push(line_detail[2].to_string());
@@ -189,17 +191,10 @@ pub mod ac {
                 let detail: Vec<&str> = pass_one[index].split_whitespace().collect();
                 if detail.len() > 1 {
                     let key: String = format!("{}", detail[1].replace("$", ""));
-
-                    // println!("{}", index);
-                    let _vstop_value: usize = 11633;
-                    if index == _vstop_value {
-                        let _stop = true;
-                    }
                     if label_locations.contains_key(&key) && detail[0].contains("JSR")
                         || detail[0].contains("JMP")
                     {
-                        //assembly = format!("{} {}", detail[0], label_locations[&key].clone());
-                        assembly = format!("{}", detail[0]);
+                        assembly = format!("{} {}", detail[0], label_locations[&key].clone());
                     }
                     if branch_locations.contains_key(&key) && detail[0].contains("BNE")
                         || detail[0].contains("BEQ")
@@ -232,7 +227,6 @@ pub mod ac {
             let mut index: usize = 0;
             while third_pass {
                 let copy: String = self.assembly_code[index].clone();
-                index += 1;
                 let detail: Vec<String> = copy.split_whitespace().map(str::to_string).collect();
                 let mut label: String = String::from("");
                 if detail.len() > 1 {
@@ -247,18 +241,14 @@ pub mod ac {
                         label = format!("{} ", branch_label_loc.get(&new_key).unwrap());
                     }
                 }
-                let offset: usize = if label.len() == 0 {
-                    20
-                } else {
-                    20 // - 2 //(label.len() - 2)
-                };
 
-                //println!("Offset: {}", offset);
+                if index < pass_one.len() {
+                    pass_three.push(format!("{:OFFSET$}{}", label, pass_two[index].clone()));
+                    index += 1;
+                }
 
                 if index >= pass_one.len() {
                     third_pass = false;
-                } else {
-                    pass_three.push(format!("{:offset$}{}", label, pass_two[index].clone()));
                 }
             }
             pass_three
