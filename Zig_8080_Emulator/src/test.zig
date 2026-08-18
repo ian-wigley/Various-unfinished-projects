@@ -1,6 +1,14 @@
 const std = @import("std");
 const expect = std.testing.expect;
-const cpu = @import("cpu.zig");
+const cpu = @import("cpu.zig").CPU;
+const main = @import("main.zig");
+const traceEntry = @import("trace.zig").TraceEntry;
+const allocator = std.heap.page_allocator;
+var content = @embedFile("./assets/i.rom");
+const fmt = std.fmt;
+const print = std.log.info;
+const init = std.testing.io;
+var traces: std.ArrayList([]traceEntry) = .empty;
 
 //***********************************************************************//
 //
@@ -9,8 +17,53 @@ const cpu = @import("cpu.zig");
 //
 //***********************************************************************//
 
-pub fn main() void {
-    std.log.info("m_byte: ", .{});
+pub fn Run() anyerror!bool {
+    var count: usize = 0;
+    const instruction_per_frame: usize = 4000;
+
+    while (count < instruction_per_frame) {
+        try cpu.ExecuteInstruction();
+        count += 1;
+        if (cpu.CRASHED) {
+            try cpu.WriteOutTraceInformation();
+            print("CRASHED: {any}", .{cpu.CRASHED});
+            break;
+        }
+    }
+    if (!cpu.CRASHED) {
+        try cpu.WriteOutSingleTraceInformation();
+        cpu.iteration += 1;
+        cpu.singleIterationTraceIndex = 0;
+    }
+    //try traces.append(allocator, &cpu.singleIterationTrace);
+    return cpu.CRASHED;
+}
+
+test "EmulateTest" {
+    const rom = try main.configureRomData();
+    try expect(rom.len == 20480);
+
+    cpu.New(rom, init);
+
+    var startIteration: usize = 0;
+    const endIteration: usize = 20;
+
+    var crashed = false;
+    while (!crashed and startIteration < endIteration) {
+        crashed = try Run();
+        startIteration += 1;
+        if (startIteration == 9){
+            _ = "true";
+        }
+    }
+
+    // Starts breaking @ Iteration 9 !!
+
+    print("CPU has crashed. {any}", .{crashed});
+    // try expect(crashed == true);
+    // try expect(traces.capacity > 1);
+
+    print("Iteration {any}", .{cpu.GetIteration()});
 }
 
 test "New" {}
