@@ -1,33 +1,35 @@
 // The CPU emulation code
-
 const std = @import("std");
-const io = @import("io.zig").IO;
+const iO = @import("io.zig").IO;
 const fmt = std.fmt;
 const print = std.log.info;
+const traceEntry = @import("trace.zig").TraceEntry;
+const allocator = std.heap.page_allocator;
+const bufPrint = std.fmt.bufPrint;
 
 pub const CPU = struct {
+    var PC: u16 = 0; // Program Counter: This is the current instruction pointer. 16-bit register.
+    //var PC: usize = 0; // Program Counter: This is the current instruction pointer. 16-bit register.
+    var SP: u16 = 0; // Stack Pointer. 16-bit register
+    var A: u8 = 0; // Accumulator. 8-bit register
+    var B: u8 = 0; // Register B. 8-bit register
+    var C: u8 = 0; // Register C. 8-bit register
+    var D: u8 = 0; // Register D. 8-bit register
+    var E: u8 = 0; // Register E. 8-bit register
+    var H: u8 = 0; // Register H. 8-bit register
+    var L: u8 = 0; // Register L. 8-bit register
+    var BC: u16 = 0; // Virtual register BC (16-bit) combination of registers B and C
+    var DE: u16 = 0; // Virtual register DE (16-bit) combination of registers D and E
+    pub var HL: u16 = 0; // Virtual register HL (16-bit) combination of registers H and L
 
-    var PC: u16 = 0;             // Program Counter: This is the current instruction pointer. 16-bit register.
-    var SP: u16 = 0;             // Stack Pointer. 16-bit register
-    var A: u8 = 0;               // Accumulator. 8-bit register
-    var B: u8 = 0;               // Register B. 8-bit register
-    var C: u8 = 0;               // Register C. 8-bit register
-    var D: u8 = 0;               // Register D. 8-bit register
-    var E: u8 = 0;               // Register E. 8-bit register
-    var H: u8 = 0;               // Register H. 8-bit register
-    var L: u8 = 0;               // Register L. 8-bit register
-    var BC: u16 = 0;             // Virtual register BC (16-bit) combinaison of registers B and C
-    var DE: u16 = 0;             // Virtual register DE (16-bit) combinaison of registers D and E
-    pub var HL: u16 = 0;         // Virtual register HL (16-bit) combinaison of registers H and L
-
-    var SIGN: u8 = 0;            // Sign flag
-    var ZERO: u8 = 0;            // Zero flag
-    var CARRY: u16 = 0;          // Carry flag
-    var HALFCARRY: u16 = 0;      // Half-carry (or Auxiliary Carry) flag
-    var PARITY: bool = false;    // Parity flag
+    var SIGN: u8 = 0; // Sign flag
+    var ZERO: u8 = 0; // Zero flag
+    var CARRY: u16 = 0; // Carry flag
+    var HALFCARRY: u16 = 0; // Half-carry (or Auxiliary Carry) flag
+    var PARITY: bool = false; // Parity flag
 
     var INTERRUPT: bool = false; // Interrupt Enabled flag
-    var CRASHED: bool = false;   // Special flag that tells if the CPU is currently crashed (stopped)
+    pub var CRASHED: bool = false; // Special flag that tells if the CPU is currently crashed (stopped)
 
     var instruction_per_frame: u16 = 4000; // Approximate real machine speed
 
@@ -36,9 +38,9 @@ pub const CPU = struct {
     var half_instruction_per_frame: u16 = 0;
 
     var count: usize = 0;
-    var rom: [] u8 = undefined;
+    var rom: []u8 = undefined;
 
-    // Addionnal debug fields, not used by CPU
+    // Additional debug fields, not used by CPU
     var BIT0: u8 = 1;
     var BIT4: u8 = 16;
     var BIT5: u8 = 32;
@@ -50,7 +52,16 @@ pub const CPU = struct {
     var source: u16 = 0;
     var value: u16 = 0;
     var instructionCounter: u16 = 0;
-    var iteration: usize = 0;
+    
+    pub var iteration: usize = 0;
+    pub var singleIterationTrace: [4000]traceEntry = undefined;
+    pub var singleIterationTraceIndex: usize = 0;
+
+    var iterationTraces: [1024]traceEntry = undefined;
+    var iterationTracesIndex: usize = 0;
+
+    // var localInit: std.process.Init = undefined;
+    var localInit: std.Io = undefined;
 
     pub fn GetIteration() usize {
         return iteration;
@@ -60,283 +71,349 @@ pub const CPU = struct {
         return PC;
     }
 
-    pub fn New(inRom: [] u8) void {
+    pub fn New(inRom: []u8, io: std.Io) void {
         rom = inRom;
-        // print("rom data: {any}", .{rom[9206]});
+        localInit = io;
+        // print("rom[9212]. {any}", .{rom[9212]});
 
-        io.New();
         half_instruction_per_frame = @as(u16, instruction_per_frame / 2);
         // print("half_instruction_per_frame: {any}", .{half_instruction_per_frame});
         Reset();
     }
 
-    pub fn Run() bool {
-
+    pub fn Run() anyerror!bool {
+        print("==================Starting-Iteration-{any}================",.{iteration});
         count = 0;
-        // clear the slice once per 4000 items
         while (count < instruction_per_frame) {
-            ExecuteInstruction();
+            try ExecuteInstruction();
             count += 1;
 
             if (CRASHED) {
+                try WriteOutTraceInformation();
                 print("CRASHED: {any}", .{CRASHED});
                 break;
             }
         }
         if (!CRASHED) {
+            try PopulateIterationsTraceInformation("na");
             iteration += 1;
-            print("Iteration: {any}", .{iteration});
+            if (iteration == 2) {
+                const stop = true;
+                _ = stop;
+                CRASHED = true;
+            }
+            // print("Iteration: {any}", .{iteration});
         }
 
         return CRASHED;
     }
 
+    pub fn PopulateIterationsTraceInformation(opcode: [*:0]const u8) !void {
+        iterationTraces[iterationTracesIndex % iterationTraces.len] = try PopulateTrace(opcode);
+        iterationTracesIndex += 1;
+    }
+
+    fn PopulateTrace(opcode: [*:0]const u8) !traceEntry {
+        var memory = std.AutoHashMap(u16, u8).init(allocator);
+        try memory.put(9206, rom[9206]);
+        try memory.put(9207, rom[9207]);
+        try memory.put(9210, rom[9210]);
+        try memory.put(9211, rom[9211]);
+        try memory.put(9212, rom[9212]);
+        try memory.put(9213, rom[9213]);
+        try memory.put(9214, rom[9214]);
+        try memory.put(9215, rom[9215]);
+
+        return .{ .iteration = iteration, .opcode = opcode, .m_byte = m_byte, .pc = PC, .sp = SP, .a = A, .b = B, .c = C, .d = D, .e = E, .h = H, .l = L, .bc = BC, .de = DE, .hl = HL, .sign = SIGN, .zero = ZERO, .halfcarry = HALFCARRY, .parity = PARITY, .carry = CARRY, .interrupt = INTERRUPT, .memory = memory };
+    }
+
     // Method assists debugging.
-    fn OutputInfo(opcode: [*:0]const u8) void {
-        if (iteration > 635) {
-            print(
-                "Count: {any}, Opcode: {s}, PC: {any}, SP: {any}, A: {any}, B: {any}, C: {any}, D: {any}, E: {any}, H: {any}, L: {any}, BC: {any}, DE: {any}, HL: {any}, " ++
-                "SIGN: {any}, ZERO: {any}, HALFCARRY: {any}, PARITY: {any}, CARRY: {any}, INTERRUPT: {any}, 9206: {any}, 9207: {any}, 9210: {any}, 9211: {any}, 9212: {any}, " ++
-                "9213: {any}, 9214: {any}, 9215: {any}",
-                .{ count, opcode, PC, SP, A, B, C, D, E, H, L, BC, DE, HL, SIGN, ZERO, HALFCARRY, PARITY, CARRY, INTERRUPT,
-                rom[9206], rom[9207], rom[9210], rom[9211], rom[9212], rom[9213], rom[9214], rom[9215] });
+    fn OutputInfo(opcode: [*:0]const u8) anyerror!void {
+        singleIterationTrace[singleIterationTraceIndex % singleIterationTrace.len] = try PopulateTrace(opcode);
+        singleIterationTraceIndex += 1;
+        print("Opcode: {s}, rom[9212]: {any}", .{opcode, rom[9212]});
+        // print("rom[9212]: {any}",.{rom[9212]});
+        // print("rom[9212]. {any}", .{rom[9212]});
+
+    // if (iteration > 634) {
+    //     print("Count: {any}, Opcode: {s}, PC: {any}, SP: {any}, A: {any}, B: {any}, C: {any}, D: {any}, E: {any}, H: {any}, L: {any}, BC: {any}, DE: {any}, HL: {any}, " ++
+    //         "SIGN: {any}, ZERO: {any}, HALFCARRY: {any}, PARITY: {any}, CARRY: {any}, INTERRUPT: {any}, 9206: {any}, 9207: {any}, 9210: {any}, 9211: {any}, 9212: {any}, " ++
+    //         "9213: {any}, 9214: {any}, 9215: {any}", .{ count, opcode, PC, SP, A, B, C, D, E, H, L, BC, DE, HL, SIGN, ZERO, HALFCARRY, PARITY, CARRY, INTERRUPT, rom[9206], rom[9207], rom[9210], rom[9211], rom[9212], rom[9213], rom[9214], rom[9215] });
+    // }
+    }
+
+    pub fn WriteOutSingleTraceInformation() anyerror!void {
+        const cwd = std.Io.Dir.cwd();
+        var b: [50]u8 = undefined;
+
+        const filename = try bufPrint(&b, "zig_per_iteration_trace_{any}.txt", .{iteration});
+        var file = try cwd.createFile(localInit, filename, .{}); 
+        defer file.close(localInit);
+
+        var buffer: [4096]u8 = undefined;
+        var file_writer = file.writerStreaming(localInit, &buffer);
+        const writer = &file_writer.interface;
+
+        const counter = @min(singleIterationTraceIndex, singleIterationTrace.len);
+        for (singleIterationTrace[0..counter]) |entry| {
+            try entry.write(writer, rom);
         }
+
+        try writer.flush();
+    }
+
+    pub fn WriteOutTraceInformation() anyerror!void {
+        const cwd = std.Io.Dir.cwd();
+        var file = try cwd.createFile(localInit, "zig_iterations_trace.txt", .{});
+        defer file.close(localInit);
+
+        var buffer: [4096]u8 = undefined;
+        var file_writer = file.writerStreaming(localInit, &buffer);
+        const writer = &file_writer.interface;
+
+        const counter = @min(iterationTracesIndex, iterationTraces.len);
+        for (iterationTraces[0..counter]) |entry| {
+            try entry.write(writer, rom);
+            //print("entry : {any}", .{entry});
+        }
+
+        try writer.flush();
     }
 
     // All opcodes are 1 byte wide
-    pub fn ExecuteInstruction() void {
+    pub fn ExecuteInstruction() anyerror!void {
         if (!CRASHED) {
             m_byte = FetchRomByte();
             switch (m_byte) {
                 0x00 => {
                     NOP();
-                    OutputInfo("NOP");
+                    try OutputInfo("NOP");
                 },
                 0xc2, 0xc3, 0xca, 0xd2, 0xda, 0xf2, 0xfa => {
                     Instruction_JMP(m_byte);
-                    OutputInfo("JMP");
+                    try OutputInfo("JMP");
                 },
                 0x01, 0x11, 0x21, 0x31 => {
                     Instruction_LXI(m_byte);
-                    OutputInfo("LXI");
+                    try OutputInfo("LXI");
                 },
 
                 0x3e, 0x06, 0x0e, 0x16, 0x1e, 0x26, 0x2e, 0x36 => {
                     Instruction_MVI(m_byte);
-                    OutputInfo("MVI");
+                    try OutputInfo("MVI");
                 },
 
                 0xcd, 0xc4, 0xcc, 0xd4, 0xdc => {
                     Instruction_CALL(m_byte);
-                    OutputInfo("CALL");
+                    try OutputInfo("CALL");
                 },
 
                 0x0a, 0x1a, 0x3a => {
                     Instruction_LDA(m_byte);
-                    OutputInfo("LDA");
+                    try OutputInfo("LDA");
                 },
 
                 0x77, 0x70, 0x71, 0x72, 0x73, 0x74, 0x75 => {
                     Instruction_MOVHL(m_byte);
-                    OutputInfo("MOVHL");
+                    try OutputInfo("MOVHL");
                 },
 
                 0x03, 0x13, 0x23, 0x33 => {
                     Instruction_INX(m_byte);
-                    OutputInfo("INX");
+                    try OutputInfo("INX");
                 },
 
                 0x0b, 0x1b, 0x2b, 0x3b => {
                     Instruction_DCX(m_byte);
-                    OutputInfo("DCX");
+                    try OutputInfo("DCX");
                 },
 
                 0x3d, 0x05, 0x0d, 0x15, 0x1d, 0x25, 0x2d, 0x35 => {
                     Instruction_DEC(m_byte);
-                    OutputInfo("DEC");
+                    try OutputInfo("DEC");
                 },
 
                 0x3c, 0x04, 0x0c, 0x14, 0x1c, 0x24, 0x2c, 0x34 => {
                     Instruction_INC(m_byte);
-                    OutputInfo("INC");
+                    try OutputInfo("INC");
                 },
 
                 0xc9, 0xc0, 0xc8, 0xd0, 0xd8 => {
                     Instruction_RET(m_byte);
-                    OutputInfo("RET");
+                    try OutputInfo("RET");
                 },
 
                 0x7F, 0x78, 0x79, 0x7A, 0x7B, 0x7C, 0x7D, 0x7E => {
                     Instruction_MOV(m_byte);
-                    OutputInfo("MOV");
+                    try OutputInfo("MOV");
                 },
 
                 0x47, 0x40, 0x41, 0x42, 0x43, 0x44, 0x45, 0x46 => {
                     Instruction_MOV(m_byte);
-                    OutputInfo("MOV");
+                    try OutputInfo("MOV");
                 },
 
                 0x4f, 0x48, 0x49, 0x4a, 0x4b, 0x4c, 0x4d, 0x4e => {
                     Instruction_MOV(m_byte);
-                    OutputInfo("MOV");
+                    try OutputInfo("MOV");
                 },
 
                 0x57, 0x50, 0x51, 0x52, 0x53, 0x54, 0x55, 0x56 => {
                     Instruction_MOV(m_byte);
-                    OutputInfo("MOV");
+                    try OutputInfo("MOV");
                 },
 
                 0x5f, 0x58, 0x59, 0x5a, 0x5b, 0x5c, 0x5d, 0x5e => {
                     Instruction_MOV(m_byte);
-                    OutputInfo("MOV");
+                    try OutputInfo("MOV");
                 },
 
                 0x67, 0x60, 0x61, 0x62, 0x63, 0x64, 0x65, 0x66 => {
                     Instruction_MOV(m_byte);
-                    OutputInfo("MOV");
+                    try OutputInfo("MOV");
                 },
 
                 0x6f, 0x68, 0x69, 0x6a, 0x6b, 0x6c, 0x6d, 0x6e => {
                     Instruction_MOV(m_byte);
-                    OutputInfo("MOV");
+                    try OutputInfo("MOV");
                 },
 
                 0xbf, 0xb8, 0xb9, 0xba, 0xbb, 0xbc, 0xbd, 0xbe, 0xfe => {
                     Instruction_CMP(m_byte);
-                    OutputInfo("CMP");
+                    try OutputInfo("CMP");
                 },
 
                 0xc5, 0xd5, 0xe5, 0xf5 => {
                     Instruction_PUSH(m_byte);
-                    OutputInfo("PUSH");
+                    try OutputInfo("PUSH");
                 },
 
                 0xc1, 0xd1, 0xe1, 0xf1 => {
                     Instruction_POP(m_byte);
-                    OutputInfo("POP");
+                    try OutputInfo("POP");
                 },
 
                 0x09, 0x19, 0x29, 0x39 => {
                     Instruction_DAD(m_byte);
-                    OutputInfo("DAD");
+                    try OutputInfo("DAD");
                 },
 
                 0xeb => {
                     Instruction_XCHG();
-                    OutputInfo("XCHG");
+                    try OutputInfo("XCHG");
                 },
 
                 0xe3 => {
                     Instruction_XTHL();
-                    OutputInfo("XTHL");
+                    try OutputInfo("XTHL");
                 },
 
                 0xd3 => {
                     Instruction_OUTP();
-                    OutputInfo("OUTP");
+                    try OutputInfo("OUTP");
                 },
 
                 0xdb => {
                     Instruction_INP();
-                    OutputInfo("INP");
+                    try OutputInfo("INP");
                 },
 
                 0xe9 => {
                     Instruction_PCHL();
-                    OutputInfo("PCHL");
+                    try OutputInfo("PCHL");
                 },
 
                 0xc7, 0xcf, 0xd7, 0xdf, 0xe7, 0xef, 0xf7, 0xff => {
                     Instruction_RST(m_byte);
-                    OutputInfo("RST");
+                    try OutputInfo("RST");
                 },
 
                 0x07 => {
                     Instruction_RLC();
-                    OutputInfo("RLC");
+                    try OutputInfo("RLC");
                 },
 
                 0x17 => {
                     Instruction_RAL();
-                    OutputInfo("RAL");
+                    try OutputInfo("RAL");
                 },
 
                 0x0f => {
                     Instruction_RRC();
-                    OutputInfo("RRC");
+                    try OutputInfo("RRC");
                 },
 
                 0x1f => {
                     Instruction_RAR();
-                    OutputInfo("RAR");
+                    try OutputInfo("RAR");
                 },
 
                 0xa7, 0xa0, 0xa1, 0xa2, 0xa3, 0xa4, 0xa5, 0xa6, 0xe6 => {
                     Instruction_AND(m_byte);
-                    OutputInfo("AND");
+                    try OutputInfo("AND");
                 },
 
                 0x80, 0x81, 0x82, 0x83, 0x84, 0x85, 0x86, 0x87, 0xc6 => {
                     Instruction_ADD(m_byte);
-                    OutputInfo("ADD");
+                    try OutputInfo("ADD");
                 },
 
                 0x02, 0x12, 0x32 => {
                     Instruction_STA(m_byte);
-                    OutputInfo("STA");
+                    try OutputInfo("STA");
                 },
 
                 0xaf, 0xa8, 0xa9, 0xaa, 0xab, 0xac, 0xad, 0xae, 0xee => {
                     Instruction_XOR(m_byte);
-                    OutputInfo("XOR");
+                    try OutputInfo("XOR");
                 },
                 0xf3 => {
                     Instruction_DI();
-                    OutputInfo("DI");
+                    try OutputInfo("DI");
                 },
                 0xfb => {
                     Instruction_EI();
-                    OutputInfo("EI");
+                    try OutputInfo("EI");
                 },
                 0x37 => {
                     Instruction_STC();
-                    OutputInfo("STC");
+                    try OutputInfo("STC");
                 },
                 0x3f => {
                     Instruction_CMC();
-                    OutputInfo("CMC");
+                    try OutputInfo("CMC");
                 },
                 0xb7, 0xb0, 0xb1, 0xb2, 0xb3, 0xb4, 0xb5, 0xb6, 0xf6 => {
                     Instruction_OR(m_byte);
-                    OutputInfo("OR");
+                    try OutputInfo("OR");
                 },
                 0x97, 0x90, 0x91, 0x92, 0x93, 0x94, 0x95, 0x96, 0xd6 => {
                     Instruction_SUB(m_byte);
-                    OutputInfo("SUB");
+                    try OutputInfo("SUB");
                 },
                 0x2a => {
                     Instruction_LHLD();
-                    OutputInfo("LHLD");
+                    try OutputInfo("LHLD");
                 },
                 0x22 => {
                     Instruction_SHLD();
-                    OutputInfo("SHLD");
+                    try OutputInfo("SHLD");
                 },
                 0xde => {
                     Instruction_SBBI();
-                    OutputInfo("SBBI");
+                    try OutputInfo("SBBI");
                 },
                 0x27 => {
                     Instruction_DAA();
-                    OutputInfo("DAA");
+                    try OutputInfo("DAA");
                 },
                 0x2f => {
                     Instruction_CMA();
-                    OutputInfo("CMA");
+                    try OutputInfo("CMA");
                 },
                 0x8f, 0x88, 0x89, 0x8a, 0x8b, 0x8c, 0x8d, 0x8e, 0xce => {
                     Instruction_ADC(m_byte);
-                    OutputInfo("ADC");
+                    try OutputInfo("ADC");
                 },
                 else => {
                     CRASHED = true;
@@ -934,12 +1011,12 @@ pub const CPU = struct {
 
     pub fn Instruction_OUTP() void {
         const port = FetchRomByte();
-        io.OutputPort(port, A);
+        iO.OutputPort(port, A);
     }
 
     pub fn Instruction_INP() void {
         const port = FetchRomByte();
-        SetA(io.InputPort(port));
+        SetA(iO.InputPort(port));
     }
 
     pub fn Instruction_PCHL() void {
@@ -1345,7 +1422,7 @@ pub const CPU = struct {
 
     pub fn FetchRomByte() u8 {
         const rom_value = rom[PC];
-        // print("Value: {any}", .{value});
+        //print("rom_value: {any}", .{rom_value});
         PC += 1;
         return rom_value;
     }
@@ -1369,14 +1446,25 @@ pub const CPU = struct {
     }
 
     pub fn WriteShort(inAddress: u16, inWord: u16) void {
-        rom[inAddress + 1] = @intCast(std.math.shr(u16, inWord, 8));
+    //pub fn WriteShort(inAddress: usize, inWord: u16) void {
+        print("WriteShort inAddress: {any}, inByte: {any}", .{inAddress, inWord});
+        // print("WriteShort inByte: {any}", .{inWord});
+        const valueOne: u8 = @intCast(std.math.shr(u16, inWord, 8));
+        // print("WriteShort valueOne: {any}", .{valueOne});
+        // rom[inAddress + 1] = @intCast(std.math.shr(u16, inWord, 8));
+        rom[inAddress + 1] = valueOne;
         // print("m_rom[inAddress + 1]: {any}", .{m_rom[inAddress + 1]});
-        rom[inAddress + 0] = @truncate(inWord);
+        const valueTwo: u8= @truncate(inWord);
+        print("WriteShort valueOne: {any}, valueTwo: {any}", .{valueOne, valueTwo});
+        // rom[inAddress + 0] = @truncate(inWord);
+        rom[inAddress + 0] = valueTwo;
         // print("m_rom[inAddress + 0]: {any}", .{m_rom[inAddress + 0]});
     }
 
     pub fn WriteByte(inAddress: u16, inByte: u8) void {
         if (inAddress < rom.len) {
+            print("WriteByte inAddress: {any}, inByte: {any}", .{inAddress, inByte});
+            // print("WriteByte inByte: {any}", .{inByte});
             rom[inAddress] = inByte;
         } else {
             print("Overflow occurred: {any}", .{rom.len});
@@ -1404,7 +1492,7 @@ pub const CPU = struct {
         HALFCARRY = @intFromBool((localValue & 0x0F) == 0);
         ZERO = @intFromBool((localValue & 255) == 0);
         SIGN = @truncate(localValue & 128);
-        const return_value:u8 = @intCast(localValue);
+        const return_value: u8 = @intCast(localValue);
         return return_value;
     }
 
