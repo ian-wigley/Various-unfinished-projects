@@ -30,7 +30,7 @@ pub const IO = struct {
 
     pub fn New() void {
         // Dipswitch: BIT0 and BIT1 controls starting number of life (from 3 to 6)
-        // BIT7 prints additionnal coin message on intro screen
+        // BIT7 prints additional coin message on intro screen
         IN_PORT2 = (IN_PORT2 | (BIT0 | BIT1));
         IN_PORT2 = (IN_PORT2 | (BIT7));
     }
